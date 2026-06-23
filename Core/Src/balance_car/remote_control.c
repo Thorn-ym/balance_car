@@ -14,6 +14,7 @@
 #define REMOTE_UART_RX_PIN                  GPIO_PIN_7
 #define REMOTE_LINE_MAX                     31U
 #define REMOTE_TELEMETRY_PERIOD_MS          500U
+#define REMOTE_FLOAT_SCALE                  1000
 
 volatile RemoteControlState_t g_remote_state = {0};
 volatile RemoteControlDebug_t g_remote_debug = {
@@ -32,6 +33,47 @@ static volatile uint8_t s_rx_index;
 static volatile uint8_t s_line_ready;
 static char s_parse_line[REMOTE_LINE_MAX + 1U];
 static uint32_t s_next_telemetry_ms;
+
+static int32_t RemoteControl_ToMilli(float value)
+{
+    if (value >= 0.0f) {
+        return (int32_t)(value * (float)REMOTE_FLOAT_SCALE + 0.5f);
+    }
+    return (int32_t)(value * (float)REMOTE_FLOAT_SCALE - 0.5f);
+}
+
+static void RemoteControl_TransmitLine(const char *line, int len)
+{
+    uint32_t timeout_ms;
+
+    if (len <= 0) {
+        return;
+    }
+    timeout_ms = (uint32_t)len * 2U + 10U;
+    (void)HAL_UART_Transmit(&s_huart_remote, (uint8_t *)line, (uint16_t)len, timeout_ms);
+}
+
+static void RemoteControl_SendDebugLine(const char *loop_name, float target, float actual)
+{
+    char line[48];
+    int32_t target_milli = RemoteControl_ToMilli(target);
+    int32_t actual_milli = RemoteControl_ToMilli(actual);
+    int32_t target_abs = target_milli < 0 ? -target_milli : target_milli;
+    int32_t actual_abs = actual_milli < 0 ? -actual_milli : actual_milli;
+    int len = snprintf(line, sizeof(line),
+                       "DBG %s %s%ld.%03ld %s%ld.%03ld\n",
+                       loop_name,
+                       target_milli < 0 ? "-" : "",
+                       (long)(target_abs / REMOTE_FLOAT_SCALE),
+                       (long)(target_abs % REMOTE_FLOAT_SCALE),
+                       actual_milli < 0 ? "-" : "",
+                       (long)(actual_abs / REMOTE_FLOAT_SCALE),
+                       (long)(actual_abs % REMOTE_FLOAT_SCALE));
+    if (len >= (int)sizeof(line)) {
+        len = (int)sizeof(line) - 1;
+    }
+    RemoteControl_TransmitLine(line, len);
+}
 
 static float RemoteControl_Clamp(float value, float limit)
 {
@@ -122,20 +164,20 @@ static void RemoteControl_SendTelemetry(void)
     int len;
 
     len = snprintf(line, sizeof(line),
-                   "OLED Temp:%d.%d C|Humi:%d %%|Weight:%d g|ADC:%u\n",
+                   "OLED Temp:%d.%d C|Humi:%d %%|Weight:%d g|HX:%ld\n",
                    temp10 / 10,
                    temp10 < 0 ? -(temp10 % 10) : temp10 % 10,
                    humi,
                    weight,
-                   (unsigned)g_sensor_state.fsr_adc_raw);
-    if (len <= 0) {
-        return;
-    }
+                   (long)g_sensor_state.hx711_raw);
     if (len >= (int)sizeof(line)) {
         len = (int)sizeof(line) - 1;
     }
 
-    (void)HAL_UART_Transmit(&s_huart_remote, (uint8_t *)line, (uint16_t)len, 5U);
+    RemoteControl_TransmitLine(line, len);
+    RemoteControl_SendDebugLine("SPD", g_speed_pid.Target, g_speed_pid.Actual);
+    RemoteControl_SendDebugLine("ANG", g_angle_pid.Target, g_angle_pid.Actual);
+    RemoteControl_SendDebugLine("TURN", g_turn_pid.Target, g_turn_pid.Actual);
 }
 
 static void RemoteControl_MarkValid(const char *line)
@@ -181,6 +223,79 @@ static uint8_t RemoteControl_ParseFloat(const char *text, float *value)
     return 1U;
 }
 
+static uint8_t RemoteControl_ParsePidValues(char *text, float *kp, float *ki, float *kd)
+{
+    char *cursor;
+    char *endptr;
+
+    if (text == 0 || kp == 0 || ki == 0 || kd == 0) {
+        return 0U;
+    }
+
+    cursor = text;
+    *kp = strtof(cursor, &endptr);
+    if (endptr == cursor) {
+        return 0U;
+    }
+    cursor = endptr;
+    while (*cursor == ' ') {
+        cursor++;
+    }
+
+    *ki = strtof(cursor, &endptr);
+    if (endptr == cursor) {
+        return 0U;
+    }
+    cursor = endptr;
+    while (*cursor == ' ') {
+        cursor++;
+    }
+
+    *kd = strtof(cursor, &endptr);
+    if (endptr == cursor) {
+        return 0U;
+    }
+    while (*endptr == ' ') {
+        endptr++;
+    }
+    if (*endptr != '\0') {
+        return 0U;
+    }
+    return 1U;
+}
+
+static uint8_t RemoteControl_SetPid(char *line)
+{
+    char *values;
+    PID_t *pid = 0;
+    float kp;
+    float ki;
+    float kd;
+
+    if (strncmp(line, "SPD ", 4U) == 0) {
+        pid = &g_speed_pid;
+        values = &line[4];
+    } else if (strncmp(line, "ANG ", 4U) == 0) {
+        pid = &g_angle_pid;
+        values = &line[4];
+    } else if (strncmp(line, "TURN ", 5U) == 0) {
+        pid = &g_turn_pid;
+        values = &line[5];
+    } else {
+        return 0U;
+    }
+
+    if (RemoteControl_ParsePidValues(values, &kp, &ki, &kd) == 0U) {
+        return 0U;
+    }
+
+    pid->Kp = kp;
+    pid->Ki = ki;
+    pid->Kd = kd;
+    PID_Init(pid);
+    return 1U;
+}
+
 static void RemoteControl_ProcessLine(char *line)
 {
     if (line[0] == '\0') {
@@ -202,6 +317,12 @@ static void RemoteControl_ProcessLine(char *line)
     }
 
     if (strcmp(line, "PING") == 0) {
+        RemoteControl_MarkValid(line);
+        return;
+    }
+
+    if (strcmp(line, "PIDRST") == 0) {
+        g_balance_debug.reset_pid_request = 1U;
         RemoteControl_MarkValid(line);
         return;
     }
@@ -244,6 +365,13 @@ static void RemoteControl_ProcessLine(char *line)
             turn = RemoteControl_Clamp(turn, g_remote_debug.turn_limit);
             g_balance_debug.turn_target = turn;
             g_remote_state.turn_cmd = turn;
+            RemoteControl_MarkValid(line);
+            return;
+        }
+    }
+
+    if (strncmp(line, "PID ", 4U) == 0) {
+        if (RemoteControl_SetPid(&line[4]) != 0U) {
             RemoteControl_MarkValid(line);
             return;
         }

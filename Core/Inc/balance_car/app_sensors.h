@@ -8,8 +8,8 @@ typedef enum {
     SENSOR_FAULT_NONE = 0x00000000UL,
     SENSOR_FAULT_DHT_INIT = 0x00000001UL,
     SENSOR_FAULT_DHT_READ = 0x00000002UL,
-    SENSOR_FAULT_FSR_INIT = 0x00000004UL,
-    SENSOR_FAULT_FSR_READ = 0x00000008UL,
+    SENSOR_FAULT_HX711_INIT = 0x00000004UL,
+    SENSOR_FAULT_HX711_READ = 0x00000008UL,
     SENSOR_FAULT_OLED_INIT = 0x00000010UL,
     SENSOR_FAULT_OLED_REFRESH = 0x00000020UL
 } SensorFault_t;
@@ -17,14 +17,13 @@ typedef enum {
 typedef struct {
     float temperature_c;
     float humidity_percent;
-    uint16_t fsr_adc_raw;
-    uint16_t fsr_voltage_mv;
+    int32_t hx711_raw;
     float weight_g;
-    uint16_t fsr_zero_adc;
-    float fsr_g_per_count;
+    int32_t hx711_zero_raw;
+    float hx711_g_per_count;
     uint32_t sensor_fault_flags;
     uint8_t dht_valid;
-    uint8_t fsr_valid;
+    uint8_t hx711_valid;
     uint8_t oled_ready;
     uint8_t oled_addr_7bit;
     uint8_t oled_probe_mask;

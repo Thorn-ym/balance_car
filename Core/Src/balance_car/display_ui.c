@@ -50,7 +50,7 @@ static void DisplayUi_UpdateText(void)
     (void)snprintf(line, sizeof(line), "Weight: %d g", weight);
     Oled_WriteString(0U, 4U, line);
 
-    (void)snprintf(line, sizeof(line), "ADC: %u", (unsigned)g_sensor_state.fsr_adc_raw);
+    (void)snprintf(line, sizeof(line), "HX: %ld", (long)g_sensor_state.hx711_raw);
     Oled_WriteString(0U, 6U, line);
 }
 

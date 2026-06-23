@@ -1,29 +1,28 @@
 #include "balance_car/app_sensors.h"
 
 #include "balance_car/dht11.h"
-#include "balance_car/fsr_adc.h"
+#include "balance_car/hx711.h"
 
-#define FSR_SAMPLE_PERIOD_MS    100U
+#define HX711_SAMPLE_PERIOD_MS  100U
 #define DHT_SAMPLE_PERIOD_MS    2000U
 #define DHT_START_LOW_MS        18U
-#define DEFAULT_G_PER_COUNT     1.0f
+#define DEFAULT_G_PER_COUNT     0.001f
 
 volatile AppSensorState_t g_sensor_state = {
     .temperature_c = 0.0f,
     .humidity_percent = 0.0f,
-    .fsr_adc_raw = 0U,
-    .fsr_voltage_mv = 0U,
+    .hx711_raw = 0,
     .weight_g = 0.0f,
-    .fsr_zero_adc = 0U,
-    .fsr_g_per_count = DEFAULT_G_PER_COUNT,
+    .hx711_zero_raw = 0,
+    .hx711_g_per_count = DEFAULT_G_PER_COUNT,
     .sensor_fault_flags = SENSOR_FAULT_NONE,
 };
 
-static uint32_t s_next_fsr_ms;
+static uint32_t s_next_hx711_ms;
 static uint32_t s_next_dht_ms;
 static uint32_t s_dht_start_ms;
 static uint8_t s_dht_waiting;
-static uint8_t s_fsr_zero_captured;
+static uint8_t s_hx711_zero_captured;
 
 void AppSensors_SetFault(uint32_t fault)
 {
@@ -44,41 +43,40 @@ HAL_StatusTypeDef AppSensors_Init(void)
         status = HAL_ERROR;
     }
 
-    if (FsrAdc_Init() != HAL_OK) {
-        AppSensors_SetFault(SENSOR_FAULT_FSR_INIT);
+    if (Hx711_Init() != HAL_OK) {
+        AppSensors_SetFault(SENSOR_FAULT_HX711_INIT);
         status = HAL_ERROR;
     }
 
-    s_next_fsr_ms = HAL_GetTick();
+    s_next_hx711_ms = HAL_GetTick();
     s_next_dht_ms = HAL_GetTick() + 1000U;
     return status;
 }
 
-static void AppSensors_ReadFsr(void)
+static void AppSensors_ReadHx711(void)
 {
-    uint16_t raw;
-    uint16_t mv;
+    int32_t raw;
+    int32_t delta;
     float weight;
 
-    if (FsrAdc_Read(&raw, &mv) != HAL_OK) {
-        AppSensors_SetFault(SENSOR_FAULT_FSR_READ);
-        g_sensor_state.fsr_valid = 0U;
+    if (Hx711_Read(&raw) != HAL_OK) {
+        AppSensors_SetFault(SENSOR_FAULT_HX711_READ);
+        g_sensor_state.hx711_valid = 0U;
         return;
     }
 
-    AppSensors_ClearFault(SENSOR_FAULT_FSR_READ);
-    g_sensor_state.fsr_valid = 1U;
-    g_sensor_state.fsr_adc_raw = raw;
-    g_sensor_state.fsr_voltage_mv = mv;
+    AppSensors_ClearFault(SENSOR_FAULT_HX711_READ);
+    g_sensor_state.hx711_valid = 1U;
+    g_sensor_state.hx711_raw = raw;
 
-    if (s_fsr_zero_captured == 0U) {
-        g_sensor_state.fsr_zero_adc = raw;
-        s_fsr_zero_captured = 1U;
+    if (s_hx711_zero_captured == 0U) {
+        g_sensor_state.hx711_zero_raw = raw;
+        s_hx711_zero_captured = 1U;
     }
 
-    if (raw > g_sensor_state.fsr_zero_adc) {
-        weight = (float)(raw - g_sensor_state.fsr_zero_adc) * g_sensor_state.fsr_g_per_count;
-    } else {
+    delta = raw - g_sensor_state.hx711_zero_raw;
+    weight = (float)delta * g_sensor_state.hx711_g_per_count;
+    if (weight < 0.0f) {
         weight = 0.0f;
     }
     g_sensor_state.weight_g = weight;
@@ -122,9 +120,9 @@ void AppSensors_Background(void)
 {
     uint32_t now = HAL_GetTick();
 
-    if ((int32_t)(now - s_next_fsr_ms) >= 0) {
-        s_next_fsr_ms = now + FSR_SAMPLE_PERIOD_MS;
-        AppSensors_ReadFsr();
+    if ((int32_t)(now - s_next_hx711_ms) >= 0) {
+        s_next_hx711_ms = now + HX711_SAMPLE_PERIOD_MS;
+        AppSensors_ReadHx711();
     }
 
     if (s_dht_waiting != 0U || (int32_t)(now - s_next_dht_ms) >= 0) {

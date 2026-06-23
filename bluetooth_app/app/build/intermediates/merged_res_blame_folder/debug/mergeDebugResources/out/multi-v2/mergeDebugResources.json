@@ -1,41 +1,17 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\Thorn\\.gradle\\daemon\\9.3.0\\com.balancecar.bluetoothremote.app-debug-4:\\values_values.arsc.flat",
-            "map": [
-                {
-                    "source": "F:\\STM32CubeMX\\project\\balance_car\\balance_car_bluetooth\\balance_car\\android_bluetooth_remote\\app\\src\\main\\res\\values\\styles.xml",
-                    "from": {
-                        "startLines": "1",
-                        "startColumns": "4",
-                        "startOffsets": "16",
-                        "endLines": "8",
-                        "endColumns": "12",
-                        "endOffsets": "450"
-                    },
-                    "to": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endLines": "9",
-                        "endColumns": "12",
-                        "endOffsets": "489"
-                    }
-                }
-            ]
-        },
-        {
             "outputFile": "com.balancecar.bluetoothremote.app-debug-4:/values_values.arsc.flat",
             "map": [
                 {
-                    "source": "F:\\STM32CubeMX\\project\\balance_car\\balance_car_bluetooth\\balance_car\\android_bluetooth_remote\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "C:\\Users\\future\\Desktop\\pi5\\balancecar\\balance_car\\bluetooth_app\\app\\src\\main\\res\\values\\styles.xml",
                     "from": {
                         "startLines": "1",
                         "startColumns": "4",
-                        "startOffsets": "16",
+                        "startOffsets": "17",
                         "endLines": "8",
                         "endColumns": "12",
-                        "endOffsets": "450"
+                        "endOffsets": "458"
                     },
                     "to": {
                         "startLines": "2",

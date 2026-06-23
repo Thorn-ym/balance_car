@@ -1,6 +1,6 @@
-#Tue Jun 23 10:20:23 CST 2026
-base.0=F\:\\STM32CubeMX\\project\\balance_car\\balance_car_bluetooth\\balance_car\\android_bluetooth_remote\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
-base.1=F\:\\STM32CubeMX\\project\\balance_car\\balance_car_bluetooth\\balance_car\\android_bluetooth_remote\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
+#Tue Jun 23 16:00:02 CST 2026
+base.0=C\:\\Users\\future\\Desktop\\pi5\\balancecar\\balance_car\\bluetooth_app\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.1=C\:\\Users\\future\\Desktop\\pi5\\balancecar\\balance_car\\bluetooth_app\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
 path.0=0/classes.dex
 path.1=12/classes.dex
 renamed.0=classes.dex

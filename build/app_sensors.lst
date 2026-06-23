@@ -1,4 +1,4 @@
-ARM GAS  D:\TMP\cclIFzgg.s 			page 1
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -30,50 +30,49 @@ ARM GAS  D:\TMP\cclIFzgg.s 			page 1
    1:Core/Src/balance_car/app_sensors.c **** #include "balance_car/app_sensors.h"
    2:Core/Src/balance_car/app_sensors.c **** 
    3:Core/Src/balance_car/app_sensors.c **** #include "balance_car/dht11.h"
-   4:Core/Src/balance_car/app_sensors.c **** #include "balance_car/fsr_adc.h"
+   4:Core/Src/balance_car/app_sensors.c **** #include "balance_car/hx711.h"
    5:Core/Src/balance_car/app_sensors.c **** 
-   6:Core/Src/balance_car/app_sensors.c **** #define FSR_SAMPLE_PERIOD_MS    100U
+   6:Core/Src/balance_car/app_sensors.c **** #define HX711_SAMPLE_PERIOD_MS  100U
    7:Core/Src/balance_car/app_sensors.c **** #define DHT_SAMPLE_PERIOD_MS    2000U
    8:Core/Src/balance_car/app_sensors.c **** #define DHT_START_LOW_MS        18U
-   9:Core/Src/balance_car/app_sensors.c **** #define DEFAULT_G_PER_COUNT     1.0f
+   9:Core/Src/balance_car/app_sensors.c **** #define DEFAULT_G_PER_COUNT     0.001f
   10:Core/Src/balance_car/app_sensors.c **** 
   11:Core/Src/balance_car/app_sensors.c **** volatile AppSensorState_t g_sensor_state = {
   12:Core/Src/balance_car/app_sensors.c ****     .temperature_c = 0.0f,
   13:Core/Src/balance_car/app_sensors.c ****     .humidity_percent = 0.0f,
-  14:Core/Src/balance_car/app_sensors.c ****     .fsr_adc_raw = 0U,
-  15:Core/Src/balance_car/app_sensors.c ****     .fsr_voltage_mv = 0U,
-  16:Core/Src/balance_car/app_sensors.c ****     .weight_g = 0.0f,
-  17:Core/Src/balance_car/app_sensors.c ****     .fsr_zero_adc = 0U,
-  18:Core/Src/balance_car/app_sensors.c ****     .fsr_g_per_count = DEFAULT_G_PER_COUNT,
-  19:Core/Src/balance_car/app_sensors.c ****     .sensor_fault_flags = SENSOR_FAULT_NONE,
-  20:Core/Src/balance_car/app_sensors.c **** };
-  21:Core/Src/balance_car/app_sensors.c **** 
-  22:Core/Src/balance_car/app_sensors.c **** static uint32_t s_next_fsr_ms;
-  23:Core/Src/balance_car/app_sensors.c **** static uint32_t s_next_dht_ms;
-  24:Core/Src/balance_car/app_sensors.c **** static uint32_t s_dht_start_ms;
-  25:Core/Src/balance_car/app_sensors.c **** static uint8_t s_dht_waiting;
-  26:Core/Src/balance_car/app_sensors.c **** static uint8_t s_fsr_zero_captured;
-  27:Core/Src/balance_car/app_sensors.c **** 
-  28:Core/Src/balance_car/app_sensors.c **** void AppSensors_SetFault(uint32_t fault)
-  29:Core/Src/balance_car/app_sensors.c **** {
-  28              		.loc 1 29 1 view -0
+  14:Core/Src/balance_car/app_sensors.c ****     .hx711_raw = 0,
+  15:Core/Src/balance_car/app_sensors.c ****     .weight_g = 0.0f,
+  16:Core/Src/balance_car/app_sensors.c ****     .hx711_zero_raw = 0,
+  17:Core/Src/balance_car/app_sensors.c ****     .hx711_g_per_count = DEFAULT_G_PER_COUNT,
+  18:Core/Src/balance_car/app_sensors.c ****     .sensor_fault_flags = SENSOR_FAULT_NONE,
+  19:Core/Src/balance_car/app_sensors.c **** };
+  20:Core/Src/balance_car/app_sensors.c **** 
+  21:Core/Src/balance_car/app_sensors.c **** static uint32_t s_next_hx711_ms;
+  22:Core/Src/balance_car/app_sensors.c **** static uint32_t s_next_dht_ms;
+  23:Core/Src/balance_car/app_sensors.c **** static uint32_t s_dht_start_ms;
+  24:Core/Src/balance_car/app_sensors.c **** static uint8_t s_dht_waiting;
+  25:Core/Src/balance_car/app_sensors.c **** static uint8_t s_hx711_zero_captured;
+  26:Core/Src/balance_car/app_sensors.c **** 
+  27:Core/Src/balance_car/app_sensors.c **** void AppSensors_SetFault(uint32_t fault)
+  28:Core/Src/balance_car/app_sensors.c **** {
+  28              		.loc 1 28 1 view -0
   29              		.cfi_startproc
-ARM GAS  D:\TMP\cclIFzgg.s 			page 2
-
-
   30              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 2
+
+
   31              		@ frame_needed = 0, uses_anonymous_args = 0
   32              		@ link register save eliminated.
-  30:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.sensor_fault_flags |= fault;
-  33              		.loc 1 30 5 view .LVU1
-  34              		.loc 1 30 19 is_stmt 0 view .LVU2
+  29:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.sensor_fault_flags |= fault;
+  33              		.loc 1 29 5 view .LVU1
+  34              		.loc 1 29 19 is_stmt 0 view .LVU2
   35 0000 024A     		ldr	r2, .L2
   36 0002 9369     		ldr	r3, [r2, #24]
-  37              		.loc 1 30 39 view .LVU3
+  37              		.loc 1 29 39 view .LVU3
   38 0004 0343     		orrs	r3, r3, r0
   39 0006 9361     		str	r3, [r2, #24]
-  31:Core/Src/balance_car/app_sensors.c **** }
-  40              		.loc 1 31 1 view .LVU4
+  30:Core/Src/balance_car/app_sensors.c **** }
+  40              		.loc 1 30 1 view .LVU4
   41 0008 7047     		bx	lr
   42              	.L3:
   43 000a 00BF     		.align	2
@@ -90,24 +89,24 @@ ARM GAS  D:\TMP\cclIFzgg.s 			page 1
   56              	AppSensors_ClearFault:
   57              	.LVL1:
   58              	.LFB66:
-  32:Core/Src/balance_car/app_sensors.c **** 
-  33:Core/Src/balance_car/app_sensors.c **** void AppSensors_ClearFault(uint32_t fault)
-  34:Core/Src/balance_car/app_sensors.c **** {
-  59              		.loc 1 34 1 is_stmt 1 view -0
+  31:Core/Src/balance_car/app_sensors.c **** 
+  32:Core/Src/balance_car/app_sensors.c **** void AppSensors_ClearFault(uint32_t fault)
+  33:Core/Src/balance_car/app_sensors.c **** {
+  59              		.loc 1 33 1 is_stmt 1 view -0
   60              		.cfi_startproc
   61              		@ args = 0, pretend = 0, frame = 0
   62              		@ frame_needed = 0, uses_anonymous_args = 0
   63              		@ link register save eliminated.
-  35:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.sensor_fault_flags &= ~fault;
-  64              		.loc 1 35 5 view .LVU6
-  65              		.loc 1 35 19 is_stmt 0 view .LVU7
+  34:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.sensor_fault_flags &= ~fault;
+  64              		.loc 1 34 5 view .LVU6
+  65              		.loc 1 34 19 is_stmt 0 view .LVU7
   66 0000 024A     		ldr	r2, .L5
   67 0002 9369     		ldr	r3, [r2, #24]
-  68              		.loc 1 35 39 view .LVU8
+  68              		.loc 1 34 39 view .LVU8
   69 0004 23EA0003 		bic	r3, r3, r0
   70 0008 9361     		str	r3, [r2, #24]
-  36:Core/Src/balance_car/app_sensors.c **** }
-  71              		.loc 1 36 1 view .LVU9
+  35:Core/Src/balance_car/app_sensors.c **** }
+  71              		.loc 1 35 1 view .LVU9
   72 000a 7047     		bx	lr
   73              	.L6:
   74              		.align	2
@@ -117,718 +116,722 @@ ARM GAS  D:\TMP\cclIFzgg.s 			page 1
   78              	.LFE66:
   80              		.global	__aeabi_i2f
   81              		.global	__aeabi_fmul
-  82              		.section	.text.AppSensors_ReadFsr,"ax",%progbits
-ARM GAS  D:\TMP\cclIFzgg.s 			page 3
+  82              		.global	__aeabi_fcmplt
+  83              		.section	.text.AppSensors_ReadHx711,"ax",%progbits
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 3
 
 
-  83              		.align	1
-  84              		.syntax unified
-  85              		.thumb
-  86              		.thumb_func
-  88              	AppSensors_ReadFsr:
-  89              	.LFB68:
-  37:Core/Src/balance_car/app_sensors.c **** 
-  38:Core/Src/balance_car/app_sensors.c **** HAL_StatusTypeDef AppSensors_Init(void)
-  39:Core/Src/balance_car/app_sensors.c **** {
-  40:Core/Src/balance_car/app_sensors.c ****     HAL_StatusTypeDef status = HAL_OK;
-  41:Core/Src/balance_car/app_sensors.c **** 
-  42:Core/Src/balance_car/app_sensors.c ****     if (Dht11_Init() != HAL_OK) {
-  43:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
-  44:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
-  45:Core/Src/balance_car/app_sensors.c ****     }
-  46:Core/Src/balance_car/app_sensors.c **** 
-  47:Core/Src/balance_car/app_sensors.c ****     if (FsrAdc_Init() != HAL_OK) {
-  48:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_FSR_INIT);
-  49:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
-  50:Core/Src/balance_car/app_sensors.c ****     }
-  51:Core/Src/balance_car/app_sensors.c **** 
-  52:Core/Src/balance_car/app_sensors.c ****     s_next_fsr_ms = HAL_GetTick();
-  53:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
-  54:Core/Src/balance_car/app_sensors.c ****     return status;
-  55:Core/Src/balance_car/app_sensors.c **** }
-  56:Core/Src/balance_car/app_sensors.c **** 
-  57:Core/Src/balance_car/app_sensors.c **** static void AppSensors_ReadFsr(void)
-  58:Core/Src/balance_car/app_sensors.c **** {
-  90              		.loc 1 58 1 is_stmt 1 view -0
-  91              		.cfi_startproc
-  92              		@ args = 0, pretend = 0, frame = 8
-  93              		@ frame_needed = 0, uses_anonymous_args = 0
-  94 0000 10B5     		push	{r4, lr}
-  95              	.LCFI0:
-  96              		.cfi_def_cfa_offset 8
-  97              		.cfi_offset 4, -8
-  98              		.cfi_offset 14, -4
-  99 0002 82B0     		sub	sp, sp, #8
- 100              	.LCFI1:
- 101              		.cfi_def_cfa_offset 16
-  59:Core/Src/balance_car/app_sensors.c ****     uint16_t raw;
- 102              		.loc 1 59 5 view .LVU11
-  60:Core/Src/balance_car/app_sensors.c ****     uint16_t mv;
- 103              		.loc 1 60 5 view .LVU12
-  61:Core/Src/balance_car/app_sensors.c ****     float weight;
- 104              		.loc 1 61 5 view .LVU13
-  62:Core/Src/balance_car/app_sensors.c **** 
-  63:Core/Src/balance_car/app_sensors.c ****     if (FsrAdc_Read(&raw, &mv) != HAL_OK) {
- 105              		.loc 1 63 5 view .LVU14
- 106              		.loc 1 63 9 is_stmt 0 view .LVU15
- 107 0004 01A9     		add	r1, sp, #4
- 108 0006 0DF10600 		add	r0, sp, #6
- 109 000a FFF7FEFF 		bl	FsrAdc_Read
- 110              	.LVL2:
- 111              		.loc 1 63 8 discriminator 1 view .LVU16
- 112 000e 10BB     		cbnz	r0, .L14
-  64:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_FSR_READ);
-ARM GAS  D:\TMP\cclIFzgg.s 			page 4
-
-
-  65:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.fsr_valid = 0U;
-  66:Core/Src/balance_car/app_sensors.c ****         return;
-  67:Core/Src/balance_car/app_sensors.c ****     }
-  68:Core/Src/balance_car/app_sensors.c **** 
-  69:Core/Src/balance_car/app_sensors.c ****     AppSensors_ClearFault(SENSOR_FAULT_FSR_READ);
- 113              		.loc 1 69 5 is_stmt 1 view .LVU17
- 114 0010 0820     		movs	r0, #8
- 115 0012 FFF7FEFF 		bl	AppSensors_ClearFault
- 116              	.LVL3:
-  70:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.fsr_valid = 1U;
- 117              		.loc 1 70 5 view .LVU18
- 118              		.loc 1 70 30 is_stmt 0 view .LVU19
- 119 0016 164A     		ldr	r2, .L15
- 120 0018 0123     		movs	r3, #1
- 121 001a 5377     		strb	r3, [r2, #29]
-  71:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.fsr_adc_raw = raw;
- 122              		.loc 1 71 5 is_stmt 1 view .LVU20
- 123              		.loc 1 71 32 is_stmt 0 view .LVU21
- 124 001c BDF80630 		ldrh	r3, [sp, #6]
- 125 0020 1381     		strh	r3, [r2, #8]	@ movhi
-  72:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.fsr_voltage_mv = mv;
- 126              		.loc 1 72 5 is_stmt 1 view .LVU22
- 127              		.loc 1 72 35 is_stmt 0 view .LVU23
- 128 0022 BDF80410 		ldrh	r1, [sp, #4]
- 129 0026 5181     		strh	r1, [r2, #10]	@ movhi
-  73:Core/Src/balance_car/app_sensors.c **** 
-  74:Core/Src/balance_car/app_sensors.c ****     if (s_fsr_zero_captured == 0U) {
- 130              		.loc 1 74 5 is_stmt 1 view .LVU24
- 131              		.loc 1 74 29 is_stmt 0 view .LVU25
- 132 0028 124A     		ldr	r2, .L15+4
- 133 002a 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
- 134              		.loc 1 74 8 view .LVU26
- 135 002c 22B9     		cbnz	r2, .L10
-  75:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.fsr_zero_adc = raw;
- 136              		.loc 1 75 9 is_stmt 1 view .LVU27
- 137              		.loc 1 75 37 is_stmt 0 view .LVU28
- 138 002e 104A     		ldr	r2, .L15
- 139 0030 1382     		strh	r3, [r2, #16]	@ movhi
-  76:Core/Src/balance_car/app_sensors.c ****         s_fsr_zero_captured = 1U;
- 140              		.loc 1 76 9 is_stmt 1 view .LVU29
- 141              		.loc 1 76 29 is_stmt 0 view .LVU30
- 142 0032 104A     		ldr	r2, .L15+4
- 143 0034 0121     		movs	r1, #1
- 144 0036 1170     		strb	r1, [r2]
- 145              	.L10:
-  77:Core/Src/balance_car/app_sensors.c ****     }
-  78:Core/Src/balance_car/app_sensors.c **** 
-  79:Core/Src/balance_car/app_sensors.c ****     if (raw > g_sensor_state.fsr_zero_adc) {
- 146              		.loc 1 79 5 is_stmt 1 view .LVU31
- 147              		.loc 1 79 29 is_stmt 0 view .LVU32
- 148 0038 0D4A     		ldr	r2, .L15
- 149 003a 128A     		ldrh	r2, [r2, #16]
- 150 003c 92B2     		uxth	r2, r2
- 151              		.loc 1 79 8 view .LVU33
- 152 003e 9342     		cmp	r3, r2
- 153 0040 10D9     		bls	.L12
-  80:Core/Src/balance_car/app_sensors.c ****         weight = (float)(raw - g_sensor_state.fsr_zero_adc) * g_sensor_state.fsr_g_per_count;
-ARM GAS  D:\TMP\cclIFzgg.s 			page 5
-
-
- 154              		.loc 1 80 9 is_stmt 1 view .LVU34
- 155              		.loc 1 80 46 is_stmt 0 view .LVU35
- 156 0042 0B4C     		ldr	r4, .L15
- 157 0044 208A     		ldrh	r0, [r4, #16]
- 158 0046 80B2     		uxth	r0, r0
- 159              		.loc 1 80 18 view .LVU36
- 160 0048 181A     		subs	r0, r3, r0
- 161 004a FFF7FEFF 		bl	__aeabi_i2f
- 162              	.LVL4:
- 163              		.loc 1 80 77 view .LVU37
- 164 004e 6169     		ldr	r1, [r4, #20]	@ float
- 165              		.loc 1 80 16 view .LVU38
- 166 0050 FFF7FEFF 		bl	__aeabi_fmul
- 167              	.LVL5:
- 168              		.loc 1 80 16 view .LVU39
- 169 0054 07E0     		b	.L11
- 170              	.LVL6:
- 171              	.L14:
-  64:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.fsr_valid = 0U;
- 172              		.loc 1 64 9 is_stmt 1 view .LVU40
- 173 0056 0820     		movs	r0, #8
- 174 0058 FFF7FEFF 		bl	AppSensors_SetFault
- 175              	.LVL7:
-  65:Core/Src/balance_car/app_sensors.c ****         return;
- 176              		.loc 1 65 9 view .LVU41
-  65:Core/Src/balance_car/app_sensors.c ****         return;
- 177              		.loc 1 65 34 is_stmt 0 view .LVU42
- 178 005c 044B     		ldr	r3, .L15
- 179 005e 0022     		movs	r2, #0
- 180 0060 5A77     		strb	r2, [r3, #29]
-  66:Core/Src/balance_car/app_sensors.c ****     }
- 181              		.loc 1 66 9 is_stmt 1 view .LVU43
- 182 0062 02E0     		b	.L7
- 183              	.L12:
-  81:Core/Src/balance_car/app_sensors.c ****     } else {
-  82:Core/Src/balance_car/app_sensors.c ****         weight = 0.0f;
- 184              		.loc 1 82 16 is_stmt 0 view .LVU44
- 185 0064 0020     		movs	r0, #0
- 186              	.L11:
- 187              	.LVL8:
-  83:Core/Src/balance_car/app_sensors.c ****     }
-  84:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.weight_g = weight;
- 188              		.loc 1 84 5 is_stmt 1 view .LVU45
- 189              		.loc 1 84 29 is_stmt 0 view .LVU46
- 190 0066 024B     		ldr	r3, .L15
- 191 0068 D860     		str	r0, [r3, #12]	@ float
- 192              	.LVL9:
- 193              	.L7:
-  85:Core/Src/balance_car/app_sensors.c **** }
- 194              		.loc 1 85 1 view .LVU47
- 195 006a 02B0     		add	sp, sp, #8
- 196              	.LCFI2:
- 197              		.cfi_def_cfa_offset 8
- 198              		@ sp needed
- 199 006c 10BD     		pop	{r4, pc}
- 200              	.L16:
- 201 006e 00BF     		.align	2
-ARM GAS  D:\TMP\cclIFzgg.s 			page 6
-
-
- 202              	.L15:
- 203 0070 00000000 		.word	g_sensor_state
- 204 0074 00000000 		.word	s_fsr_zero_captured
- 205              		.cfi_endproc
- 206              	.LFE68:
- 208              		.section	.text.AppSensors_ServiceDht,"ax",%progbits
- 209              		.align	1
- 210              		.syntax unified
- 211              		.thumb
- 212              		.thumb_func
- 214              	AppSensors_ServiceDht:
- 215              	.LFB69:
-  86:Core/Src/balance_car/app_sensors.c **** 
-  87:Core/Src/balance_car/app_sensors.c **** static void AppSensors_ServiceDht(void)
-  88:Core/Src/balance_car/app_sensors.c **** {
- 216              		.loc 1 88 1 is_stmt 1 view -0
- 217              		.cfi_startproc
- 218              		@ args = 0, pretend = 0, frame = 8
- 219              		@ frame_needed = 0, uses_anonymous_args = 0
- 220 0000 00B5     		push	{lr}
- 221              	.LCFI3:
- 222              		.cfi_def_cfa_offset 4
- 223              		.cfi_offset 14, -4
- 224 0002 83B0     		sub	sp, sp, #12
- 225              	.LCFI4:
- 226              		.cfi_def_cfa_offset 16
-  89:Core/Src/balance_car/app_sensors.c ****     Dht11Reading_t reading;
- 227              		.loc 1 89 5 view .LVU49
-  90:Core/Src/balance_car/app_sensors.c **** 
-  91:Core/Src/balance_car/app_sensors.c ****     if (s_dht_waiting == 0U) {
- 228              		.loc 1 91 5 view .LVU50
- 229              		.loc 1 91 23 is_stmt 0 view .LVU51
- 230 0004 204B     		ldr	r3, .L28
- 231 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 232              		.loc 1 91 8 view .LVU52
- 233 0008 4BB1     		cbz	r3, .L25
-  92:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
-  93:Core/Src/balance_car/app_sensors.c ****             s_dht_start_ms = HAL_GetTick();
-  94:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
-  95:Core/Src/balance_car/app_sensors.c ****         } else {
-  96:Core/Src/balance_car/app_sensors.c ****             AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
-  97:Core/Src/balance_car/app_sensors.c ****             s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
-  98:Core/Src/balance_car/app_sensors.c ****         }
-  99:Core/Src/balance_car/app_sensors.c ****         return;
- 100:Core/Src/balance_car/app_sensors.c ****     }
- 101:Core/Src/balance_car/app_sensors.c **** 
- 102:Core/Src/balance_car/app_sensors.c ****     if ((HAL_GetTick() - s_dht_start_ms) < DHT_START_LOW_MS) {
- 234              		.loc 1 102 5 is_stmt 1 view .LVU53
- 235              		.loc 1 102 10 is_stmt 0 view .LVU54
- 236 000a FFF7FEFF 		bl	HAL_GetTick
- 237              	.LVL10:
- 238              		.loc 1 102 24 discriminator 1 view .LVU55
- 239 000e 1F4B     		ldr	r3, .L28+4
- 240 0010 1B68     		ldr	r3, [r3]
- 241 0012 C01A     		subs	r0, r0, r3
- 242              		.loc 1 102 8 discriminator 1 view .LVU56
- 243 0014 1128     		cmp	r0, #17
-ARM GAS  D:\TMP\cclIFzgg.s 			page 7
-
-
- 244 0016 17D8     		bhi	.L26
- 245              	.L17:
- 103:Core/Src/balance_car/app_sensors.c ****         return;
- 104:Core/Src/balance_car/app_sensors.c ****     }
- 105:Core/Src/balance_car/app_sensors.c **** 
- 106:Core/Src/balance_car/app_sensors.c ****     s_dht_waiting = 0U;
- 107:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
- 108:Core/Src/balance_car/app_sensors.c **** 
- 109:Core/Src/balance_car/app_sensors.c ****     if (Dht11_FinishRead(&reading) != HAL_OK) {
- 110:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
- 111:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.dht_valid = 0U;
- 112:Core/Src/balance_car/app_sensors.c ****         return;
- 113:Core/Src/balance_car/app_sensors.c ****     }
- 114:Core/Src/balance_car/app_sensors.c **** 
- 115:Core/Src/balance_car/app_sensors.c ****     AppSensors_ClearFault(SENSOR_FAULT_DHT_READ);
- 116:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.dht_valid = 1U;
- 117:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
- 118:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
- 119:Core/Src/balance_car/app_sensors.c **** }
- 246              		.loc 1 119 1 view .LVU57
- 247 0018 03B0     		add	sp, sp, #12
- 248              	.LCFI5:
- 249              		.cfi_remember_state
- 250              		.cfi_def_cfa_offset 4
- 251              		@ sp needed
- 252 001a 5DF804FB 		ldr	pc, [sp], #4
- 253              	.L25:
- 254              	.LCFI6:
- 255              		.cfi_restore_state
-  92:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
- 256              		.loc 1 92 9 is_stmt 1 view .LVU58
-  92:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
- 257              		.loc 1 92 13 is_stmt 0 view .LVU59
- 258 001e FFF7FEFF 		bl	Dht11_StartRead
- 259              	.LVL11:
-  92:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
- 260              		.loc 1 92 12 discriminator 1 view .LVU60
- 261 0022 38B9     		cbnz	r0, .L19
-  93:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
- 262              		.loc 1 93 13 is_stmt 1 view .LVU61
-  93:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
- 263              		.loc 1 93 30 is_stmt 0 view .LVU62
- 264 0024 FFF7FEFF 		bl	HAL_GetTick
- 265              	.LVL12:
-  93:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
- 266              		.loc 1 93 28 discriminator 1 view .LVU63
- 267 0028 184B     		ldr	r3, .L28+4
- 268 002a 1860     		str	r0, [r3]
-  94:Core/Src/balance_car/app_sensors.c ****         } else {
- 269              		.loc 1 94 13 is_stmt 1 view .LVU64
-  94:Core/Src/balance_car/app_sensors.c ****         } else {
- 270              		.loc 1 94 27 is_stmt 0 view .LVU65
- 271 002c 164B     		ldr	r3, .L28
- 272 002e 0122     		movs	r2, #1
- 273 0030 1A70     		strb	r2, [r3]
- 274 0032 F1E7     		b	.L17
- 275              	.L19:
-ARM GAS  D:\TMP\cclIFzgg.s 			page 8
-
-
-  96:Core/Src/balance_car/app_sensors.c ****             s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
- 276              		.loc 1 96 13 is_stmt 1 view .LVU66
- 277 0034 0220     		movs	r0, #2
- 278 0036 FFF7FEFF 		bl	AppSensors_SetFault
- 279              	.LVL13:
-  97:Core/Src/balance_car/app_sensors.c ****         }
- 280              		.loc 1 97 13 view .LVU67
-  97:Core/Src/balance_car/app_sensors.c ****         }
- 281              		.loc 1 97 29 is_stmt 0 view .LVU68
- 282 003a FFF7FEFF 		bl	HAL_GetTick
- 283              	.LVL14:
-  97:Core/Src/balance_car/app_sensors.c ****         }
- 284              		.loc 1 97 43 discriminator 1 view .LVU69
- 285 003e 00F5FA60 		add	r0, r0, #2000
-  97:Core/Src/balance_car/app_sensors.c ****         }
- 286              		.loc 1 97 27 discriminator 1 view .LVU70
- 287 0042 134B     		ldr	r3, .L28+8
- 288 0044 1860     		str	r0, [r3]
-  99:Core/Src/balance_car/app_sensors.c ****     }
- 289              		.loc 1 99 9 is_stmt 1 view .LVU71
- 290 0046 E7E7     		b	.L17
- 291              	.L26:
- 106:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
- 292              		.loc 1 106 5 view .LVU72
- 106:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
- 293              		.loc 1 106 19 is_stmt 0 view .LVU73
- 294 0048 0F4B     		ldr	r3, .L28
- 295 004a 0022     		movs	r2, #0
- 296 004c 1A70     		strb	r2, [r3]
- 107:Core/Src/balance_car/app_sensors.c **** 
- 297              		.loc 1 107 5 is_stmt 1 view .LVU74
- 107:Core/Src/balance_car/app_sensors.c **** 
- 298              		.loc 1 107 21 is_stmt 0 view .LVU75
- 299 004e FFF7FEFF 		bl	HAL_GetTick
- 300              	.LVL15:
- 107:Core/Src/balance_car/app_sensors.c **** 
- 301              		.loc 1 107 35 discriminator 1 view .LVU76
- 302 0052 00F5FA60 		add	r0, r0, #2000
- 107:Core/Src/balance_car/app_sensors.c **** 
- 303              		.loc 1 107 19 discriminator 1 view .LVU77
- 304 0056 0E4B     		ldr	r3, .L28+8
- 305 0058 1860     		str	r0, [r3]
- 109:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
- 306              		.loc 1 109 5 is_stmt 1 view .LVU78
- 109:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
- 307              		.loc 1 109 9 is_stmt 0 view .LVU79
- 308 005a 6846     		mov	r0, sp
- 309 005c FFF7FEFF 		bl	Dht11_FinishRead
- 310              	.LVL16:
- 109:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
- 311              		.loc 1 109 8 discriminator 1 view .LVU80
- 312 0060 50B9     		cbnz	r0, .L27
- 115:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.dht_valid = 1U;
- 313              		.loc 1 115 5 is_stmt 1 view .LVU81
- 314 0062 0220     		movs	r0, #2
- 315 0064 FFF7FEFF 		bl	AppSensors_ClearFault
- 316              	.LVL17:
-ARM GAS  D:\TMP\cclIFzgg.s 			page 9
-
-
- 116:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
- 317              		.loc 1 116 5 view .LVU82
- 116:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
- 318              		.loc 1 116 30 is_stmt 0 view .LVU83
- 319 0068 0A4B     		ldr	r3, .L28+12
- 320 006a 0122     		movs	r2, #1
- 321 006c 1A77     		strb	r2, [r3, #28]
- 117:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
- 322              		.loc 1 117 5 is_stmt 1 view .LVU84
- 117:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
- 323              		.loc 1 117 43 is_stmt 0 view .LVU85
- 324 006e 009A     		ldr	r2, [sp]	@ float
- 117:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
- 325              		.loc 1 117 34 view .LVU86
- 326 0070 1A60     		str	r2, [r3]	@ float
- 118:Core/Src/balance_car/app_sensors.c **** }
- 327              		.loc 1 118 5 is_stmt 1 view .LVU87
- 118:Core/Src/balance_car/app_sensors.c **** }
- 328              		.loc 1 118 46 is_stmt 0 view .LVU88
- 329 0072 019A     		ldr	r2, [sp, #4]	@ float
- 118:Core/Src/balance_car/app_sensors.c **** }
- 330              		.loc 1 118 37 view .LVU89
- 331 0074 5A60     		str	r2, [r3, #4]	@ float
- 332 0076 CFE7     		b	.L17
- 333              	.L27:
- 110:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.dht_valid = 0U;
- 334              		.loc 1 110 9 is_stmt 1 view .LVU90
- 335 0078 0220     		movs	r0, #2
- 336 007a FFF7FEFF 		bl	AppSensors_SetFault
- 337              	.LVL18:
- 111:Core/Src/balance_car/app_sensors.c ****         return;
- 338              		.loc 1 111 9 view .LVU91
- 111:Core/Src/balance_car/app_sensors.c ****         return;
- 339              		.loc 1 111 34 is_stmt 0 view .LVU92
- 340 007e 054B     		ldr	r3, .L28+12
- 341 0080 0022     		movs	r2, #0
- 342 0082 1A77     		strb	r2, [r3, #28]
- 112:Core/Src/balance_car/app_sensors.c ****     }
- 343              		.loc 1 112 9 is_stmt 1 view .LVU93
- 344 0084 C8E7     		b	.L17
- 345              	.L29:
- 346 0086 00BF     		.align	2
- 347              	.L28:
- 348 0088 00000000 		.word	s_dht_waiting
- 349 008c 00000000 		.word	s_dht_start_ms
- 350 0090 00000000 		.word	s_next_dht_ms
- 351 0094 00000000 		.word	g_sensor_state
- 352              		.cfi_endproc
- 353              	.LFE69:
- 355              		.section	.text.AppSensors_Init,"ax",%progbits
- 356              		.align	1
- 357              		.global	AppSensors_Init
- 358              		.syntax unified
- 359              		.thumb
- 360              		.thumb_func
- 362              	AppSensors_Init:
- 363              	.LFB67:
-ARM GAS  D:\TMP\cclIFzgg.s 			page 10
-
-
+  84              		.align	1
+  85              		.syntax unified
+  86              		.thumb
+  87              		.thumb_func
+  89              	AppSensors_ReadHx711:
+  90              	.LFB68:
+  36:Core/Src/balance_car/app_sensors.c **** 
+  37:Core/Src/balance_car/app_sensors.c **** HAL_StatusTypeDef AppSensors_Init(void)
+  38:Core/Src/balance_car/app_sensors.c **** {
   39:Core/Src/balance_car/app_sensors.c ****     HAL_StatusTypeDef status = HAL_OK;
- 364              		.loc 1 39 1 view -0
- 365              		.cfi_startproc
- 366              		@ args = 0, pretend = 0, frame = 0
- 367              		@ frame_needed = 0, uses_anonymous_args = 0
- 368 0000 10B5     		push	{r4, lr}
- 369              	.LCFI7:
- 370              		.cfi_def_cfa_offset 8
- 371              		.cfi_offset 4, -8
- 372              		.cfi_offset 14, -4
   40:Core/Src/balance_car/app_sensors.c **** 
- 373              		.loc 1 40 5 view .LVU95
- 374              	.LVL19:
+  41:Core/Src/balance_car/app_sensors.c ****     if (Dht11_Init() != HAL_OK) {
   42:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
- 375              		.loc 1 42 5 view .LVU96
-  42:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
- 376              		.loc 1 42 9 is_stmt 0 view .LVU97
- 377 0002 FFF7FEFF 		bl	Dht11_Init
- 378              	.LVL20:
-  42:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
- 379              		.loc 1 42 8 discriminator 1 view .LVU98
- 380 0006 0446     		mov	r4, r0
- 381 0008 70B9     		cbnz	r0, .L34
- 382              	.LVL21:
- 383              	.L31:
-  47:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_FSR_INIT);
- 384              		.loc 1 47 5 is_stmt 1 view .LVU99
-  47:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_FSR_INIT);
- 385              		.loc 1 47 9 is_stmt 0 view .LVU100
- 386 000a FFF7FEFF 		bl	FsrAdc_Init
- 387              	.LVL22:
-  47:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_FSR_INIT);
- 388              		.loc 1 47 8 discriminator 1 view .LVU101
- 389 000e 80B9     		cbnz	r0, .L35
- 390              	.LVL23:
- 391              	.L32:
-  52:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
- 392              		.loc 1 52 5 is_stmt 1 view .LVU102
-  52:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
- 393              		.loc 1 52 21 is_stmt 0 view .LVU103
- 394 0010 FFF7FEFF 		bl	HAL_GetTick
- 395              	.LVL24:
-  52:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
- 396              		.loc 1 52 19 discriminator 1 view .LVU104
- 397 0014 094B     		ldr	r3, .L36
- 398 0016 1860     		str	r0, [r3]
-  53:Core/Src/balance_car/app_sensors.c ****     return status;
- 399              		.loc 1 53 5 is_stmt 1 view .LVU105
-  53:Core/Src/balance_car/app_sensors.c ****     return status;
- 400              		.loc 1 53 21 is_stmt 0 view .LVU106
- 401 0018 FFF7FEFF 		bl	HAL_GetTick
- 402              	.LVL25:
-  53:Core/Src/balance_car/app_sensors.c ****     return status;
- 403              		.loc 1 53 35 discriminator 1 view .LVU107
- 404 001c 00F57A70 		add	r0, r0, #1000
-  53:Core/Src/balance_car/app_sensors.c ****     return status;
- 405              		.loc 1 53 19 discriminator 1 view .LVU108
-ARM GAS  D:\TMP\cclIFzgg.s 			page 11
-
-
- 406 0020 074B     		ldr	r3, .L36+4
- 407 0022 1860     		str	r0, [r3]
-  54:Core/Src/balance_car/app_sensors.c **** }
- 408              		.loc 1 54 5 is_stmt 1 view .LVU109
-  55:Core/Src/balance_car/app_sensors.c **** 
- 409              		.loc 1 55 1 is_stmt 0 view .LVU110
- 410 0024 2046     		mov	r0, r4
- 411 0026 10BD     		pop	{r4, pc}
- 412              	.LVL26:
- 413              	.L34:
   43:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
- 414              		.loc 1 43 9 is_stmt 1 view .LVU111
- 415 0028 0120     		movs	r0, #1
- 416 002a FFF7FEFF 		bl	AppSensors_SetFault
- 417              	.LVL27:
   44:Core/Src/balance_car/app_sensors.c ****     }
- 418              		.loc 1 44 9 view .LVU112
-  44:Core/Src/balance_car/app_sensors.c ****     }
- 419              		.loc 1 44 16 is_stmt 0 view .LVU113
- 420 002e 0124     		movs	r4, #1
- 421 0030 EBE7     		b	.L31
- 422              	.LVL28:
- 423              	.L35:
+  45:Core/Src/balance_car/app_sensors.c **** 
+  46:Core/Src/balance_car/app_sensors.c ****     if (Hx711_Init() != HAL_OK) {
+  47:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_HX711_INIT);
   48:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
- 424              		.loc 1 48 9 is_stmt 1 view .LVU114
- 425 0032 0420     		movs	r0, #4
- 426 0034 FFF7FEFF 		bl	AppSensors_SetFault
- 427              	.LVL29:
   49:Core/Src/balance_car/app_sensors.c ****     }
- 428              		.loc 1 49 9 view .LVU115
-  49:Core/Src/balance_car/app_sensors.c ****     }
- 429              		.loc 1 49 16 is_stmt 0 view .LVU116
- 430 0038 0124     		movs	r4, #1
- 431 003a E9E7     		b	.L32
- 432              	.L37:
- 433              		.align	2
- 434              	.L36:
- 435 003c 00000000 		.word	s_next_fsr_ms
- 436 0040 00000000 		.word	s_next_dht_ms
- 437              		.cfi_endproc
- 438              	.LFE67:
- 440              		.section	.text.AppSensors_Background,"ax",%progbits
- 441              		.align	1
- 442              		.global	AppSensors_Background
- 443              		.syntax unified
- 444              		.thumb
- 445              		.thumb_func
- 447              	AppSensors_Background:
- 448              	.LFB70:
- 120:Core/Src/balance_car/app_sensors.c **** 
- 121:Core/Src/balance_car/app_sensors.c **** void AppSensors_Background(void)
- 122:Core/Src/balance_car/app_sensors.c **** {
- 449              		.loc 1 122 1 is_stmt 1 view -0
- 450              		.cfi_startproc
- 451              		@ args = 0, pretend = 0, frame = 0
- 452              		@ frame_needed = 0, uses_anonymous_args = 0
- 453 0000 10B5     		push	{r4, lr}
-ARM GAS  D:\TMP\cclIFzgg.s 			page 12
+  50:Core/Src/balance_car/app_sensors.c **** 
+  51:Core/Src/balance_car/app_sensors.c ****     s_next_hx711_ms = HAL_GetTick();
+  52:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
+  53:Core/Src/balance_car/app_sensors.c ****     return status;
+  54:Core/Src/balance_car/app_sensors.c **** }
+  55:Core/Src/balance_car/app_sensors.c **** 
+  56:Core/Src/balance_car/app_sensors.c **** static void AppSensors_ReadHx711(void)
+  57:Core/Src/balance_car/app_sensors.c **** {
+  91              		.loc 1 57 1 is_stmt 1 view -0
+  92              		.cfi_startproc
+  93              		@ args = 0, pretend = 0, frame = 8
+  94              		@ frame_needed = 0, uses_anonymous_args = 0
+  95 0000 10B5     		push	{r4, lr}
+  96              	.LCFI0:
+  97              		.cfi_def_cfa_offset 8
+  98              		.cfi_offset 4, -8
+  99              		.cfi_offset 14, -4
+ 100 0002 82B0     		sub	sp, sp, #8
+ 101              	.LCFI1:
+ 102              		.cfi_def_cfa_offset 16
+  58:Core/Src/balance_car/app_sensors.c ****     int32_t raw;
+ 103              		.loc 1 58 5 view .LVU11
+  59:Core/Src/balance_car/app_sensors.c ****     int32_t delta;
+ 104              		.loc 1 59 5 view .LVU12
+  60:Core/Src/balance_car/app_sensors.c ****     float weight;
+ 105              		.loc 1 60 5 view .LVU13
+  61:Core/Src/balance_car/app_sensors.c **** 
+  62:Core/Src/balance_car/app_sensors.c ****     if (Hx711_Read(&raw) != HAL_OK) {
+ 106              		.loc 1 62 5 view .LVU14
+ 107              		.loc 1 62 9 is_stmt 0 view .LVU15
+ 108 0004 01A8     		add	r0, sp, #4
+ 109 0006 FFF7FEFF 		bl	Hx711_Read
+ 110              	.LVL2:
+ 111              		.loc 1 62 8 discriminator 1 view .LVU16
+ 112 000a 00BB     		cbnz	r0, .L14
+  63:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_HX711_READ);
+  64:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.hx711_valid = 0U;
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 4
 
 
- 454              	.LCFI8:
- 455              		.cfi_def_cfa_offset 8
- 456              		.cfi_offset 4, -8
- 457              		.cfi_offset 14, -4
- 123:Core/Src/balance_car/app_sensors.c ****     uint32_t now = HAL_GetTick();
- 458              		.loc 1 123 5 view .LVU118
- 459              		.loc 1 123 20 is_stmt 0 view .LVU119
- 460 0002 FFF7FEFF 		bl	HAL_GetTick
- 461              	.LVL30:
- 462 0006 0446     		mov	r4, r0
- 463              	.LVL31:
- 124:Core/Src/balance_car/app_sensors.c **** 
- 125:Core/Src/balance_car/app_sensors.c ****     if ((int32_t)(now - s_next_fsr_ms) >= 0) {
- 464              		.loc 1 125 5 is_stmt 1 view .LVU120
- 465              		.loc 1 125 23 is_stmt 0 view .LVU121
- 466 0008 0B4B     		ldr	r3, .L44
- 467 000a 1B68     		ldr	r3, [r3]
- 468 000c C31A     		subs	r3, r0, r3
- 469              		.loc 1 125 8 view .LVU122
- 470 000e 002B     		cmp	r3, #0
- 471 0010 0ADA     		bge	.L43
- 472              	.LVL32:
- 473              	.L39:
- 126:Core/Src/balance_car/app_sensors.c ****         s_next_fsr_ms = now + FSR_SAMPLE_PERIOD_MS;
- 127:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadFsr();
- 128:Core/Src/balance_car/app_sensors.c ****     }
- 129:Core/Src/balance_car/app_sensors.c **** 
- 130:Core/Src/balance_car/app_sensors.c ****     if (s_dht_waiting != 0U || (int32_t)(now - s_next_dht_ms) >= 0) {
- 474              		.loc 1 130 5 is_stmt 1 view .LVU123
- 475              		.loc 1 130 23 is_stmt 0 view .LVU124
- 476 0012 0A4B     		ldr	r3, .L44+4
- 477 0014 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 478              		.loc 1 130 8 view .LVU125
- 479 0016 23B9     		cbnz	r3, .L40
- 480              		.loc 1 130 46 discriminator 1 view .LVU126
- 481 0018 094B     		ldr	r3, .L44+8
- 482 001a 1B68     		ldr	r3, [r3]
- 483 001c E41A     		subs	r4, r4, r3
- 484              	.LVL33:
- 485              		.loc 1 130 29 discriminator 1 view .LVU127
- 486 001e 002C     		cmp	r4, #0
- 487 0020 01DB     		blt	.L38
- 488              	.L40:
- 131:Core/Src/balance_car/app_sensors.c ****         AppSensors_ServiceDht();
- 489              		.loc 1 131 9 is_stmt 1 view .LVU128
- 490 0022 FFF7FEFF 		bl	AppSensors_ServiceDht
- 491              	.LVL34:
- 492              	.L38:
- 132:Core/Src/balance_car/app_sensors.c ****     }
- 133:Core/Src/balance_car/app_sensors.c **** }
- 493              		.loc 1 133 1 is_stmt 0 view .LVU129
- 494 0026 10BD     		pop	{r4, pc}
- 495              	.LVL35:
- 496              	.L43:
- 126:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadFsr();
- 497              		.loc 1 126 9 is_stmt 1 view .LVU130
- 126:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadFsr();
-ARM GAS  D:\TMP\cclIFzgg.s 			page 13
+  65:Core/Src/balance_car/app_sensors.c ****         return;
+  66:Core/Src/balance_car/app_sensors.c ****     }
+  67:Core/Src/balance_car/app_sensors.c **** 
+  68:Core/Src/balance_car/app_sensors.c ****     AppSensors_ClearFault(SENSOR_FAULT_HX711_READ);
+ 113              		.loc 1 68 5 is_stmt 1 view .LVU17
+ 114 000c 0820     		movs	r0, #8
+ 115 000e FFF7FEFF 		bl	AppSensors_ClearFault
+ 116              	.LVL3:
+  69:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.hx711_valid = 1U;
+ 117              		.loc 1 69 5 view .LVU18
+ 118              		.loc 1 69 32 is_stmt 0 view .LVU19
+ 119 0012 134A     		ldr	r2, .L16
+ 120 0014 0123     		movs	r3, #1
+ 121 0016 5377     		strb	r3, [r2, #29]
+  70:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.hx711_raw = raw;
+ 122              		.loc 1 70 5 is_stmt 1 view .LVU20
+ 123              		.loc 1 70 30 is_stmt 0 view .LVU21
+ 124 0018 019B     		ldr	r3, [sp, #4]
+ 125 001a 9360     		str	r3, [r2, #8]
+  71:Core/Src/balance_car/app_sensors.c **** 
+  72:Core/Src/balance_car/app_sensors.c ****     if (s_hx711_zero_captured == 0U) {
+ 126              		.loc 1 72 5 is_stmt 1 view .LVU22
+ 127              		.loc 1 72 31 is_stmt 0 view .LVU23
+ 128 001c 114A     		ldr	r2, .L16+4
+ 129 001e 1278     		ldrb	r2, [r2]	@ zero_extendqisi2
+ 130              		.loc 1 72 8 view .LVU24
+ 131 0020 22B9     		cbnz	r2, .L10
+  73:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.hx711_zero_raw = raw;
+ 132              		.loc 1 73 9 is_stmt 1 view .LVU25
+ 133              		.loc 1 73 39 is_stmt 0 view .LVU26
+ 134 0022 0F4A     		ldr	r2, .L16
+ 135 0024 1361     		str	r3, [r2, #16]
+  74:Core/Src/balance_car/app_sensors.c ****         s_hx711_zero_captured = 1U;
+ 136              		.loc 1 74 9 is_stmt 1 view .LVU27
+ 137              		.loc 1 74 31 is_stmt 0 view .LVU28
+ 138 0026 0F4A     		ldr	r2, .L16+4
+ 139 0028 0121     		movs	r1, #1
+ 140 002a 1170     		strb	r1, [r2]
+ 141              	.L10:
+  75:Core/Src/balance_car/app_sensors.c ****     }
+  76:Core/Src/balance_car/app_sensors.c **** 
+  77:Core/Src/balance_car/app_sensors.c ****     delta = raw - g_sensor_state.hx711_zero_raw;
+ 142              		.loc 1 77 5 is_stmt 1 view .LVU29
+ 143              		.loc 1 77 33 is_stmt 0 view .LVU30
+ 144 002c 0C4C     		ldr	r4, .L16
+ 145 002e 2069     		ldr	r0, [r4, #16]
+ 146              	.LVL4:
+  78:Core/Src/balance_car/app_sensors.c ****     weight = (float)delta * g_sensor_state.hx711_g_per_count;
+ 147              		.loc 1 78 5 is_stmt 1 view .LVU31
+ 148              		.loc 1 78 14 is_stmt 0 view .LVU32
+ 149 0030 181A     		subs	r0, r3, r0
+ 150              	.LVL5:
+ 151              		.loc 1 78 14 view .LVU33
+ 152 0032 FFF7FEFF 		bl	__aeabi_i2f
+ 153              	.LVL6:
+ 154              		.loc 1 78 43 view .LVU34
+ 155 0036 6169     		ldr	r1, [r4, #20]	@ float
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 5
 
 
- 498              		.loc 1 126 29 is_stmt 0 view .LVU131
- 499 0028 00F16403 		add	r3, r0, #100
- 126:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadFsr();
- 500              		.loc 1 126 23 view .LVU132
- 501 002c 024A     		ldr	r2, .L44
- 502 002e 1360     		str	r3, [r2]
- 127:Core/Src/balance_car/app_sensors.c ****     }
- 503              		.loc 1 127 9 is_stmt 1 view .LVU133
- 504 0030 FFF7FEFF 		bl	AppSensors_ReadFsr
- 505              	.LVL36:
- 127:Core/Src/balance_car/app_sensors.c ****     }
- 506              		.loc 1 127 9 is_stmt 0 view .LVU134
- 507 0034 EDE7     		b	.L39
- 508              	.L45:
- 509 0036 00BF     		.align	2
- 510              	.L44:
- 511 0038 00000000 		.word	s_next_fsr_ms
- 512 003c 00000000 		.word	s_dht_waiting
- 513 0040 00000000 		.word	s_next_dht_ms
- 514              		.cfi_endproc
- 515              	.LFE70:
- 517              		.section	.bss.s_fsr_zero_captured,"aw",%nobits
- 520              	s_fsr_zero_captured:
- 521 0000 00       		.space	1
- 522              		.section	.bss.s_dht_waiting,"aw",%nobits
- 525              	s_dht_waiting:
- 526 0000 00       		.space	1
- 527              		.section	.bss.s_dht_start_ms,"aw",%nobits
- 528              		.align	2
- 531              	s_dht_start_ms:
- 532 0000 00000000 		.space	4
- 533              		.section	.bss.s_next_dht_ms,"aw",%nobits
- 534              		.align	2
- 537              	s_next_dht_ms:
- 538 0000 00000000 		.space	4
- 539              		.section	.bss.s_next_fsr_ms,"aw",%nobits
- 540              		.align	2
- 543              	s_next_fsr_ms:
- 544 0000 00000000 		.space	4
- 545              		.global	g_sensor_state
- 546              		.section	.data.g_sensor_state,"aw"
- 547              		.align	2
- 550              	g_sensor_state:
- 551 0000 00000000 		.word	0
- 552 0004 00000000 		.word	0
- 553 0008 0000     		.short	0
- 554 000a 0000     		.short	0
- 555 000c 00000000 		.word	0
- 556 0010 0000     		.short	0
- 557 0012 0000     		.space	2
- 558 0014 0000803F 		.word	1065353216
- 559 0018 00000000 		.word	0
- 560 001c 00000000 		.space	8
- 560      00000000 
- 561              		.text
- 562              	.Letext0:
- 563              		.file 2 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
-ARM GAS  D:\TMP\cclIFzgg.s 			page 14
+ 156              		.loc 1 78 12 view .LVU35
+ 157 0038 FFF7FEFF 		bl	__aeabi_fmul
+ 158              	.LVL7:
+ 159 003c 0446     		mov	r4, r0
+ 160              	.LVL8:
+  79:Core/Src/balance_car/app_sensors.c ****     if (weight < 0.0f) {
+ 161              		.loc 1 79 5 is_stmt 1 view .LVU36
+ 162              		.loc 1 79 8 is_stmt 0 view .LVU37
+ 163 003e 0021     		movs	r1, #0
+ 164 0040 FFF7FEFF 		bl	__aeabi_fcmplt
+ 165              	.LVL9:
+ 166              		.loc 1 79 8 view .LVU38
+ 167 0044 50B9     		cbnz	r0, .L15
+ 168              	.LVL10:
+ 169              	.L11:
+  80:Core/Src/balance_car/app_sensors.c ****         weight = 0.0f;
+  81:Core/Src/balance_car/app_sensors.c ****     }
+  82:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.weight_g = weight;
+ 170              		.loc 1 82 5 is_stmt 1 view .LVU39
+ 171              		.loc 1 82 29 is_stmt 0 view .LVU40
+ 172 0046 064B     		ldr	r3, .L16
+ 173 0048 DC60     		str	r4, [r3, #12]	@ float
+ 174              	.LVL11:
+ 175              	.L7:
+  83:Core/Src/balance_car/app_sensors.c **** }
+ 176              		.loc 1 83 1 view .LVU41
+ 177 004a 02B0     		add	sp, sp, #8
+ 178              	.LCFI2:
+ 179              		.cfi_remember_state
+ 180              		.cfi_def_cfa_offset 8
+ 181              		@ sp needed
+ 182 004c 10BD     		pop	{r4, pc}
+ 183              	.L14:
+ 184              	.LCFI3:
+ 185              		.cfi_restore_state
+  63:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.hx711_valid = 0U;
+ 186              		.loc 1 63 9 is_stmt 1 view .LVU42
+ 187 004e 0820     		movs	r0, #8
+ 188 0050 FFF7FEFF 		bl	AppSensors_SetFault
+ 189              	.LVL12:
+  64:Core/Src/balance_car/app_sensors.c ****         return;
+ 190              		.loc 1 64 9 view .LVU43
+  64:Core/Src/balance_car/app_sensors.c ****         return;
+ 191              		.loc 1 64 36 is_stmt 0 view .LVU44
+ 192 0054 024B     		ldr	r3, .L16
+ 193 0056 0022     		movs	r2, #0
+ 194 0058 5A77     		strb	r2, [r3, #29]
+  65:Core/Src/balance_car/app_sensors.c ****     }
+ 195              		.loc 1 65 9 is_stmt 1 view .LVU45
+ 196 005a F6E7     		b	.L7
+ 197              	.LVL13:
+ 198              	.L15:
+  80:Core/Src/balance_car/app_sensors.c ****     }
+ 199              		.loc 1 80 16 is_stmt 0 view .LVU46
+ 200 005c 0024     		movs	r4, #0
+ 201              	.LVL14:
+  80:Core/Src/balance_car/app_sensors.c ****     }
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 6
 
 
- 564              		.file 3 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
- 565              		.file 4 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 566              		.file 5 "Core/Inc/balance_car/app_sensors.h"
- 567              		.file 6 "Core/Inc/balance_car/dht11.h"
- 568              		.file 7 "Core/Inc/balance_car/fsr_adc.h"
- 569              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
-ARM GAS  D:\TMP\cclIFzgg.s 			page 15
+ 202              		.loc 1 80 16 view .LVU47
+ 203 005e F2E7     		b	.L11
+ 204              	.L17:
+ 205              		.align	2
+ 206              	.L16:
+ 207 0060 00000000 		.word	g_sensor_state
+ 208 0064 00000000 		.word	s_hx711_zero_captured
+ 209              		.cfi_endproc
+ 210              	.LFE68:
+ 212              		.section	.text.AppSensors_ServiceDht,"ax",%progbits
+ 213              		.align	1
+ 214              		.syntax unified
+ 215              		.thumb
+ 216              		.thumb_func
+ 218              	AppSensors_ServiceDht:
+ 219              	.LFB69:
+  84:Core/Src/balance_car/app_sensors.c **** 
+  85:Core/Src/balance_car/app_sensors.c **** static void AppSensors_ServiceDht(void)
+  86:Core/Src/balance_car/app_sensors.c **** {
+ 220              		.loc 1 86 1 is_stmt 1 view -0
+ 221              		.cfi_startproc
+ 222              		@ args = 0, pretend = 0, frame = 8
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 224 0000 00B5     		push	{lr}
+ 225              	.LCFI4:
+ 226              		.cfi_def_cfa_offset 4
+ 227              		.cfi_offset 14, -4
+ 228 0002 83B0     		sub	sp, sp, #12
+ 229              	.LCFI5:
+ 230              		.cfi_def_cfa_offset 16
+  87:Core/Src/balance_car/app_sensors.c ****     Dht11Reading_t reading;
+ 231              		.loc 1 87 5 view .LVU49
+  88:Core/Src/balance_car/app_sensors.c **** 
+  89:Core/Src/balance_car/app_sensors.c ****     if (s_dht_waiting == 0U) {
+ 232              		.loc 1 89 5 view .LVU50
+ 233              		.loc 1 89 23 is_stmt 0 view .LVU51
+ 234 0004 204B     		ldr	r3, .L29
+ 235 0006 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 236              		.loc 1 89 8 view .LVU52
+ 237 0008 4BB1     		cbz	r3, .L26
+  90:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
+  91:Core/Src/balance_car/app_sensors.c ****             s_dht_start_ms = HAL_GetTick();
+  92:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
+  93:Core/Src/balance_car/app_sensors.c ****         } else {
+  94:Core/Src/balance_car/app_sensors.c ****             AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
+  95:Core/Src/balance_car/app_sensors.c ****             s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
+  96:Core/Src/balance_car/app_sensors.c ****         }
+  97:Core/Src/balance_car/app_sensors.c ****         return;
+  98:Core/Src/balance_car/app_sensors.c ****     }
+  99:Core/Src/balance_car/app_sensors.c **** 
+ 100:Core/Src/balance_car/app_sensors.c ****     if ((HAL_GetTick() - s_dht_start_ms) < DHT_START_LOW_MS) {
+ 238              		.loc 1 100 5 is_stmt 1 view .LVU53
+ 239              		.loc 1 100 10 is_stmt 0 view .LVU54
+ 240 000a FFF7FEFF 		bl	HAL_GetTick
+ 241              	.LVL15:
+ 242              		.loc 1 100 24 discriminator 1 view .LVU55
+ 243 000e 1F4B     		ldr	r3, .L29+4
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 7
+
+
+ 244 0010 1B68     		ldr	r3, [r3]
+ 245 0012 C01A     		subs	r0, r0, r3
+ 246              		.loc 1 100 8 discriminator 1 view .LVU56
+ 247 0014 1128     		cmp	r0, #17
+ 248 0016 17D8     		bhi	.L27
+ 249              	.L18:
+ 101:Core/Src/balance_car/app_sensors.c ****         return;
+ 102:Core/Src/balance_car/app_sensors.c ****     }
+ 103:Core/Src/balance_car/app_sensors.c **** 
+ 104:Core/Src/balance_car/app_sensors.c ****     s_dht_waiting = 0U;
+ 105:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
+ 106:Core/Src/balance_car/app_sensors.c **** 
+ 107:Core/Src/balance_car/app_sensors.c ****     if (Dht11_FinishRead(&reading) != HAL_OK) {
+ 108:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
+ 109:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.dht_valid = 0U;
+ 110:Core/Src/balance_car/app_sensors.c ****         return;
+ 111:Core/Src/balance_car/app_sensors.c ****     }
+ 112:Core/Src/balance_car/app_sensors.c **** 
+ 113:Core/Src/balance_car/app_sensors.c ****     AppSensors_ClearFault(SENSOR_FAULT_DHT_READ);
+ 114:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.dht_valid = 1U;
+ 115:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
+ 116:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
+ 117:Core/Src/balance_car/app_sensors.c **** }
+ 250              		.loc 1 117 1 view .LVU57
+ 251 0018 03B0     		add	sp, sp, #12
+ 252              	.LCFI6:
+ 253              		.cfi_remember_state
+ 254              		.cfi_def_cfa_offset 4
+ 255              		@ sp needed
+ 256 001a 5DF804FB 		ldr	pc, [sp], #4
+ 257              	.L26:
+ 258              	.LCFI7:
+ 259              		.cfi_restore_state
+  90:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
+ 260              		.loc 1 90 9 is_stmt 1 view .LVU58
+  90:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
+ 261              		.loc 1 90 13 is_stmt 0 view .LVU59
+ 262 001e FFF7FEFF 		bl	Dht11_StartRead
+ 263              	.LVL16:
+  90:Core/Src/balance_car/app_sensors.c ****         if (Dht11_StartRead() == HAL_OK) {
+ 264              		.loc 1 90 12 discriminator 1 view .LVU60
+ 265 0022 38B9     		cbnz	r0, .L20
+  91:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
+ 266              		.loc 1 91 13 is_stmt 1 view .LVU61
+  91:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
+ 267              		.loc 1 91 30 is_stmt 0 view .LVU62
+ 268 0024 FFF7FEFF 		bl	HAL_GetTick
+ 269              	.LVL17:
+  91:Core/Src/balance_car/app_sensors.c ****             s_dht_waiting = 1U;
+ 270              		.loc 1 91 28 discriminator 1 view .LVU63
+ 271 0028 184B     		ldr	r3, .L29+4
+ 272 002a 1860     		str	r0, [r3]
+  92:Core/Src/balance_car/app_sensors.c ****         } else {
+ 273              		.loc 1 92 13 is_stmt 1 view .LVU64
+  92:Core/Src/balance_car/app_sensors.c ****         } else {
+ 274              		.loc 1 92 27 is_stmt 0 view .LVU65
+ 275 002c 164B     		ldr	r3, .L29
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 8
+
+
+ 276 002e 0122     		movs	r2, #1
+ 277 0030 1A70     		strb	r2, [r3]
+ 278 0032 F1E7     		b	.L18
+ 279              	.L20:
+  94:Core/Src/balance_car/app_sensors.c ****             s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
+ 280              		.loc 1 94 13 is_stmt 1 view .LVU66
+ 281 0034 0220     		movs	r0, #2
+ 282 0036 FFF7FEFF 		bl	AppSensors_SetFault
+ 283              	.LVL18:
+  95:Core/Src/balance_car/app_sensors.c ****         }
+ 284              		.loc 1 95 13 view .LVU67
+  95:Core/Src/balance_car/app_sensors.c ****         }
+ 285              		.loc 1 95 29 is_stmt 0 view .LVU68
+ 286 003a FFF7FEFF 		bl	HAL_GetTick
+ 287              	.LVL19:
+  95:Core/Src/balance_car/app_sensors.c ****         }
+ 288              		.loc 1 95 43 discriminator 1 view .LVU69
+ 289 003e 00F5FA60 		add	r0, r0, #2000
+  95:Core/Src/balance_car/app_sensors.c ****         }
+ 290              		.loc 1 95 27 discriminator 1 view .LVU70
+ 291 0042 134B     		ldr	r3, .L29+8
+ 292 0044 1860     		str	r0, [r3]
+  97:Core/Src/balance_car/app_sensors.c ****     }
+ 293              		.loc 1 97 9 is_stmt 1 view .LVU71
+ 294 0046 E7E7     		b	.L18
+ 295              	.L27:
+ 104:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
+ 296              		.loc 1 104 5 view .LVU72
+ 104:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + DHT_SAMPLE_PERIOD_MS;
+ 297              		.loc 1 104 19 is_stmt 0 view .LVU73
+ 298 0048 0F4B     		ldr	r3, .L29
+ 299 004a 0022     		movs	r2, #0
+ 300 004c 1A70     		strb	r2, [r3]
+ 105:Core/Src/balance_car/app_sensors.c **** 
+ 301              		.loc 1 105 5 is_stmt 1 view .LVU74
+ 105:Core/Src/balance_car/app_sensors.c **** 
+ 302              		.loc 1 105 21 is_stmt 0 view .LVU75
+ 303 004e FFF7FEFF 		bl	HAL_GetTick
+ 304              	.LVL20:
+ 105:Core/Src/balance_car/app_sensors.c **** 
+ 305              		.loc 1 105 35 discriminator 1 view .LVU76
+ 306 0052 00F5FA60 		add	r0, r0, #2000
+ 105:Core/Src/balance_car/app_sensors.c **** 
+ 307              		.loc 1 105 19 discriminator 1 view .LVU77
+ 308 0056 0E4B     		ldr	r3, .L29+8
+ 309 0058 1860     		str	r0, [r3]
+ 107:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
+ 310              		.loc 1 107 5 is_stmt 1 view .LVU78
+ 107:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
+ 311              		.loc 1 107 9 is_stmt 0 view .LVU79
+ 312 005a 6846     		mov	r0, sp
+ 313 005c FFF7FEFF 		bl	Dht11_FinishRead
+ 314              	.LVL21:
+ 107:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_READ);
+ 315              		.loc 1 107 8 discriminator 1 view .LVU80
+ 316 0060 50B9     		cbnz	r0, .L28
+ 113:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.dht_valid = 1U;
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 9
+
+
+ 317              		.loc 1 113 5 is_stmt 1 view .LVU81
+ 318 0062 0220     		movs	r0, #2
+ 319 0064 FFF7FEFF 		bl	AppSensors_ClearFault
+ 320              	.LVL22:
+ 114:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
+ 321              		.loc 1 114 5 view .LVU82
+ 114:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.temperature_c = reading.temperature_c;
+ 322              		.loc 1 114 30 is_stmt 0 view .LVU83
+ 323 0068 0A4B     		ldr	r3, .L29+12
+ 324 006a 0122     		movs	r2, #1
+ 325 006c 1A77     		strb	r2, [r3, #28]
+ 115:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
+ 326              		.loc 1 115 5 is_stmt 1 view .LVU84
+ 115:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
+ 327              		.loc 1 115 43 is_stmt 0 view .LVU85
+ 328 006e 009A     		ldr	r2, [sp]	@ float
+ 115:Core/Src/balance_car/app_sensors.c ****     g_sensor_state.humidity_percent = reading.humidity_percent;
+ 329              		.loc 1 115 34 view .LVU86
+ 330 0070 1A60     		str	r2, [r3]	@ float
+ 116:Core/Src/balance_car/app_sensors.c **** }
+ 331              		.loc 1 116 5 is_stmt 1 view .LVU87
+ 116:Core/Src/balance_car/app_sensors.c **** }
+ 332              		.loc 1 116 46 is_stmt 0 view .LVU88
+ 333 0072 019A     		ldr	r2, [sp, #4]	@ float
+ 116:Core/Src/balance_car/app_sensors.c **** }
+ 334              		.loc 1 116 37 view .LVU89
+ 335 0074 5A60     		str	r2, [r3, #4]	@ float
+ 336 0076 CFE7     		b	.L18
+ 337              	.L28:
+ 108:Core/Src/balance_car/app_sensors.c ****         g_sensor_state.dht_valid = 0U;
+ 338              		.loc 1 108 9 is_stmt 1 view .LVU90
+ 339 0078 0220     		movs	r0, #2
+ 340 007a FFF7FEFF 		bl	AppSensors_SetFault
+ 341              	.LVL23:
+ 109:Core/Src/balance_car/app_sensors.c ****         return;
+ 342              		.loc 1 109 9 view .LVU91
+ 109:Core/Src/balance_car/app_sensors.c ****         return;
+ 343              		.loc 1 109 34 is_stmt 0 view .LVU92
+ 344 007e 054B     		ldr	r3, .L29+12
+ 345 0080 0022     		movs	r2, #0
+ 346 0082 1A77     		strb	r2, [r3, #28]
+ 110:Core/Src/balance_car/app_sensors.c ****     }
+ 347              		.loc 1 110 9 is_stmt 1 view .LVU93
+ 348 0084 C8E7     		b	.L18
+ 349              	.L30:
+ 350 0086 00BF     		.align	2
+ 351              	.L29:
+ 352 0088 00000000 		.word	s_dht_waiting
+ 353 008c 00000000 		.word	s_dht_start_ms
+ 354 0090 00000000 		.word	s_next_dht_ms
+ 355 0094 00000000 		.word	g_sensor_state
+ 356              		.cfi_endproc
+ 357              	.LFE69:
+ 359              		.section	.text.AppSensors_Init,"ax",%progbits
+ 360              		.align	1
+ 361              		.global	AppSensors_Init
+ 362              		.syntax unified
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 10
+
+
+ 363              		.thumb
+ 364              		.thumb_func
+ 366              	AppSensors_Init:
+ 367              	.LFB67:
+  38:Core/Src/balance_car/app_sensors.c ****     HAL_StatusTypeDef status = HAL_OK;
+ 368              		.loc 1 38 1 view -0
+ 369              		.cfi_startproc
+ 370              		@ args = 0, pretend = 0, frame = 0
+ 371              		@ frame_needed = 0, uses_anonymous_args = 0
+ 372 0000 10B5     		push	{r4, lr}
+ 373              	.LCFI8:
+ 374              		.cfi_def_cfa_offset 8
+ 375              		.cfi_offset 4, -8
+ 376              		.cfi_offset 14, -4
+  39:Core/Src/balance_car/app_sensors.c **** 
+ 377              		.loc 1 39 5 view .LVU95
+ 378              	.LVL24:
+  41:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
+ 379              		.loc 1 41 5 view .LVU96
+  41:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
+ 380              		.loc 1 41 9 is_stmt 0 view .LVU97
+ 381 0002 FFF7FEFF 		bl	Dht11_Init
+ 382              	.LVL25:
+  41:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_DHT_INIT);
+ 383              		.loc 1 41 8 discriminator 1 view .LVU98
+ 384 0006 0446     		mov	r4, r0
+ 385 0008 70B9     		cbnz	r0, .L35
+ 386              	.LVL26:
+ 387              	.L32:
+  46:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_HX711_INIT);
+ 388              		.loc 1 46 5 is_stmt 1 view .LVU99
+  46:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_HX711_INIT);
+ 389              		.loc 1 46 9 is_stmt 0 view .LVU100
+ 390 000a FFF7FEFF 		bl	Hx711_Init
+ 391              	.LVL27:
+  46:Core/Src/balance_car/app_sensors.c ****         AppSensors_SetFault(SENSOR_FAULT_HX711_INIT);
+ 392              		.loc 1 46 8 discriminator 1 view .LVU101
+ 393 000e 80B9     		cbnz	r0, .L36
+ 394              	.LVL28:
+ 395              	.L33:
+  51:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
+ 396              		.loc 1 51 5 is_stmt 1 view .LVU102
+  51:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
+ 397              		.loc 1 51 23 is_stmt 0 view .LVU103
+ 398 0010 FFF7FEFF 		bl	HAL_GetTick
+ 399              	.LVL29:
+  51:Core/Src/balance_car/app_sensors.c ****     s_next_dht_ms = HAL_GetTick() + 1000U;
+ 400              		.loc 1 51 21 discriminator 1 view .LVU104
+ 401 0014 094B     		ldr	r3, .L37
+ 402 0016 1860     		str	r0, [r3]
+  52:Core/Src/balance_car/app_sensors.c ****     return status;
+ 403              		.loc 1 52 5 is_stmt 1 view .LVU105
+  52:Core/Src/balance_car/app_sensors.c ****     return status;
+ 404              		.loc 1 52 21 is_stmt 0 view .LVU106
+ 405 0018 FFF7FEFF 		bl	HAL_GetTick
+ 406              	.LVL30:
+  52:Core/Src/balance_car/app_sensors.c ****     return status;
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 11
+
+
+ 407              		.loc 1 52 35 discriminator 1 view .LVU107
+ 408 001c 00F57A70 		add	r0, r0, #1000
+  52:Core/Src/balance_car/app_sensors.c ****     return status;
+ 409              		.loc 1 52 19 discriminator 1 view .LVU108
+ 410 0020 074B     		ldr	r3, .L37+4
+ 411 0022 1860     		str	r0, [r3]
+  53:Core/Src/balance_car/app_sensors.c **** }
+ 412              		.loc 1 53 5 is_stmt 1 view .LVU109
+  54:Core/Src/balance_car/app_sensors.c **** 
+ 413              		.loc 1 54 1 is_stmt 0 view .LVU110
+ 414 0024 2046     		mov	r0, r4
+ 415 0026 10BD     		pop	{r4, pc}
+ 416              	.LVL31:
+ 417              	.L35:
+  42:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
+ 418              		.loc 1 42 9 is_stmt 1 view .LVU111
+ 419 0028 0120     		movs	r0, #1
+ 420 002a FFF7FEFF 		bl	AppSensors_SetFault
+ 421              	.LVL32:
+  43:Core/Src/balance_car/app_sensors.c ****     }
+ 422              		.loc 1 43 9 view .LVU112
+  43:Core/Src/balance_car/app_sensors.c ****     }
+ 423              		.loc 1 43 16 is_stmt 0 view .LVU113
+ 424 002e 0124     		movs	r4, #1
+ 425 0030 EBE7     		b	.L32
+ 426              	.LVL33:
+ 427              	.L36:
+  47:Core/Src/balance_car/app_sensors.c ****         status = HAL_ERROR;
+ 428              		.loc 1 47 9 is_stmt 1 view .LVU114
+ 429 0032 0420     		movs	r0, #4
+ 430 0034 FFF7FEFF 		bl	AppSensors_SetFault
+ 431              	.LVL34:
+  48:Core/Src/balance_car/app_sensors.c ****     }
+ 432              		.loc 1 48 9 view .LVU115
+  48:Core/Src/balance_car/app_sensors.c ****     }
+ 433              		.loc 1 48 16 is_stmt 0 view .LVU116
+ 434 0038 0124     		movs	r4, #1
+ 435 003a E9E7     		b	.L33
+ 436              	.L38:
+ 437              		.align	2
+ 438              	.L37:
+ 439 003c 00000000 		.word	s_next_hx711_ms
+ 440 0040 00000000 		.word	s_next_dht_ms
+ 441              		.cfi_endproc
+ 442              	.LFE67:
+ 444              		.section	.text.AppSensors_Background,"ax",%progbits
+ 445              		.align	1
+ 446              		.global	AppSensors_Background
+ 447              		.syntax unified
+ 448              		.thumb
+ 449              		.thumb_func
+ 451              	AppSensors_Background:
+ 452              	.LFB70:
+ 118:Core/Src/balance_car/app_sensors.c **** 
+ 119:Core/Src/balance_car/app_sensors.c **** void AppSensors_Background(void)
+ 120:Core/Src/balance_car/app_sensors.c **** {
+ 453              		.loc 1 120 1 is_stmt 1 view -0
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 12
+
+
+ 454              		.cfi_startproc
+ 455              		@ args = 0, pretend = 0, frame = 0
+ 456              		@ frame_needed = 0, uses_anonymous_args = 0
+ 457 0000 10B5     		push	{r4, lr}
+ 458              	.LCFI9:
+ 459              		.cfi_def_cfa_offset 8
+ 460              		.cfi_offset 4, -8
+ 461              		.cfi_offset 14, -4
+ 121:Core/Src/balance_car/app_sensors.c ****     uint32_t now = HAL_GetTick();
+ 462              		.loc 1 121 5 view .LVU118
+ 463              		.loc 1 121 20 is_stmt 0 view .LVU119
+ 464 0002 FFF7FEFF 		bl	HAL_GetTick
+ 465              	.LVL35:
+ 466 0006 0446     		mov	r4, r0
+ 467              	.LVL36:
+ 122:Core/Src/balance_car/app_sensors.c **** 
+ 123:Core/Src/balance_car/app_sensors.c ****     if ((int32_t)(now - s_next_hx711_ms) >= 0) {
+ 468              		.loc 1 123 5 is_stmt 1 view .LVU120
+ 469              		.loc 1 123 23 is_stmt 0 view .LVU121
+ 470 0008 0B4B     		ldr	r3, .L45
+ 471 000a 1B68     		ldr	r3, [r3]
+ 472 000c C31A     		subs	r3, r0, r3
+ 473              		.loc 1 123 8 view .LVU122
+ 474 000e 002B     		cmp	r3, #0
+ 475 0010 0ADA     		bge	.L44
+ 476              	.LVL37:
+ 477              	.L40:
+ 124:Core/Src/balance_car/app_sensors.c ****         s_next_hx711_ms = now + HX711_SAMPLE_PERIOD_MS;
+ 125:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadHx711();
+ 126:Core/Src/balance_car/app_sensors.c ****     }
+ 127:Core/Src/balance_car/app_sensors.c **** 
+ 128:Core/Src/balance_car/app_sensors.c ****     if (s_dht_waiting != 0U || (int32_t)(now - s_next_dht_ms) >= 0) {
+ 478              		.loc 1 128 5 is_stmt 1 view .LVU123
+ 479              		.loc 1 128 23 is_stmt 0 view .LVU124
+ 480 0012 0A4B     		ldr	r3, .L45+4
+ 481 0014 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 482              		.loc 1 128 8 view .LVU125
+ 483 0016 23B9     		cbnz	r3, .L41
+ 484              		.loc 1 128 46 discriminator 1 view .LVU126
+ 485 0018 094B     		ldr	r3, .L45+8
+ 486 001a 1B68     		ldr	r3, [r3]
+ 487 001c E41A     		subs	r4, r4, r3
+ 488              	.LVL38:
+ 489              		.loc 1 128 29 discriminator 1 view .LVU127
+ 490 001e 002C     		cmp	r4, #0
+ 491 0020 01DB     		blt	.L39
+ 492              	.L41:
+ 129:Core/Src/balance_car/app_sensors.c ****         AppSensors_ServiceDht();
+ 493              		.loc 1 129 9 is_stmt 1 view .LVU128
+ 494 0022 FFF7FEFF 		bl	AppSensors_ServiceDht
+ 495              	.LVL39:
+ 496              	.L39:
+ 130:Core/Src/balance_car/app_sensors.c ****     }
+ 131:Core/Src/balance_car/app_sensors.c **** }
+ 497              		.loc 1 131 1 is_stmt 0 view .LVU129
+ 498 0026 10BD     		pop	{r4, pc}
+ 499              	.LVL40:
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 13
+
+
+ 500              	.L44:
+ 124:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadHx711();
+ 501              		.loc 1 124 9 is_stmt 1 view .LVU130
+ 124:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadHx711();
+ 502              		.loc 1 124 31 is_stmt 0 view .LVU131
+ 503 0028 00F16403 		add	r3, r0, #100
+ 124:Core/Src/balance_car/app_sensors.c ****         AppSensors_ReadHx711();
+ 504              		.loc 1 124 25 view .LVU132
+ 505 002c 024A     		ldr	r2, .L45
+ 506 002e 1360     		str	r3, [r2]
+ 125:Core/Src/balance_car/app_sensors.c ****     }
+ 507              		.loc 1 125 9 is_stmt 1 view .LVU133
+ 508 0030 FFF7FEFF 		bl	AppSensors_ReadHx711
+ 509              	.LVL41:
+ 125:Core/Src/balance_car/app_sensors.c ****     }
+ 510              		.loc 1 125 9 is_stmt 0 view .LVU134
+ 511 0034 EDE7     		b	.L40
+ 512              	.L46:
+ 513 0036 00BF     		.align	2
+ 514              	.L45:
+ 515 0038 00000000 		.word	s_next_hx711_ms
+ 516 003c 00000000 		.word	s_dht_waiting
+ 517 0040 00000000 		.word	s_next_dht_ms
+ 518              		.cfi_endproc
+ 519              	.LFE70:
+ 521              		.section	.bss.s_hx711_zero_captured,"aw",%nobits
+ 524              	s_hx711_zero_captured:
+ 525 0000 00       		.space	1
+ 526              		.section	.bss.s_dht_waiting,"aw",%nobits
+ 529              	s_dht_waiting:
+ 530 0000 00       		.space	1
+ 531              		.section	.bss.s_dht_start_ms,"aw",%nobits
+ 532              		.align	2
+ 535              	s_dht_start_ms:
+ 536 0000 00000000 		.space	4
+ 537              		.section	.bss.s_next_dht_ms,"aw",%nobits
+ 538              		.align	2
+ 541              	s_next_dht_ms:
+ 542 0000 00000000 		.space	4
+ 543              		.section	.bss.s_next_hx711_ms,"aw",%nobits
+ 544              		.align	2
+ 547              	s_next_hx711_ms:
+ 548 0000 00000000 		.space	4
+ 549              		.global	g_sensor_state
+ 550              		.section	.data.g_sensor_state,"aw"
+ 551              		.align	2
+ 554              	g_sensor_state:
+ 555 0000 00000000 		.word	0
+ 556 0004 00000000 		.word	0
+ 557 0008 00000000 		.word	0
+ 558 000c 00000000 		.word	0
+ 559 0010 00000000 		.word	0
+ 560 0014 6F12833A 		.word	981668463
+ 561 0018 00000000 		.word	0
+ 562 001c 00000000 		.space	8
+ 562      00000000 
+ 563              		.text
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 14
+
+
+ 564              	.Letext0:
+ 565              		.file 2 "C:/msys64/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 566              		.file 3 "C:/msys64/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 567              		.file 4 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 568              		.file 5 "Core/Inc/balance_car/app_sensors.h"
+ 569              		.file 6 "Core/Inc/balance_car/dht11.h"
+ 570              		.file 7 "Core/Inc/balance_car/hx711.h"
+ 571              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ARM GAS  C:\Users\future\AppData\Local\Temp\cccyU9ud.s 			page 15
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 app_sensors.c
-   D:\TMP\cclIFzgg.s:19     .text.AppSensors_SetFault:00000000 $t
-   D:\TMP\cclIFzgg.s:25     .text.AppSensors_SetFault:00000000 AppSensors_SetFault
-   D:\TMP\cclIFzgg.s:45     .text.AppSensors_SetFault:0000000c $d
-   D:\TMP\cclIFzgg.s:550    .data.g_sensor_state:00000000 g_sensor_state
-   D:\TMP\cclIFzgg.s:50     .text.AppSensors_ClearFault:00000000 $t
-   D:\TMP\cclIFzgg.s:56     .text.AppSensors_ClearFault:00000000 AppSensors_ClearFault
-   D:\TMP\cclIFzgg.s:76     .text.AppSensors_ClearFault:0000000c $d
-   D:\TMP\cclIFzgg.s:83     .text.AppSensors_ReadFsr:00000000 $t
-   D:\TMP\cclIFzgg.s:88     .text.AppSensors_ReadFsr:00000000 AppSensors_ReadFsr
-   D:\TMP\cclIFzgg.s:203    .text.AppSensors_ReadFsr:00000070 $d
-   D:\TMP\cclIFzgg.s:520    .bss.s_fsr_zero_captured:00000000 s_fsr_zero_captured
-   D:\TMP\cclIFzgg.s:209    .text.AppSensors_ServiceDht:00000000 $t
-   D:\TMP\cclIFzgg.s:214    .text.AppSensors_ServiceDht:00000000 AppSensors_ServiceDht
-   D:\TMP\cclIFzgg.s:348    .text.AppSensors_ServiceDht:00000088 $d
-   D:\TMP\cclIFzgg.s:525    .bss.s_dht_waiting:00000000 s_dht_waiting
-   D:\TMP\cclIFzgg.s:531    .bss.s_dht_start_ms:00000000 s_dht_start_ms
-   D:\TMP\cclIFzgg.s:537    .bss.s_next_dht_ms:00000000 s_next_dht_ms
-   D:\TMP\cclIFzgg.s:356    .text.AppSensors_Init:00000000 $t
-   D:\TMP\cclIFzgg.s:362    .text.AppSensors_Init:00000000 AppSensors_Init
-   D:\TMP\cclIFzgg.s:435    .text.AppSensors_Init:0000003c $d
-   D:\TMP\cclIFzgg.s:543    .bss.s_next_fsr_ms:00000000 s_next_fsr_ms
-   D:\TMP\cclIFzgg.s:441    .text.AppSensors_Background:00000000 $t
-   D:\TMP\cclIFzgg.s:447    .text.AppSensors_Background:00000000 AppSensors_Background
-   D:\TMP\cclIFzgg.s:511    .text.AppSensors_Background:00000038 $d
-   D:\TMP\cclIFzgg.s:521    .bss.s_fsr_zero_captured:00000000 $d
-   D:\TMP\cclIFzgg.s:526    .bss.s_dht_waiting:00000000 $d
-   D:\TMP\cclIFzgg.s:528    .bss.s_dht_start_ms:00000000 $d
-   D:\TMP\cclIFzgg.s:534    .bss.s_next_dht_ms:00000000 $d
-   D:\TMP\cclIFzgg.s:540    .bss.s_next_fsr_ms:00000000 $d
-   D:\TMP\cclIFzgg.s:547    .data.g_sensor_state:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:19     .text.AppSensors_SetFault:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:25     .text.AppSensors_SetFault:00000000 AppSensors_SetFault
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:45     .text.AppSensors_SetFault:0000000c $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:554    .data.g_sensor_state:00000000 g_sensor_state
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:50     .text.AppSensors_ClearFault:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:56     .text.AppSensors_ClearFault:00000000 AppSensors_ClearFault
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:76     .text.AppSensors_ClearFault:0000000c $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:84     .text.AppSensors_ReadHx711:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:89     .text.AppSensors_ReadHx711:00000000 AppSensors_ReadHx711
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:207    .text.AppSensors_ReadHx711:00000060 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:524    .bss.s_hx711_zero_captured:00000000 s_hx711_zero_captured
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:213    .text.AppSensors_ServiceDht:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:218    .text.AppSensors_ServiceDht:00000000 AppSensors_ServiceDht
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:352    .text.AppSensors_ServiceDht:00000088 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:529    .bss.s_dht_waiting:00000000 s_dht_waiting
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:535    .bss.s_dht_start_ms:00000000 s_dht_start_ms
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:541    .bss.s_next_dht_ms:00000000 s_next_dht_ms
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:360    .text.AppSensors_Init:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:366    .text.AppSensors_Init:00000000 AppSensors_Init
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:439    .text.AppSensors_Init:0000003c $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:547    .bss.s_next_hx711_ms:00000000 s_next_hx711_ms
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:445    .text.AppSensors_Background:00000000 $t
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:451    .text.AppSensors_Background:00000000 AppSensors_Background
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:515    .text.AppSensors_Background:00000038 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:525    .bss.s_hx711_zero_captured:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:530    .bss.s_dht_waiting:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:532    .bss.s_dht_start_ms:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:538    .bss.s_next_dht_ms:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:544    .bss.s_next_hx711_ms:00000000 $d
+C:\Users\future\AppData\Local\Temp\cccyU9ud.s:551    .data.g_sensor_state:00000000 $d
 
 UNDEFINED SYMBOLS
 __aeabi_i2f
 __aeabi_fmul
-FsrAdc_Read
+__aeabi_fcmplt
+Hx711_Read
 HAL_GetTick
 Dht11_StartRead
 Dht11_FinishRead
 Dht11_Init
-FsrAdc_Init
+Hx711_Init

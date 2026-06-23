@@ -16,7 +16,7 @@
 - PC13 运行指示灯
 - SSD1306 OLED 状态显示
 - DHT11 温湿度采集
-- FSR402/RFP602 压力与重量趋势估算
+- HX711 称重传感器读取与重量换算
 - Ozone + J-Link 调试变量入口
 
 调试阶段可以通过 Ozone 直接观察和修改全局变量，完成姿态校准、电机方向确认、编码器方向确认和 PID 参数调节。
@@ -118,18 +118,20 @@ OLED 使用 I2C2 的 PB10/PB11，不与 MPU6050 共用 I2C1。
 
 DHT11 数据脚需要上拉电阻；多数模块板已自带上拉。
 
-### FSR402 + RFP602 压力/重量估算
+### HX711 称重模块
 
-| 功能 | STM32 引脚 | RFP602 |
+| 功能 | STM32 引脚 | HX711 |
 | --- | --- | --- |
-| 模拟输出 | PA2 / ADC1_IN2 | AO |
+| 数据输出 | PA2 | DT / DOUT |
+| 时钟输入 | PB12 | SCK / SCLK |
 | 3.3V | 3.3V | VCC |
 | GND | GND | GND |
 
 注意：
 
-- RFP602 输出必须限制在 `0~3.3V`，不能超过 STM32 ADC 输入范围。
-- FSR402 不是精密称重传感器，OLED 上显示的重量是通过校准系数估算出来的克重。
+- HX711 常见模块可接 3.3V 或 5V；若接 5V，请确认 `DT/DOUT` 高电平不会超过 STM32 输入允许范围。
+- 当前代码使用 HX711 通道 A、增益 128，每次读取后额外发送 1 个 SCK 脉冲。
+- PB12 当前只用于 HX711 SCK；PA3 已用于 TB6612 STBY，不能作为 HX711 SCK。
 
 ## 2. 工程结构
 
@@ -153,8 +155,8 @@ Core/Src/balance_car/
 | `oled_ssd1306.c/.h` | SSD1306 128x64 I2C OLED 分页刷新 |
 | `remote_control.c/.h` | USART1 重映射 PB6/PB7 蓝牙遥控命令接收、解析、限幅和超时保护 |
 | `dht11.c/.h` | PC14 单总线读取 DHT11 温湿度 |
-| `fsr_adc.c/.h` | PA2 / ADC1_IN2 读取 RFP602 模拟电平 |
-| `app_sensors.c/.h` | 温湿度、ADC、电压、重量估算和 Ozone 状态变量 |
+| `hx711.c/.h` | PA2/PB12 读取 HX711 24 位称重原始计数 |
+| `app_sensors.c/.h` | 温湿度、HX711 原始值、重量换算和 Ozone 状态变量 |
 | `display_ui.c/.h` | OLED 四行数据显示和后台刷新 |
 
 Android APP 工程在：
@@ -331,20 +333,19 @@ g_turn_pid
 
 ### 5.3 g_sensor_state
 
-这是 OLED、DHT11 和 FSR402/RFP602 的观察与校准入口。
+这是 OLED、DHT11 和 HX711 的观察与校准入口。
 
 | 变量 | 含义 |
 | --- | --- |
 | `temperature_c` | DHT11 温度，单位摄氏度 |
 | `humidity_percent` | DHT11 湿度，单位百分比 |
-| `fsr_adc_raw` | PA2 / ADC1_IN2 原始 ADC 值，范围约 0~4095 |
-| `fsr_voltage_mv` | RFP602 模拟输出电压，单位 mV |
-| `weight_g` | 按校准系数估算出的重量，单位 g |
-| `fsr_zero_adc` | 空载零点 ADC 值，可在 Ozone 中手动修正 |
-| `fsr_g_per_count` | 每个 ADC count 对应多少克，可在 Ozone 中手动校准 |
+| `hx711_raw` | HX711 24 位有符号原始计数 |
+| `weight_g` | 按校准系数换算出的重量，单位 g |
+| `hx711_zero_raw` | 空载零点原始计数，可在 Ozone 中手动修正 |
+| `hx711_g_per_count` | 每个 HX711 count 对应多少克，可在 Ozone 中手动校准 |
 | `sensor_fault_flags` | 传感器和 OLED 故障位 |
 | `dht_valid` | 1=DHT11 最近一次读取成功 |
-| `fsr_valid` | 1=FSR ADC 最近一次读取成功 |
+| `hx711_valid` | 1=HX711 最近一次读取成功 |
 | `oled_ready` | 1=OLED 初始化成功且正在刷新 |
 | `oled_addr_7bit` | OLED 实际使用的 7 位 I2C 地址，正常通常是 `0x3C` 或 `0x3D` |
 | `oled_probe_mask` | OLED 地址探测结果，bit0=`0x3C` 有应答，bit1=`0x3D` 有应答 |
@@ -353,7 +354,7 @@ g_turn_pid
 重量换算公式：
 
 ```text
-weight_g = max(0, (fsr_adc_raw - fsr_zero_adc) * fsr_g_per_count)
+weight_g = max(0, (hx711_raw - hx711_zero_raw) * hx711_g_per_count)
 ```
 
 容易混淆的一点：
@@ -927,7 +928,7 @@ g_balance_state.ave_speed
 
 ### 6.8 OLED、温湿度和重量显示调试
 
-先不要接电机电源，只接 STM32、MPU6050、OLED、DHT11 和 RFP602。
+先不要接电机电源，只接 STM32、MPU6050、OLED、DHT11 和 HX711。
 
 在 Ozone 中观察：
 
@@ -935,8 +936,9 @@ g_balance_state.ave_speed
 g_sensor_state.oled_ready
 g_sensor_state.temperature_c
 g_sensor_state.humidity_percent
-g_sensor_state.fsr_adc_raw
-g_sensor_state.fsr_voltage_mv
+g_sensor_state.hx711_raw
+g_sensor_state.hx711_zero_raw
+g_sensor_state.hx711_g_per_count
 g_sensor_state.weight_g
 g_sensor_state.sensor_fault_flags
 g_sensor_state.oled_addr_7bit
@@ -948,32 +950,32 @@ g_sensor_state.oled_fail_step
 
 - OLED 每隔约 500ms 更新一次显示。
 - DHT11 温湿度每隔约 2s 更新一次。
-- 按压 FSR402 时，`fsr_adc_raw` 和 `fsr_voltage_mv` 连续变化。
+- 放置或移除砝码时，`hx711_raw` 会连续变化。
 - 空载时 `weight_g` 接近 0。
 
-FSR402 重量校准步骤：
+HX711 重量校准步骤：
 
-1. 空载时观察 `g_sensor_state.fsr_adc_raw`，把稳定值写入：
+1. 空载时观察 `g_sensor_state.hx711_raw`，把稳定值写入：
 
 ```c
-g_sensor_state.fsr_zero_adc
+g_sensor_state.hx711_zero_raw
 ```
 
-2. 放一个已知重量的物体，观察新的 ADC 值。
+2. 放一个已知重量的物体，观察新的 HX711 原始计数。
 
 3. 按下面公式计算：
 
 ```text
-fsr_g_per_count = 已知重量g / (当前fsr_adc_raw - fsr_zero_adc)
+hx711_g_per_count = 已知重量g / (当前hx711_raw - hx711_zero_raw)
 ```
 
 4. 把结果写入：
 
 ```c
-g_sensor_state.fsr_g_per_count
+g_sensor_state.hx711_g_per_count
 ```
 
-FSR402 受受力面积、安装结构和材料回弹影响很大，建议只把它当作估算重量或压力趋势显示。
+如果放上砝码后 `weight_g` 变成 0 或方向相反，说明传感器受力方向或接线让计数反向，可以把 `hx711_g_per_count` 写成负值。
 
 ### 6.9 蓝牙遥控调试
 
@@ -1070,7 +1072,9 @@ APP 使用流程：
 7. 左侧摇杆上下控制前进/后退，松开后速度自动归零。
 8. 右侧摇杆左右控制左转/右转，松开后转向自动归零。
 9. 中间区域会同步显示车上 OLED 的四行内容。
-10. 点击中间下方的 `EMERGENCY STOP` 发送 `RUN 0`。
+10. 点击右上角 `调试` 切换到 PID 调试界面。
+11. 调试界面上半屏显示当前控制环的目标值和实际值双波形，下半屏通过 `速度环`、`角度环`、`转向环` 三个按钮切换 Kp/Ki/Kd 滑杆。
+12. 点击中间下方的 `EMERGENCY STOP` 发送 `RUN 0`。
 
 APP 控制对应命令：
 
@@ -1085,11 +1089,23 @@ APP 控制对应命令：
 | 右摇杆向右 | `TURN 负值` |
 | 右摇杆松开 | `TURN 0` |
 | 速度归零 | `STOP` |
+| 调试界面速度环滑杆 | `PID SPD Kp Ki Kd` |
+| 调试界面角度环滑杆 | `PID ANG Kp Ki Kd` |
+| 调试界面转向环滑杆 | `PID TURN Kp Ki Kd` |
+| 清 PID 历史 | `PIDRST` |
 
 STM32 每隔约 500ms 会通过蓝牙回传一行 OLED 数据：
 
 ```text
-OLED Temp:25.0 C|Humi:60 %|Weight:120 g|ADC:1234
+OLED Temp:25.0 C|Humi:60 %|Weight:120 g|HX:123456
+```
+
+同时会回传三行 PID 调试数据，APP 调试界面的波形图用这些数据绘制目标值和实际值：
+
+```text
+DBG SPD 0.500 0.420
+DBG ANG 1.250 1.100
+DBG TURN 0.200 0.180
 ```
 
 APP 收到后会拆成四行显示，尽量和车上 OLED 内容保持一致：
@@ -1098,7 +1114,7 @@ APP 收到后会拆成四行显示，尽量和车上 OLED 内容保持一致：
 Temp: 25.0 C
 Humi: 60 %
 Weight: 120 g
-ADC: 1234
+HX: 123456
 ```
 
 如果车的前进后退方向反了，优先改 APP 里发送的 `SPD` 正负号；如果左右转向反了，优先改 APP 里发送的 `TURN` 正负号。不要再动已经调好的角度环、电机方向和编码器方向。
@@ -1262,8 +1278,8 @@ g_balance_debug.clear_fault_request = 1;
 | `0x00000000` | 无故障 | 正常 |
 | `0x00000001` | DHT11 初始化失败 | 检查 PC14、供电和上拉 |
 | `0x00000002` | DHT11 读取失败 | 检查数据线、上拉、电源稳定性 |
-| `0x00000004` | FSR ADC 初始化失败 | 检查 ADC1/PA2 配置 |
-| `0x00000008` | FSR ADC 读取失败 | 检查 PA2 输入和 ADC |
+| `0x00000004` | HX711 初始化失败 | 检查 PA2/PB12 配置 |
+| `0x00000008` | HX711 读取失败 | 检查 DT/DOUT、SCK、供电和共地 |
 | `0x00000010` | OLED 初始化失败 | 检查 PB10/PB11、地址 0x3C、供电 |
 | `0x00000020` | OLED 刷新失败 | 检查 I2C 总线和 OLED 接触 |
 
@@ -1415,7 +1431,7 @@ HEX/BIN 只适合烧录，不适合看变量。
 - `stm32f1xx_hal_msp.c` 中是否仍保留 SWD，不要禁用 SWD
 - `Makefile` 是否仍包含 `Core/Src/balance_car/*.c`
 - `Makefile` 是否仍包含 `Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c`
-- `stm32f1xx_hal_conf.h` 是否启用了 `HAL_I2C_MODULE_ENABLED`、`HAL_TIM_MODULE_ENABLED`、`HAL_ADC_MODULE_ENABLED` 和 `HAL_UART_MODULE_ENABLED`
+- `stm32f1xx_hal_conf.h` 是否启用了 `HAL_I2C_MODULE_ENABLED`、`HAL_TIM_MODULE_ENABLED` 和 `HAL_UART_MODULE_ENABLED`
 - OLED 是否仍接在 PB10/PB11 的 I2C2
 - PB6/PB7 是否仍留给 USART1 重映射蓝牙遥控，不要再接实体按键
 

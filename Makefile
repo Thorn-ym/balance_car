@@ -42,7 +42,7 @@ Core/Src/balance_car/app_sensors.c \
 Core/Src/balance_car/display_ui.c \
 Core/Src/balance_car/dht11.c \
 Core/Src/balance_car/encoder_hal.c \
-Core/Src/balance_car/fsr_adc.c \
+Core/Src/balance_car/hx711.c \
 Core/Src/balance_car/i2c_bus.c \
 Core/Src/balance_car/motor_tb6612.c \
 Core/Src/balance_car/mpu6050_hal.c \
@@ -66,8 +66,6 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_exti.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_adc_ex.c \
 Core/Src/system_stm32f1xx.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c  

@@ -1,4 +1,4 @@
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -41,8 +41,8 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
   30      00
   31 0029 000000   		.align	2
   32              	.LC3:
-  33 002c 4144433A 		.ascii	"ADC: %u\000"
-  33      20257500 
+  33 002c 48583A20 		.ascii	"HX: %ld\000"
+  33      256C6400 
   34              		.section	.text.DisplayUi_UpdateText,"ax",%progbits
   35              		.align	1
   36              		.syntax unified
@@ -58,7 +58,7 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
    6:Core/Src/balance_car/display_ui.c **** 
    7:Core/Src/balance_car/display_ui.c **** #define DISPLAY_TEXT_PERIOD_MS     500U
    8:Core/Src/balance_car/display_ui.c **** #define DISPLAY_PAGE_PERIOD_MS     20U
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 2
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 2
 
 
    9:Core/Src/balance_car/display_ui.c **** 
@@ -118,7 +118,7 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
   65 000e FFF7FEFF 		bl	__aeabi_f2iz
   66              	.LVL1:
   67 0012 0446     		mov	r4, r0
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 3
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 3
 
 
   68              	.LVL2:
@@ -150,7 +150,7 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
   89 002e E317     		asrs	r3, r4, #31
   90 0030 C3EBA203 		rsb	r3, r3, r2, asr #2
   91 0034 002C     		cmp	r4, #0
-  92 0036 40DB     		blt	.L5
+  92 0036 3FDB     		blt	.L5
   93              		.loc 1 44 11 discriminator 2 view .LVU13
   94 0038 2449     		ldr	r1, .L6+8
   95 003a 81FB0421 		smull	r2, r1, r1, r4
@@ -178,7 +178,7 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
  114              		.loc 1 47 5 view .LVU16
  115              		.loc 1 47 75 is_stmt 0 view .LVU17
  116 0062 184C     		ldr	r4, .L6
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 4
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 4
 
 
  117              	.LVL10:
@@ -222,298 +222,297 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
  151 009a FFF7FEFF 		bl	Oled_WriteString
  152              	.LVL16:
   52:Core/Src/balance_car/display_ui.c **** 
-  53:Core/Src/balance_car/display_ui.c ****     (void)snprintf(line, sizeof(line), "ADC: %u", (unsigned)g_sensor_state.fsr_adc_raw);
+  53:Core/Src/balance_car/display_ui.c ****     (void)snprintf(line, sizeof(line), "HX: %ld", (long)g_sensor_state.hx711_raw);
  153              		.loc 1 53 5 view .LVU25
- 154              		.loc 1 53 75 is_stmt 0 view .LVU26
- 155 009e 2389     		ldrh	r3, [r4, #8]
+ 154              		.loc 1 53 71 is_stmt 0 view .LVU26
+ 155 009e A368     		ldr	r3, [r4, #8]
  156              		.loc 1 53 11 view .LVU27
- 157 00a0 9BB2     		uxth	r3, r3
- 158 00a2 0E4A     		ldr	r2, .L6+24
- 159 00a4 1621     		movs	r1, #22
- 160 00a6 02A8     		add	r0, sp, #8
- 161 00a8 FFF7FEFF 		bl	snprintf
- 162              	.LVL17:
+ 157 00a0 0E4A     		ldr	r2, .L6+24
+ 158 00a2 1621     		movs	r1, #22
+ 159 00a4 02A8     		add	r0, sp, #8
+ 160 00a6 FFF7FEFF 		bl	snprintf
+ 161              	.LVL17:
   54:Core/Src/balance_car/display_ui.c ****     Oled_WriteString(0U, 6U, line);
- 163              		.loc 1 54 5 is_stmt 1 view .LVU28
- 164 00ac 02AA     		add	r2, sp, #8
- 165 00ae 0621     		movs	r1, #6
- 166 00b0 0020     		movs	r0, #0
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 5
+ 162              		.loc 1 54 5 is_stmt 1 view .LVU28
+ 163 00aa 02AA     		add	r2, sp, #8
+ 164 00ac 0621     		movs	r1, #6
+ 165 00ae 0020     		movs	r0, #0
+ 166 00b0 FFF7FEFF 		bl	Oled_WriteString
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 5
 
 
- 167 00b2 FFF7FEFF 		bl	Oled_WriteString
- 168              	.LVL18:
+ 167              	.LVL18:
   55:Core/Src/balance_car/display_ui.c **** }
- 169              		.loc 1 55 1 is_stmt 0 view .LVU29
- 170 00b6 09B0     		add	sp, sp, #36
- 171              	.LCFI2:
- 172              		.cfi_remember_state
- 173              		.cfi_def_cfa_offset 12
- 174              		@ sp needed
- 175 00b8 30BD     		pop	{r4, r5, pc}
- 176              	.LVL19:
- 177              	.L5:
- 178              	.LCFI3:
- 179              		.cfi_restore_state
+ 168              		.loc 1 55 1 is_stmt 0 view .LVU29
+ 169 00b4 09B0     		add	sp, sp, #36
+ 170              	.LCFI2:
+ 171              		.cfi_remember_state
+ 172              		.cfi_def_cfa_offset 12
+ 173              		@ sp needed
+ 174 00b6 30BD     		pop	{r4, r5, pc}
+ 175              	.LVL19:
+ 176              	.L5:
+ 177              	.LCFI3:
+ 178              		.cfi_restore_state
   44:Core/Src/balance_car/display_ui.c ****     Oled_WriteString(0U, 0U, line);
- 180              		.loc 1 44 92 discriminator 1 view .LVU30
- 181 00ba 03EB8302 		add	r2, r3, r3, lsl #2
+ 179              		.loc 1 44 92 discriminator 1 view .LVU30
+ 180 00b8 03EB8302 		add	r2, r3, r3, lsl #2
   44:Core/Src/balance_car/display_ui.c ****     Oled_WriteString(0U, 0U, line);
- 182              		.loc 1 44 11 discriminator 1 view .LVU31
- 183 00be C4EB4202 		rsb	r2, r4, r2, lsl #1
- 184 00c2 C3E7     		b	.L3
- 185              	.L7:
- 186              		.align	2
- 187              	.L6:
- 188 00c4 00000000 		.word	g_sensor_state
- 189 00c8 00002041 		.word	1092616192
- 190 00cc 67666666 		.word	1717986919
- 191 00d0 00000000 		.word	.LC0
- 192 00d4 10000000 		.word	.LC1
- 193 00d8 1C000000 		.word	.LC2
- 194 00dc 2C000000 		.word	.LC3
- 195              		.cfi_endproc
- 196              	.LFE69:
- 198              		.section	.text.DisplayUi_Init,"ax",%progbits
- 199              		.align	1
- 200              		.global	DisplayUi_Init
- 201              		.syntax unified
- 202              		.thumb
- 203              		.thumb_func
- 205              	DisplayUi_Init:
- 206              	.LFB68:
+ 181              		.loc 1 44 11 discriminator 1 view .LVU31
+ 182 00bc C4EB4202 		rsb	r2, r4, r2, lsl #1
+ 183 00c0 C4E7     		b	.L3
+ 184              	.L7:
+ 185 00c2 00BF     		.align	2
+ 186              	.L6:
+ 187 00c4 00000000 		.word	g_sensor_state
+ 188 00c8 00002041 		.word	1092616192
+ 189 00cc 67666666 		.word	1717986919
+ 190 00d0 00000000 		.word	.LC0
+ 191 00d4 10000000 		.word	.LC1
+ 192 00d8 1C000000 		.word	.LC2
+ 193 00dc 2C000000 		.word	.LC3
+ 194              		.cfi_endproc
+ 195              	.LFE69:
+ 197              		.section	.text.DisplayUi_Init,"ax",%progbits
+ 198              		.align	1
+ 199              		.global	DisplayUi_Init
+ 200              		.syntax unified
+ 201              		.thumb
+ 202              		.thumb_func
+ 204              	DisplayUi_Init:
+ 205              	.LFB68:
   14:Core/Src/balance_car/display_ui.c ****     HAL_StatusTypeDef status = Oled_Init();
- 207              		.loc 1 14 1 is_stmt 1 view -0
- 208              		.cfi_startproc
- 209              		@ args = 0, pretend = 0, frame = 0
- 210              		@ frame_needed = 0, uses_anonymous_args = 0
- 211 0000 38B5     		push	{r3, r4, r5, lr}
- 212              	.LCFI4:
- 213              		.cfi_def_cfa_offset 16
- 214              		.cfi_offset 3, -16
- 215              		.cfi_offset 4, -12
- 216              		.cfi_offset 5, -8
- 217              		.cfi_offset 14, -4
+ 206              		.loc 1 14 1 is_stmt 1 view -0
+ 207              		.cfi_startproc
+ 208              		@ args = 0, pretend = 0, frame = 0
+ 209              		@ frame_needed = 0, uses_anonymous_args = 0
+ 210 0000 38B5     		push	{r3, r4, r5, lr}
+ 211              	.LCFI4:
+ 212              		.cfi_def_cfa_offset 16
+ 213              		.cfi_offset 3, -16
+ 214              		.cfi_offset 4, -12
+ 215              		.cfi_offset 5, -8
+ 216              		.cfi_offset 14, -4
   15:Core/Src/balance_car/display_ui.c **** 
- 218              		.loc 1 15 5 view .LVU33
+ 217              		.loc 1 15 5 view .LVU33
   15:Core/Src/balance_car/display_ui.c **** 
- 219              		.loc 1 15 32 is_stmt 0 view .LVU34
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 6
+ 218              		.loc 1 15 32 is_stmt 0 view .LVU34
+ 219 0002 FFF7FEFF 		bl	Oled_Init
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 6
 
 
- 220 0002 FFF7FEFF 		bl	Oled_Init
- 221              	.LVL20:
+ 220              	.LVL20:
   17:Core/Src/balance_car/display_ui.c ****         AppSensors_SetFault(SENSOR_FAULT_OLED_INIT);
- 222              		.loc 1 17 5 is_stmt 1 view .LVU35
+ 221              		.loc 1 17 5 is_stmt 1 view .LVU35
   17:Core/Src/balance_car/display_ui.c ****         AppSensors_SetFault(SENSOR_FAULT_OLED_INIT);
- 223              		.loc 1 17 8 is_stmt 0 view .LVU36
- 224 0006 0546     		mov	r5, r0
- 225 0008 D0B9     		cbnz	r0, .L12
+ 222              		.loc 1 17 8 is_stmt 0 view .LVU36
+ 223 0006 0546     		mov	r5, r0
+ 224 0008 D0B9     		cbnz	r0, .L12
   26:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_ready = 1U;
- 226              		.loc 1 26 5 is_stmt 1 view .LVU37
- 227 000a 1020     		movs	r0, #16
- 228              	.LVL21:
+ 225              		.loc 1 26 5 is_stmt 1 view .LVU37
+ 226 000a 1020     		movs	r0, #16
+ 227              	.LVL21:
   26:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_ready = 1U;
- 229              		.loc 1 26 5 is_stmt 0 view .LVU38
- 230 000c FFF7FEFF 		bl	AppSensors_ClearFault
- 231              	.LVL22:
+ 228              		.loc 1 26 5 is_stmt 0 view .LVU38
+ 229 000c FFF7FEFF 		bl	AppSensors_ClearFault
+ 230              	.LVL22:
   27:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_addr_7bit = Oled_GetAddress7Bit();
- 232              		.loc 1 27 5 is_stmt 1 view .LVU39
+ 231              		.loc 1 27 5 is_stmt 1 view .LVU39
   27:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_addr_7bit = Oled_GetAddress7Bit();
- 233              		.loc 1 27 31 is_stmt 0 view .LVU40
- 234 0010 144C     		ldr	r4, .L13
- 235 0012 0123     		movs	r3, #1
- 236 0014 A377     		strb	r3, [r4, #30]
+ 232              		.loc 1 27 31 is_stmt 0 view .LVU40
+ 233 0010 144C     		ldr	r4, .L13
+ 234 0012 0123     		movs	r3, #1
+ 235 0014 A377     		strb	r3, [r4, #30]
   28:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 237              		.loc 1 28 5 is_stmt 1 view .LVU41
+ 236              		.loc 1 28 5 is_stmt 1 view .LVU41
   28:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 238              		.loc 1 28 37 is_stmt 0 view .LVU42
- 239 0016 FFF7FEFF 		bl	Oled_GetAddress7Bit
- 240              	.LVL23:
+ 237              		.loc 1 28 37 is_stmt 0 view .LVU42
+ 238 0016 FFF7FEFF 		bl	Oled_GetAddress7Bit
+ 239              	.LVL23:
   28:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 241              		.loc 1 28 35 discriminator 1 view .LVU43
- 242 001a E077     		strb	r0, [r4, #31]
+ 240              		.loc 1 28 35 discriminator 1 view .LVU43
+ 241 001a E077     		strb	r0, [r4, #31]
   29:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 243              		.loc 1 29 5 is_stmt 1 view .LVU44
+ 242              		.loc 1 29 5 is_stmt 1 view .LVU44
   29:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 244              		.loc 1 29 38 is_stmt 0 view .LVU45
- 245 001c FFF7FEFF 		bl	Oled_GetProbeMask
- 246              	.LVL24:
+ 243              		.loc 1 29 38 is_stmt 0 view .LVU45
+ 244 001c FFF7FEFF 		bl	Oled_GetProbeMask
+ 245              	.LVL24:
   29:Core/Src/balance_car/display_ui.c ****     g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 247              		.loc 1 29 36 discriminator 1 view .LVU46
- 248 0020 84F82000 		strb	r0, [r4, #32]
+ 246              		.loc 1 29 36 discriminator 1 view .LVU46
+ 247 0020 84F82000 		strb	r0, [r4, #32]
   30:Core/Src/balance_car/display_ui.c ****     s_next_text_ms = HAL_GetTick();
- 249              		.loc 1 30 5 is_stmt 1 view .LVU47
+ 248              		.loc 1 30 5 is_stmt 1 view .LVU47
   30:Core/Src/balance_car/display_ui.c ****     s_next_text_ms = HAL_GetTick();
- 250              		.loc 1 30 37 is_stmt 0 view .LVU48
- 251 0024 FFF7FEFF 		bl	Oled_GetFailStep
- 252              	.LVL25:
+ 249              		.loc 1 30 37 is_stmt 0 view .LVU48
+ 250 0024 FFF7FEFF 		bl	Oled_GetFailStep
+ 251              	.LVL25:
   30:Core/Src/balance_car/display_ui.c ****     s_next_text_ms = HAL_GetTick();
- 253              		.loc 1 30 35 discriminator 1 view .LVU49
- 254 0028 84F82100 		strb	r0, [r4, #33]
+ 252              		.loc 1 30 35 discriminator 1 view .LVU49
+ 253 0028 84F82100 		strb	r0, [r4, #33]
   31:Core/Src/balance_car/display_ui.c ****     s_next_page_ms = HAL_GetTick();
- 255              		.loc 1 31 5 is_stmt 1 view .LVU50
+ 254              		.loc 1 31 5 is_stmt 1 view .LVU50
   31:Core/Src/balance_car/display_ui.c ****     s_next_page_ms = HAL_GetTick();
- 256              		.loc 1 31 22 is_stmt 0 view .LVU51
- 257 002c FFF7FEFF 		bl	HAL_GetTick
- 258              	.LVL26:
+ 255              		.loc 1 31 22 is_stmt 0 view .LVU51
+ 256 002c FFF7FEFF 		bl	HAL_GetTick
+ 257              	.LVL26:
   31:Core/Src/balance_car/display_ui.c ****     s_next_page_ms = HAL_GetTick();
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 7
+ 258              		.loc 1 31 20 discriminator 1 view .LVU52
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 7
 
 
- 259              		.loc 1 31 20 discriminator 1 view .LVU52
- 260 0030 0D4B     		ldr	r3, .L13+4
- 261 0032 1860     		str	r0, [r3]
+ 259 0030 0D4B     		ldr	r3, .L13+4
+ 260 0032 1860     		str	r0, [r3]
   32:Core/Src/balance_car/display_ui.c ****     return HAL_OK;
- 262              		.loc 1 32 5 is_stmt 1 view .LVU53
+ 261              		.loc 1 32 5 is_stmt 1 view .LVU53
   32:Core/Src/balance_car/display_ui.c ****     return HAL_OK;
- 263              		.loc 1 32 22 is_stmt 0 view .LVU54
- 264 0034 FFF7FEFF 		bl	HAL_GetTick
- 265              	.LVL27:
+ 262              		.loc 1 32 22 is_stmt 0 view .LVU54
+ 263 0034 FFF7FEFF 		bl	HAL_GetTick
+ 264              	.LVL27:
   32:Core/Src/balance_car/display_ui.c ****     return HAL_OK;
- 266              		.loc 1 32 20 discriminator 1 view .LVU55
- 267 0038 0C4B     		ldr	r3, .L13+8
- 268 003a 1860     		str	r0, [r3]
+ 265              		.loc 1 32 20 discriminator 1 view .LVU55
+ 266 0038 0C4B     		ldr	r3, .L13+8
+ 267 003a 1860     		str	r0, [r3]
   33:Core/Src/balance_car/display_ui.c **** }
- 269              		.loc 1 33 5 is_stmt 1 view .LVU56
- 270              	.L10:
+ 268              		.loc 1 33 5 is_stmt 1 view .LVU56
+ 269              	.L10:
   34:Core/Src/balance_car/display_ui.c **** 
- 271              		.loc 1 34 1 is_stmt 0 view .LVU57
- 272 003c 2846     		mov	r0, r5
- 273 003e 38BD     		pop	{r3, r4, r5, pc}
- 274              	.LVL28:
- 275              	.L12:
+ 270              		.loc 1 34 1 is_stmt 0 view .LVU57
+ 271 003c 2846     		mov	r0, r5
+ 272 003e 38BD     		pop	{r3, r4, r5, pc}
+ 273              	.LVL28:
+ 274              	.L12:
   18:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_ready = 0U;
- 276              		.loc 1 18 9 is_stmt 1 view .LVU58
- 277 0040 1020     		movs	r0, #16
- 278              	.LVL29:
+ 275              		.loc 1 18 9 is_stmt 1 view .LVU58
+ 276 0040 1020     		movs	r0, #16
+ 277              	.LVL29:
   18:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_ready = 0U;
- 279              		.loc 1 18 9 is_stmt 0 view .LVU59
- 280 0042 FFF7FEFF 		bl	AppSensors_SetFault
- 281              	.LVL30:
+ 278              		.loc 1 18 9 is_stmt 0 view .LVU59
+ 279 0042 FFF7FEFF 		bl	AppSensors_SetFault
+ 280              	.LVL30:
   19:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_addr_7bit = Oled_GetAddress7Bit();
- 282              		.loc 1 19 9 is_stmt 1 view .LVU60
+ 281              		.loc 1 19 9 is_stmt 1 view .LVU60
   19:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_addr_7bit = Oled_GetAddress7Bit();
- 283              		.loc 1 19 35 is_stmt 0 view .LVU61
- 284 0046 074C     		ldr	r4, .L13
- 285 0048 0023     		movs	r3, #0
- 286 004a A377     		strb	r3, [r4, #30]
+ 282              		.loc 1 19 35 is_stmt 0 view .LVU61
+ 283 0046 074C     		ldr	r4, .L13
+ 284 0048 0023     		movs	r3, #0
+ 285 004a A377     		strb	r3, [r4, #30]
   20:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 287              		.loc 1 20 9 is_stmt 1 view .LVU62
+ 286              		.loc 1 20 9 is_stmt 1 view .LVU62
   20:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 288              		.loc 1 20 41 is_stmt 0 view .LVU63
- 289 004c FFF7FEFF 		bl	Oled_GetAddress7Bit
- 290              	.LVL31:
+ 287              		.loc 1 20 41 is_stmt 0 view .LVU63
+ 288 004c FFF7FEFF 		bl	Oled_GetAddress7Bit
+ 289              	.LVL31:
   20:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_probe_mask = Oled_GetProbeMask();
- 291              		.loc 1 20 39 discriminator 1 view .LVU64
- 292 0050 E077     		strb	r0, [r4, #31]
+ 290              		.loc 1 20 39 discriminator 1 view .LVU64
+ 291 0050 E077     		strb	r0, [r4, #31]
   21:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 293              		.loc 1 21 9 is_stmt 1 view .LVU65
+ 292              		.loc 1 21 9 is_stmt 1 view .LVU65
   21:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 294              		.loc 1 21 42 is_stmt 0 view .LVU66
- 295 0052 FFF7FEFF 		bl	Oled_GetProbeMask
- 296              	.LVL32:
+ 293              		.loc 1 21 42 is_stmt 0 view .LVU66
+ 294 0052 FFF7FEFF 		bl	Oled_GetProbeMask
+ 295              	.LVL32:
   21:Core/Src/balance_car/display_ui.c ****         g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 297              		.loc 1 21 40 discriminator 1 view .LVU67
- 298 0056 84F82000 		strb	r0, [r4, #32]
+ 296              		.loc 1 21 40 discriminator 1 view .LVU67
+ 297 0056 84F82000 		strb	r0, [r4, #32]
   22:Core/Src/balance_car/display_ui.c ****         return status;
- 299              		.loc 1 22 9 is_stmt 1 view .LVU68
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 8
+ 298              		.loc 1 22 9 is_stmt 1 view .LVU68
+  22:Core/Src/balance_car/display_ui.c ****         return status;
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 8
 
 
+ 299              		.loc 1 22 41 is_stmt 0 view .LVU69
+ 300 005a FFF7FEFF 		bl	Oled_GetFailStep
+ 301              	.LVL33:
   22:Core/Src/balance_car/display_ui.c ****         return status;
- 300              		.loc 1 22 41 is_stmt 0 view .LVU69
- 301 005a FFF7FEFF 		bl	Oled_GetFailStep
- 302              	.LVL33:
-  22:Core/Src/balance_car/display_ui.c ****         return status;
- 303              		.loc 1 22 39 discriminator 1 view .LVU70
- 304 005e 84F82100 		strb	r0, [r4, #33]
+ 302              		.loc 1 22 39 discriminator 1 view .LVU70
+ 303 005e 84F82100 		strb	r0, [r4, #33]
   23:Core/Src/balance_car/display_ui.c ****     }
- 305              		.loc 1 23 9 is_stmt 1 view .LVU71
+ 304              		.loc 1 23 9 is_stmt 1 view .LVU71
   23:Core/Src/balance_car/display_ui.c ****     }
- 306              		.loc 1 23 16 is_stmt 0 view .LVU72
- 307 0062 EBE7     		b	.L10
- 308              	.L14:
- 309              		.align	2
- 310              	.L13:
- 311 0064 00000000 		.word	g_sensor_state
- 312 0068 00000000 		.word	s_next_text_ms
- 313 006c 00000000 		.word	s_next_page_ms
- 314              		.cfi_endproc
- 315              	.LFE68:
- 317              		.section	.text.DisplayUi_Background,"ax",%progbits
- 318              		.align	1
- 319              		.global	DisplayUi_Background
- 320              		.syntax unified
- 321              		.thumb
- 322              		.thumb_func
- 324              	DisplayUi_Background:
- 325              	.LFB70:
+ 305              		.loc 1 23 16 is_stmt 0 view .LVU72
+ 306 0062 EBE7     		b	.L10
+ 307              	.L14:
+ 308              		.align	2
+ 309              	.L13:
+ 310 0064 00000000 		.word	g_sensor_state
+ 311 0068 00000000 		.word	s_next_text_ms
+ 312 006c 00000000 		.word	s_next_page_ms
+ 313              		.cfi_endproc
+ 314              	.LFE68:
+ 316              		.section	.text.DisplayUi_Background,"ax",%progbits
+ 317              		.align	1
+ 318              		.global	DisplayUi_Background
+ 319              		.syntax unified
+ 320              		.thumb
+ 321              		.thumb_func
+ 323              	DisplayUi_Background:
+ 324              	.LFB70:
   56:Core/Src/balance_car/display_ui.c **** 
   57:Core/Src/balance_car/display_ui.c **** void DisplayUi_Background(void)
   58:Core/Src/balance_car/display_ui.c **** {
- 326              		.loc 1 58 1 is_stmt 1 view -0
- 327              		.cfi_startproc
- 328              		@ args = 0, pretend = 0, frame = 0
- 329              		@ frame_needed = 0, uses_anonymous_args = 0
+ 325              		.loc 1 58 1 is_stmt 1 view -0
+ 326              		.cfi_startproc
+ 327              		@ args = 0, pretend = 0, frame = 0
+ 328              		@ frame_needed = 0, uses_anonymous_args = 0
   59:Core/Src/balance_car/display_ui.c ****     uint32_t now;
- 330              		.loc 1 59 5 view .LVU74
+ 329              		.loc 1 59 5 view .LVU74
   60:Core/Src/balance_car/display_ui.c **** 
   61:Core/Src/balance_car/display_ui.c ****     if (g_sensor_state.oled_ready == 0U) {
- 331              		.loc 1 61 5 view .LVU75
- 332              		.loc 1 61 23 is_stmt 0 view .LVU76
- 333 0000 174B     		ldr	r3, .L26
- 334 0002 9B7F     		ldrb	r3, [r3, #30]	@ zero_extendqisi2
- 335              		.loc 1 61 8 view .LVU77
- 336 0004 03B9     		cbnz	r3, .L23
- 337 0006 7047     		bx	lr
- 338              	.L23:
+ 330              		.loc 1 61 5 view .LVU75
+ 331              		.loc 1 61 23 is_stmt 0 view .LVU76
+ 332 0000 174B     		ldr	r3, .L26
+ 333 0002 9B7F     		ldrb	r3, [r3, #30]	@ zero_extendqisi2
+ 334              		.loc 1 61 8 view .LVU77
+ 335 0004 03B9     		cbnz	r3, .L23
+ 336 0006 7047     		bx	lr
+ 337              	.L23:
   58:Core/Src/balance_car/display_ui.c ****     uint32_t now;
- 339              		.loc 1 58 1 view .LVU78
- 340 0008 10B5     		push	{r4, lr}
- 341              	.LCFI5:
- 342              		.cfi_def_cfa_offset 8
- 343              		.cfi_offset 4, -8
- 344              		.cfi_offset 14, -4
+ 338              		.loc 1 58 1 view .LVU78
+ 339 0008 10B5     		push	{r4, lr}
+ 340              	.LCFI5:
+ 341              		.cfi_def_cfa_offset 8
+ 342              		.cfi_offset 4, -8
+ 343              		.cfi_offset 14, -4
   62:Core/Src/balance_car/display_ui.c ****         return;
   63:Core/Src/balance_car/display_ui.c ****     }
   64:Core/Src/balance_car/display_ui.c **** 
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 9
-
-
   65:Core/Src/balance_car/display_ui.c ****     now = HAL_GetTick();
- 345              		.loc 1 65 5 is_stmt 1 view .LVU79
- 346              		.loc 1 65 11 is_stmt 0 view .LVU80
- 347 000a FFF7FEFF 		bl	HAL_GetTick
- 348              	.LVL34:
- 349 000e 0446     		mov	r4, r0
- 350              	.LVL35:
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 9
+
+
+ 344              		.loc 1 65 5 is_stmt 1 view .LVU79
+ 345              		.loc 1 65 11 is_stmt 0 view .LVU80
+ 346 000a FFF7FEFF 		bl	HAL_GetTick
+ 347              	.LVL34:
+ 348 000e 0446     		mov	r4, r0
+ 349              	.LVL35:
   66:Core/Src/balance_car/display_ui.c ****     if ((int32_t)(now - s_next_text_ms) >= 0) {
- 351              		.loc 1 66 5 is_stmt 1 view .LVU81
- 352              		.loc 1 66 23 is_stmt 0 view .LVU82
- 353 0010 144B     		ldr	r3, .L26+4
- 354 0012 1B68     		ldr	r3, [r3]
- 355 0014 C31A     		subs	r3, r0, r3
- 356              		.loc 1 66 8 view .LVU83
- 357 0016 002B     		cmp	r3, #0
- 358 0018 05DA     		bge	.L24
- 359              	.LVL36:
- 360              	.L17:
+ 350              		.loc 1 66 5 is_stmt 1 view .LVU81
+ 351              		.loc 1 66 23 is_stmt 0 view .LVU82
+ 352 0010 144B     		ldr	r3, .L26+4
+ 353 0012 1B68     		ldr	r3, [r3]
+ 354 0014 C31A     		subs	r3, r0, r3
+ 355              		.loc 1 66 8 view .LVU83
+ 356 0016 002B     		cmp	r3, #0
+ 357 0018 05DA     		bge	.L24
+ 358              	.LVL36:
+ 359              	.L17:
   67:Core/Src/balance_car/display_ui.c ****         s_next_text_ms = now + DISPLAY_TEXT_PERIOD_MS;
   68:Core/Src/balance_car/display_ui.c ****         DisplayUi_UpdateText();
   69:Core/Src/balance_car/display_ui.c ****     }
   70:Core/Src/balance_car/display_ui.c **** 
   71:Core/Src/balance_car/display_ui.c ****     if ((int32_t)(now - s_next_page_ms) >= 0) {
- 361              		.loc 1 71 5 is_stmt 1 view .LVU84
- 362              		.loc 1 71 23 is_stmt 0 view .LVU85
- 363 001a 134B     		ldr	r3, .L26+8
- 364 001c 1B68     		ldr	r3, [r3]
- 365 001e E31A     		subs	r3, r4, r3
- 366              		.loc 1 71 8 view .LVU86
- 367 0020 002B     		cmp	r3, #0
- 368 0022 07DA     		bge	.L25
- 369              	.LVL37:
- 370              	.L15:
+ 360              		.loc 1 71 5 is_stmt 1 view .LVU84
+ 361              		.loc 1 71 23 is_stmt 0 view .LVU85
+ 362 001a 134B     		ldr	r3, .L26+8
+ 363 001c 1B68     		ldr	r3, [r3]
+ 364 001e E31A     		subs	r3, r4, r3
+ 365              		.loc 1 71 8 view .LVU86
+ 366 0020 002B     		cmp	r3, #0
+ 367 0022 07DA     		bge	.L25
+ 368              	.LVL37:
+ 369              	.L15:
   72:Core/Src/balance_car/display_ui.c ****         s_next_page_ms = now + DISPLAY_PAGE_PERIOD_MS;
   73:Core/Src/balance_car/display_ui.c ****         if (Oled_RefreshNextPage() != HAL_OK) {
   74:Core/Src/balance_car/display_ui.c ****             AppSensors_SetFault(SENSOR_FAULT_OLED_REFRESH);
@@ -524,130 +523,130 @@ ARM GAS  D:\TMP\cc7GMIhu.s 			page 1
   79:Core/Src/balance_car/display_ui.c ****         }
   80:Core/Src/balance_car/display_ui.c ****     }
   81:Core/Src/balance_car/display_ui.c **** }
- 371              		.loc 1 81 1 view .LVU87
- 372 0024 10BD     		pop	{r4, pc}
- 373              	.LVL38:
- 374              	.L24:
+ 370              		.loc 1 81 1 view .LVU87
+ 371 0024 10BD     		pop	{r4, pc}
+ 372              	.LVL38:
+ 373              	.L24:
   67:Core/Src/balance_car/display_ui.c ****         s_next_text_ms = now + DISPLAY_TEXT_PERIOD_MS;
- 375              		.loc 1 67 9 is_stmt 1 view .LVU88
+ 374              		.loc 1 67 9 is_stmt 1 view .LVU88
   67:Core/Src/balance_car/display_ui.c ****         s_next_text_ms = now + DISPLAY_TEXT_PERIOD_MS;
- 376              		.loc 1 67 30 is_stmt 0 view .LVU89
- 377 0026 00F5FA73 		add	r3, r0, #500
+ 375              		.loc 1 67 30 is_stmt 0 view .LVU89
+ 376 0026 00F5FA73 		add	r3, r0, #500
   67:Core/Src/balance_car/display_ui.c ****         s_next_text_ms = now + DISPLAY_TEXT_PERIOD_MS;
- 378              		.loc 1 67 24 view .LVU90
- 379 002a 0E4A     		ldr	r2, .L26+4
- 380 002c 1360     		str	r3, [r2]
+ 377              		.loc 1 67 24 view .LVU90
+ 378 002a 0E4A     		ldr	r2, .L26+4
+ 379 002c 1360     		str	r3, [r2]
   68:Core/Src/balance_car/display_ui.c ****     }
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 10
+ 380              		.loc 1 68 9 is_stmt 1 view .LVU91
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 10
 
 
- 381              		.loc 1 68 9 is_stmt 1 view .LVU91
- 382 002e FFF7FEFF 		bl	DisplayUi_UpdateText
- 383              	.LVL39:
+ 381 002e FFF7FEFF 		bl	DisplayUi_UpdateText
+ 382              	.LVL39:
   68:Core/Src/balance_car/display_ui.c ****     }
- 384              		.loc 1 68 9 is_stmt 0 view .LVU92
- 385 0032 F2E7     		b	.L17
- 386              	.L25:
+ 383              		.loc 1 68 9 is_stmt 0 view .LVU92
+ 384 0032 F2E7     		b	.L17
+ 385              	.L25:
   72:Core/Src/balance_car/display_ui.c ****         s_next_page_ms = now + DISPLAY_PAGE_PERIOD_MS;
- 387              		.loc 1 72 9 is_stmt 1 view .LVU93
+ 386              		.loc 1 72 9 is_stmt 1 view .LVU93
   72:Core/Src/balance_car/display_ui.c ****         s_next_page_ms = now + DISPLAY_PAGE_PERIOD_MS;
- 388              		.loc 1 72 30 is_stmt 0 view .LVU94
- 389 0034 1434     		adds	r4, r4, #20
- 390              	.LVL40:
+ 387              		.loc 1 72 30 is_stmt 0 view .LVU94
+ 388 0034 1434     		adds	r4, r4, #20
+ 389              	.LVL40:
   72:Core/Src/balance_car/display_ui.c ****         s_next_page_ms = now + DISPLAY_PAGE_PERIOD_MS;
- 391              		.loc 1 72 24 view .LVU95
- 392 0036 0C4B     		ldr	r3, .L26+8
- 393 0038 1C60     		str	r4, [r3]
+ 390              		.loc 1 72 24 view .LVU95
+ 391 0036 0C4B     		ldr	r3, .L26+8
+ 392 0038 1C60     		str	r4, [r3]
   73:Core/Src/balance_car/display_ui.c ****             AppSensors_SetFault(SENSOR_FAULT_OLED_REFRESH);
- 394              		.loc 1 73 9 is_stmt 1 view .LVU96
+ 393              		.loc 1 73 9 is_stmt 1 view .LVU96
   73:Core/Src/balance_car/display_ui.c ****             AppSensors_SetFault(SENSOR_FAULT_OLED_REFRESH);
- 395              		.loc 1 73 13 is_stmt 0 view .LVU97
- 396 003a FFF7FEFF 		bl	Oled_RefreshNextPage
- 397              	.LVL41:
+ 394              		.loc 1 73 13 is_stmt 0 view .LVU97
+ 395 003a FFF7FEFF 		bl	Oled_RefreshNextPage
+ 396              	.LVL41:
   73:Core/Src/balance_car/display_ui.c ****             AppSensors_SetFault(SENSOR_FAULT_OLED_REFRESH);
- 398              		.loc 1 73 12 discriminator 1 view .LVU98
- 399 003e 50B1     		cbz	r0, .L18
+ 397              		.loc 1 73 12 discriminator 1 view .LVU98
+ 398 003e 50B1     		cbz	r0, .L18
   74:Core/Src/balance_car/display_ui.c ****             g_sensor_state.oled_ready = 0U;
- 400              		.loc 1 74 13 is_stmt 1 view .LVU99
- 401 0040 2020     		movs	r0, #32
- 402 0042 FFF7FEFF 		bl	AppSensors_SetFault
- 403              	.LVL42:
+ 399              		.loc 1 74 13 is_stmt 1 view .LVU99
+ 400 0040 2020     		movs	r0, #32
+ 401 0042 FFF7FEFF 		bl	AppSensors_SetFault
+ 402              	.LVL42:
   75:Core/Src/balance_car/display_ui.c ****             g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 404              		.loc 1 75 13 view .LVU100
+ 403              		.loc 1 75 13 view .LVU100
   75:Core/Src/balance_car/display_ui.c ****             g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 405              		.loc 1 75 39 is_stmt 0 view .LVU101
- 406 0046 064C     		ldr	r4, .L26
- 407              	.LVL43:
+ 404              		.loc 1 75 39 is_stmt 0 view .LVU101
+ 405 0046 064C     		ldr	r4, .L26
+ 406              	.LVL43:
   75:Core/Src/balance_car/display_ui.c ****             g_sensor_state.oled_fail_step = Oled_GetFailStep();
- 408              		.loc 1 75 39 view .LVU102
- 409 0048 0023     		movs	r3, #0
- 410 004a A377     		strb	r3, [r4, #30]
+ 407              		.loc 1 75 39 view .LVU102
+ 408 0048 0023     		movs	r3, #0
+ 409 004a A377     		strb	r3, [r4, #30]
   76:Core/Src/balance_car/display_ui.c ****         } else {
- 411              		.loc 1 76 13 is_stmt 1 view .LVU103
+ 410              		.loc 1 76 13 is_stmt 1 view .LVU103
   76:Core/Src/balance_car/display_ui.c ****         } else {
- 412              		.loc 1 76 45 is_stmt 0 view .LVU104
- 413 004c FFF7FEFF 		bl	Oled_GetFailStep
- 414              	.LVL44:
+ 411              		.loc 1 76 45 is_stmt 0 view .LVU104
+ 412 004c FFF7FEFF 		bl	Oled_GetFailStep
+ 413              	.LVL44:
   76:Core/Src/balance_car/display_ui.c ****         } else {
- 415              		.loc 1 76 43 discriminator 1 view .LVU105
- 416 0050 84F82100 		strb	r0, [r4, #33]
- 417 0054 E6E7     		b	.L15
- 418              	.LVL45:
- 419              	.L18:
+ 414              		.loc 1 76 43 discriminator 1 view .LVU105
+ 415 0050 84F82100 		strb	r0, [r4, #33]
+ 416 0054 E6E7     		b	.L15
+ 417              	.LVL45:
+ 418              	.L18:
   78:Core/Src/balance_car/display_ui.c ****         }
- 420              		.loc 1 78 13 is_stmt 1 view .LVU106
- 421 0056 2020     		movs	r0, #32
- 422 0058 FFF7FEFF 		bl	AppSensors_ClearFault
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 11
+ 419              		.loc 1 78 13 is_stmt 1 view .LVU106
+ 420 0056 2020     		movs	r0, #32
+ 421 0058 FFF7FEFF 		bl	AppSensors_ClearFault
+ 422              	.LVL46:
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 11
 
 
- 423              	.LVL46:
- 424 005c E2E7     		b	.L15
- 425              	.L27:
- 426 005e 00BF     		.align	2
- 427              	.L26:
- 428 0060 00000000 		.word	g_sensor_state
- 429 0064 00000000 		.word	s_next_text_ms
- 430 0068 00000000 		.word	s_next_page_ms
- 431              		.cfi_endproc
- 432              	.LFE70:
- 434              		.section	.bss.s_next_page_ms,"aw",%nobits
- 435              		.align	2
- 438              	s_next_page_ms:
- 439 0000 00000000 		.space	4
- 440              		.section	.bss.s_next_text_ms,"aw",%nobits
- 441              		.align	2
- 444              	s_next_text_ms:
- 445 0000 00000000 		.space	4
- 446              		.text
- 447              	.Letext0:
- 448              		.file 2 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
- 449              		.file 3 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
- 450              		.file 4 "F:/Msys2/mingw64/lib/gcc/arm-none-eabi/13.3.0/include/stddef.h"
- 451              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 452              		.file 6 "Core/Inc/balance_car/app_sensors.h"
- 453              		.file 7 "Core/Inc/balance_car/oled_ssd1306.h"
- 454              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
- 455              		.file 9 "F:/Msys2/mingw64/arm-none-eabi/include/stdio.h"
-ARM GAS  D:\TMP\cc7GMIhu.s 			page 12
+ 423 005c E2E7     		b	.L15
+ 424              	.L27:
+ 425 005e 00BF     		.align	2
+ 426              	.L26:
+ 427 0060 00000000 		.word	g_sensor_state
+ 428 0064 00000000 		.word	s_next_text_ms
+ 429 0068 00000000 		.word	s_next_page_ms
+ 430              		.cfi_endproc
+ 431              	.LFE70:
+ 433              		.section	.bss.s_next_page_ms,"aw",%nobits
+ 434              		.align	2
+ 437              	s_next_page_ms:
+ 438 0000 00000000 		.space	4
+ 439              		.section	.bss.s_next_text_ms,"aw",%nobits
+ 440              		.align	2
+ 443              	s_next_text_ms:
+ 444 0000 00000000 		.space	4
+ 445              		.text
+ 446              	.Letext0:
+ 447              		.file 2 "C:/msys64/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 448              		.file 3 "C:/msys64/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 449              		.file 4 "C:/msys64/mingw64/lib/gcc/arm-none-eabi/13.3.0/include/stddef.h"
+ 450              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 451              		.file 6 "Core/Inc/balance_car/app_sensors.h"
+ 452              		.file 7 "Core/Inc/balance_car/oled_ssd1306.h"
+ 453              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 454              		.file 9 "C:/msys64/mingw64/arm-none-eabi/include/stdio.h"
+ARM GAS  C:\Users\future\AppData\Local\Temp\ccIqNpKp.s 			page 12
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 display_ui.c
-   D:\TMP\cc7GMIhu.s:22     .rodata.DisplayUi_UpdateText.str1.4:00000000 $d
-   D:\TMP\cc7GMIhu.s:35     .text.DisplayUi_UpdateText:00000000 $t
-   D:\TMP\cc7GMIhu.s:40     .text.DisplayUi_UpdateText:00000000 DisplayUi_UpdateText
-   D:\TMP\cc7GMIhu.s:188    .text.DisplayUi_UpdateText:000000c4 $d
-   D:\TMP\cc7GMIhu.s:199    .text.DisplayUi_Init:00000000 $t
-   D:\TMP\cc7GMIhu.s:205    .text.DisplayUi_Init:00000000 DisplayUi_Init
-   D:\TMP\cc7GMIhu.s:311    .text.DisplayUi_Init:00000064 $d
-   D:\TMP\cc7GMIhu.s:444    .bss.s_next_text_ms:00000000 s_next_text_ms
-   D:\TMP\cc7GMIhu.s:438    .bss.s_next_page_ms:00000000 s_next_page_ms
-   D:\TMP\cc7GMIhu.s:318    .text.DisplayUi_Background:00000000 $t
-   D:\TMP\cc7GMIhu.s:324    .text.DisplayUi_Background:00000000 DisplayUi_Background
-   D:\TMP\cc7GMIhu.s:428    .text.DisplayUi_Background:00000060 $d
-   D:\TMP\cc7GMIhu.s:435    .bss.s_next_page_ms:00000000 $d
-   D:\TMP\cc7GMIhu.s:441    .bss.s_next_text_ms:00000000 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:22     .rodata.DisplayUi_UpdateText.str1.4:00000000 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:35     .text.DisplayUi_UpdateText:00000000 $t
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:40     .text.DisplayUi_UpdateText:00000000 DisplayUi_UpdateText
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:187    .text.DisplayUi_UpdateText:000000c4 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:198    .text.DisplayUi_Init:00000000 $t
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:204    .text.DisplayUi_Init:00000000 DisplayUi_Init
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:310    .text.DisplayUi_Init:00000064 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:443    .bss.s_next_text_ms:00000000 s_next_text_ms
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:437    .bss.s_next_page_ms:00000000 s_next_page_ms
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:317    .text.DisplayUi_Background:00000000 $t
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:323    .text.DisplayUi_Background:00000000 DisplayUi_Background
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:427    .text.DisplayUi_Background:00000060 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:434    .bss.s_next_page_ms:00000000 $d
+C:\Users\future\AppData\Local\Temp\ccIqNpKp.s:440    .bss.s_next_text_ms:00000000 $d
 
 UNDEFINED SYMBOLS
 __aeabi_fmul
