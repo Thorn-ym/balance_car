@@ -22,6 +22,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "balance_car/raspi_link.h"
 #include "balance_car/remote_control.h"
 /* USER CODE END Includes */
 
@@ -200,6 +201,11 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
+
+void USART1_IRQHandler(void)
+{
+  RaspiLink_IRQHandler();
+}
 
 void USART3_IRQHandler(void)
 {

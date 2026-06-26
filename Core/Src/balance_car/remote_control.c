@@ -32,6 +32,8 @@ static char s_rx_line[REMOTE_LINE_MAX + 1U];
 static volatile uint8_t s_rx_index;
 static volatile uint8_t s_line_ready;
 static char s_parse_line[REMOTE_LINE_MAX + 1U];
+static char s_tx_line[96];
+static volatile uint8_t s_tx_busy;
 static uint32_t s_next_telemetry_ms;
 static uint32_t s_next_debug_ms;
 
@@ -105,6 +107,7 @@ HAL_StatusTypeDef RemoteControl_Init(void)
     memset((void *)&g_remote_state, 0, sizeof(g_remote_state));
     s_rx_index = 0U;
     s_line_ready = 0U;
+    s_tx_busy = 0U;
     s_next_telemetry_ms = HAL_GetTick() + REMOTE_TELEMETRY_PERIOD_MS;
     s_next_debug_ms = HAL_GetTick() + REMOTE_DEBUG_PERIOD_MS;
     status = RemoteControl_UartInit();
@@ -116,10 +119,17 @@ HAL_StatusTypeDef RemoteControl_Init(void)
 
 static void RemoteControl_SendLine(const char *line, int len)
 {
-    if (len <= 0) {
+    if (len <= 0 || s_tx_busy != 0U) {
         return;
     }
-    (void)HAL_UART_Transmit(&s_huart_remote, (uint8_t *)line, (uint16_t)len, 50U);
+    if (len >= (int)sizeof(s_tx_line)) {
+        len = (int)sizeof(s_tx_line) - 1;
+    }
+    memcpy(s_tx_line, line, (uint16_t)len);
+    s_tx_busy = 1U;
+    if (HAL_UART_Transmit_IT(&s_huart_remote, (uint8_t *)s_tx_line, (uint16_t)len) != HAL_OK) {
+        s_tx_busy = 0U;
+    }
 }
 
 static void RemoteControl_SendTelemetry(void)
@@ -464,12 +474,12 @@ void RemoteControl_IRQHandler(void)
     HAL_UART_IRQHandler(&s_huart_remote);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+uint8_t RemoteControl_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t ch;
 
     if (huart->Instance != REMOTE_UART) {
-        return;
+        return 0U;
     }
 
     ch = s_rx_byte;
@@ -477,7 +487,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     if (ch == '\r') {
         RemoteControl_StartReceive();
-        return;
+        return 1U;
     }
 
     if (ch == '\n') {
@@ -486,7 +496,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         s_line_ready = 1U;
         g_remote_state.command_ready = 1U;
         RemoteControl_StartReceive();
-        return;
+        return 1U;
     }
 
     if (s_rx_index < REMOTE_LINE_MAX) {
@@ -498,11 +508,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
 
     RemoteControl_StartReceive();
+    return 1U;
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+uint8_t RemoteControl_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance != REMOTE_UART) {
+        return 0U;
+    }
+    s_tx_busy = 0U;
+    return 1U;
+}
+
+uint8_t RemoteControl_ErrorCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == REMOTE_UART) {
+        s_tx_busy = 0U;
         RemoteControl_StartReceive();
+        return 1U;
     }
+    return 0U;
 }

@@ -46,7 +46,9 @@ Core/Src/balance_car/i2c_bus.c \
 Core/Src/balance_car/motor_tb6612.c \
 Core/Src/balance_car/mpu6050_hal.c \
 Core/Src/balance_car/pid.c \
+Core/Src/balance_car/raspi_link.c \
 Core/Src/balance_car/remote_control.c \
+Core/Src/balance_car/uart_dispatch.c \
 Core/Src/stm32f1xx_it.c \
 Core/Src/stm32f1xx_hal_msp.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \

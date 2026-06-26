@@ -74,7 +74,7 @@ MPU6050 单独使用 I2C1 的 PB8/PB9。
 | --- | --- | --- |
 | 运行指示灯 | PC13 | 最小系统板常见板载 LED，运行允许时点亮 |
 
-PB6/PB7 当前未作为实体按键使用。启停通过 Android APP 的 `START` / `EMERGENCY STOP`，或 Ozone 修改 `g_balance_debug.run_enable` 完成。PC13 指示灯跟随 `run_enable` 亮灭。
+PB6/PB7 当前用于树莓派 UART 通信，不再作为实体按键使用。启停通过 Android APP 的 `START` / `EMERGENCY STOP`、树莓派 `$BB` 控制帧，或 Ozone 修改 `g_balance_debug.run_enable` 完成。PC13 指示灯跟随 `run_enable` 亮灭。
 
 ### OLED 显示屏
 
@@ -97,6 +97,38 @@ OLED 已从当前固件中移除，不再初始化或刷新。PB10/PB11 已改�
 - 如果你的蓝牙模块已经改成 `115200`，需要把 `remote_control.c` 里的 `REMOTE_UART_BAUDRATE` 改成 `115200U`。
 - 很多 HC-05/HC-06 模块板的 `VCC` 可以接 5V，但串口电平仍建议按 3.3V 逻辑使用；如果模块 RXD 不耐 5V，需要确认电平安全。
 - 手机需要先在系统蓝牙设置里配对模块，常见配对码是 `1234` 或 `0000`。
+
+### 树莓派 UART 通信
+
+树莓派使用 USART1 重映射后的 PB6/PB7 与 STM32 通信。蓝牙仍保留在 USART3 PB10/PB11，二者互不复用。
+
+| STM32F103C8T6 | 树莓派 GPIO | 说明 |
+| --- | --- | --- |
+| PB6 / USART1_TX | GPIO15 / RXD，物理引脚 10 | STM32 发给树莓派 |
+| PB7 / USART1_RX | GPIO14 / TXD，物理引脚 8 | 树莓派发给 STM32 |
+| GND | GND | 必须共地 |
+
+串口参数为 `115200 8N1`。树莓派和 STM32 都是 3.3V 串口电平，只连接 TX/RX/GND，不要把树莓派 5V 接到 STM32 串口脚。
+
+Pi 下发文本帧格式：
+
+```text
+$BB,<seq>,<enable_motion>,<obstacle_stop>,<linear_x>,<angular_z>*<checksum>
+```
+
+`checksum` 为 `$` 和 `*` 之间所有 ASCII 字节的异或值，使用两位十六进制表示。合法帧会把 `linear_x` 按轮半径换算成内部轮速目标，再更新 `g_balance_debug.speed_target`；`angular_z` 会更新 `g_balance_debug.turn_target`。`enable_motion=0` 或 `obstacle_stop=1` 会立即停机并清零目标。超过 500ms 没收到合法帧时，STM32 会自动停机，防止保持旧命令。
+
+STM32 还会周期性回传里程计帧给树莓派：
+
+```text
+$BO,<seq>,<stamp_ms>,<x_m>,<y_m>,<yaw_rad>,<linear_x_mps>,<angular_z_rps>*<checksum>
+```
+
+当前实现默认每 50ms 发一次，浮点字段保留 4 位小数。`checksum` 只计算 `BO,...` 这一段 payload 的 ASCII 异或，不包括 `$`、`*` 和换行。字段含义是：
+
+- `x/y/yaw`：STM32 内部积分得到的位姿估计
+- `vx`：左右轮平均速度换算出的线速度
+- `wz`：MPU6050 Z 轴角速度换算值
 
 ### DHT11 温湿度模块
 
@@ -151,6 +183,8 @@ Core/Src/balance_car/
 | `i2c_bus.c/.h` | I2C1 总线初始化，MPU6050 使用 I2C1 |
 | `oled_ssd1306.c/.h` | OLED 驱动源码保留，但当前不参与编译 |
 | `remote_control.c/.h` | USART3 PB10/PB11 蓝牙遥控命令接收、解析、限幅和超时保护 |
+| `raspi_link.c/.h` | USART1 PB6/PB7 树莓派 `$BB` 控制帧接收、校验、解析和失联停机 |
+| `uart_dispatch.c` | HAL UART 全局回调分发，避免蓝牙和树莓派串口互相覆盖 |
 | `dht11.c/.h` | PC14 单总线读取 DHT11 温湿度 |
 | `hx711.c/.h` | PB12/PB13 读取 XFW-XH711/HX711 称重模块 |
 | `app_sensors.c/.h` | 温湿度、XH711 重量计算和 Ozone 状态变量 |
@@ -430,6 +464,71 @@ g_balance_state.angle
 - 如果松开 APP 方向键后车还继续走，优先看 `timeout_stop_enable` 是否为 1，以及 `timeout_count` 是否会增加。
 
 ### 5.6 三个 PID
+
+### 5.6 g_raspi_link_state
+
+这是树莓派 UART 链路的接收状态。调 Pi 到 STM32 的 `$BB` 控制帧时主要看它。
+
+| 变量 | 含义 |
+| --- | --- |
+| `link_active` | 1=最近 `timeout_ms` 内收到过有效 Pi 控制帧 |
+| `frame_ready` | 1=收到完整帧并等待后台解析，通常只会短暂出现 |
+| `parser_error` | 1=最近一次帧格式或校验错误 |
+| `obstacle_stop` | 最近一次有效帧的障碍急停标志 |
+| `rx_count` | USART1 PB7 收到的字节数 |
+| `valid_frame_count` | 有效 `$BB` 帧计数 |
+| `invalid_frame_count` | 无效帧计数 |
+| `checksum_error_count` | 校验失败计数 |
+| `timeout_count` | Pi 链路失联超时次数 |
+| `last_rx_ms` | 最近一次有效帧的系统毫秒时间 |
+| `last_tx_ms` | 最近一次成功发送 `$BO` 的系统毫秒时间 |
+| `last_seq` | 最近一次有效帧的序号 |
+| `odom_seq` | 最近一次发送的里程计序号 |
+| `fault_flags` | Pi 链路故障位 |
+| `linear_x_cmd` | 最近一次 Pi 线速度目标，单位 m/s，已经过限幅 |
+| `angular_z_cmd` | 最近一次 Pi 角速度目标，已经过限幅 |
+| `speed_target_rps` | `linear_x_cmd` 换算后的内部速度环目标，单位轮子输出轴转/秒 |
+| `speed_actual_rps` | 编码器测得的内部实际速度，单位轮子输出轴转/秒 |
+| `speed_actual_mps` | 编码器测得的实际线速度，单位 m/s |
+| `left_pwm_snapshot` | 最近一次记录的左电机 PWM |
+| `right_pwm_snapshot` | 最近一次记录的右电机 PWM |
+| `odom_x_m` | 回传给树莓派的里程计 X |
+| `odom_y_m` | 回传给树莓派的里程计 Y |
+| `odom_yaw_rad` | 回传给树莓派的里程计 yaw |
+| `odom_linear_x_mps` | 回传给树莓派的线速度 |
+| `odom_angular_z_rps` | 回传给树莓派的角速度 |
+| `last_frame` | 最近一次完整帧字符串 |
+| `last_tx_frame` | 最近一次发送给树莓派的 `$BO` 帧 |
+
+正常现象：
+
+- 串口助手或 Pi 发送 `$BB` 帧并带 `\n` 时，`rx_count` 应该增加。
+- 校验正确时，`valid_frame_count` 增加，`linear_x_cmd/angular_z_cmd` 更新。
+- `tx_count` 应该持续增长，`last_tx_frame` 会显示 `$BO,...`。
+- `enable_motion=0` 或 `obstacle_stop=1` 时，`g_balance_debug.run_enable` 变 0，速度和转向目标清零。
+- 超过 500ms 没收到有效帧时，`timeout_count` 增加，平衡车停机。
+
+### 5.7 g_raspi_link_debug
+
+这是树莓派 UART 链路的调试配置，可以在 Ozone 中临时修改。
+
+| 变量 | 含义 | 默认值 |
+| --- | --- | --- |
+| `enable` | 1=允许 Pi 控制帧改变目标，0=只接收不执行 | 1 |
+| `timeout_stop_enable` | 1=Pi 失联超时后自动停机 | 1 |
+| `allow_run_enable` | 1=合法 Pi 帧允许把 `run_enable` 置 1 | 1 |
+| `speed_limit` | Pi 线速度目标绝对值限幅 | 3.0 |
+| `turn_limit` | Pi 角速度目标绝对值限幅 | 2.0 |
+| `wheel_radius_m` | 用于把轮速换成线速度的轮半径，65mm 直径对应 0.0325m | 0.0325 |
+| `odom_angular_deadband_rps` | 里程计 yaw 积分角速度死区，小于该值按 0 处理 | 0.02 |
+| `timeout_ms` | Pi 链路失联超时时间，单位 ms | 500 |
+| `odom_period_ms` | `$BO` 里程计回传周期，单位 ms | 50 |
+
+第一次联调时可以把 `allow_run_enable` 设为 0，只观察 `linear_x_cmd`、`speed_target_rps`、`speed_actual_mps` 和 `left_pwm_snapshot/right_pwm_snapshot` 是否合理，确认车架空和控制方向正确后再允许 Pi 启动。65mm 轮径下，`linear_x=0.02m/s` 对应内部速度目标约 `0.098rps`。
+
+如果车完全静止但 `/odom` 的 yaw 缓慢漂移，先校准 `g_balance_debug.gyro_z_offset`，让 `g_balance_state.gyro_z_rate` 静止时接近 0；仍有轻微漂移时，可以适当调大 `g_raspi_link_debug.odom_angular_deadband_rps`。写 `g_raspi_link_debug.odom_reset_request = 1` 可以清零当前 `x/y/yaw`。
+
+### 5.8 三个 PID
 
 | PID | 作用 | 调试顺序 |
 | --- | --- | --- |
@@ -1418,6 +1517,20 @@ g_sensor_state.oled_fail_step
 | `0x00000008` | 命令格式错误 | 检查命令是否是 `RUN/SPD/TURN/CTL/STOP/PING`，并且是否带换行 |
 
 如果 `rx_count` 增加但 `valid_cmd_count` 不增加，通常是命令格式不对或没有发送 `\n`。
+
+`g_raspi_link_state.fault_flags` 是树莓派 UART 链路故障位。
+
+| 值 | 含义 | 排查方向 |
+| --- | --- | --- |
+| `0x00000000` | 无故障 | 正常 |
+| `0x00000001` | USART1 初始化失败 | 检查 HAL UART、PB6/PB7 remap 和时钟配置 |
+| `0x00000002` | UART 接收中断重启失败 | 检查 USART1 中断和 HAL UART 状态 |
+| `0x00000004` | 帧过长溢出 | Pi 单帧超过 79 字节或没有及时换行 |
+| `0x00000008` | 帧格式错误 | 检查是否为 `$BB,<seq>,<enable>,<stop>,<linear>,<angular>*CS` |
+| `0x00000010` | 校验错误 | 检查 checksum 是否为 `$` 和 `*` 之间 ASCII 字节异或 |
+| `0x00000020` | Pi 链路失联超时 | 检查 Pi 是否持续发送有效帧、波特率是否为 115200 |
+
+如果 `rx_count` 增加但 `valid_frame_count` 不增加，优先检查是否带 `\n`、checksum 是否正确、TX/RX 是否接反。
 
 ## 9. 脱离 Ozone 后自启动
 
