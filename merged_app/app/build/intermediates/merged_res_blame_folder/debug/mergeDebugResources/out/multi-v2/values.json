@@ -4,7 +4,7 @@
             "outputFile": "com.balancecar.bluetoothremote.app-mergeDebugResources-2:/values/values.xml",
             "map": [
                 {
-                    "source": "F:\\STM32CubeMX\\project\\balance_car\\balance_car_bluetooth\\balance_car\\merged_app\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "F:\\STM32CubeMX\\project\\balance_buletooth2_PCB\\balance_car\\merged_app\\app\\src\\main\\res\\values\\styles.xml",
                     "from": {
                         "startLines": "1",
                         "startColumns": "4",

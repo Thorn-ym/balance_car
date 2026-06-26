@@ -1,7 +1,7 @@
-com.balancecar.bluetoothremote.app-pngs-0 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\build\generated\res\pngs\debug
-com.balancecar.bluetoothremote.app-resValues-1 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\build\generated\res\resValues\debug
-com.balancecar.bluetoothremote.app-packageDebugResources-2 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
-com.balancecar.bluetoothremote.app-packageDebugResources-3 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
-com.balancecar.bluetoothremote.app-debug-4 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\build\intermediates\merged_res\debug\mergeDebugResources
-com.balancecar.bluetoothremote.app-debug-5 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\src\debug\res
-com.balancecar.bluetoothremote.app-main-6 F:\STM32CubeMX\project\balance_car\balance_car_bluetooth\balance_car\merged_app\app\src\main\res
+com.balancecar.bluetoothremote.app-pngs-0 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\build\generated\res\pngs\debug
+com.balancecar.bluetoothremote.app-resValues-1 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\build\generated\res\resValues\debug
+com.balancecar.bluetoothremote.app-packageDebugResources-2 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.balancecar.bluetoothremote.app-packageDebugResources-3 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.balancecar.bluetoothremote.app-debug-4 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.balancecar.bluetoothremote.app-debug-5 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\src\debug\res
+com.balancecar.bluetoothremote.app-main-6 F:\STM32CubeMX\project\balance_buletooth2_PCB\balance_car\merged_app\app\src\main\res

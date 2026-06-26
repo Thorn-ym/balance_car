@@ -9,6 +9,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.pm.PackageManager;
 import android.content.pm.ActivityInfo;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -82,6 +83,8 @@ public class MainActivity extends Activity {
     private static final String[] LOOP_COMMANDS = {"SPD", "ANG", "TURN"};
     private static final String[] LOOP_LABELS = {"速度环", "角度环", "转向环"};
     private static final String[] PID_LABELS = {"Kp", "Ki", "Kd"};
+    private static final String PREFS_NAME = "balance_car_app_state";
+    private static final String PREF_SELECTED_LOOP = "selected_loop";
     private static final float[][] PID_MAX_DEFAULTS = {
         {3.0f, 2.0f, 1.0f},
         {30.0f, 2.0f, 20.0f},
@@ -106,10 +109,14 @@ public class MainActivity extends Activity {
     private TextView commandText;
     private LinearLayout bodyContainer;
     private Button screenSwitchButton;
+    private Button connectButton;
     private TelemetryDisplayView telemetryView;
     private DebugWaveView debugWaveView;
     private final float[][] waveTargets = new float[3][WAVE_POINTS];
     private final float[][] waveActuals = new float[3][WAVE_POINTS];
+    private final int[] waveSampleCounts = new int[3];
+    private final float[] latestWaveTargets = new float[3];
+    private final float[] latestWaveActuals = new float[3];
     private final float[] manualWaveScales = {0.25f, 5.0f, 0.25f};
     private final float[][] pidValues = new float[3][3];
     private final float[][] pidMaxValues = new float[3][3];
@@ -119,6 +126,15 @@ public class MainActivity extends Activity {
     private boolean running;
     private boolean debugMode;
     private boolean waveAutoScale = true;
+    private volatile boolean bluetoothConnected;
+    private volatile boolean bluetoothConnecting;
+    private volatile int connectionToken;
+    private volatile int disconnectedColor = COLOR_CYAN;
+    private volatile String connectedDeviceName;
+    private volatile String connectedDeviceAddress;
+    private volatile String selectedDeviceAddress;
+    private volatile String pendingDeviceName;
+    private volatile String disconnectedMessage = "未连接";
     private int activeScreen = SCREEN_CONTROL;
     private int selectedLoop = LOOP_SPEED;
     private float currentSpeed;
@@ -155,7 +171,7 @@ public class MainActivity extends Activity {
             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        resetPidValues();
+        loadPidValues();
         setContentView(createUi());
         requestBluetoothPermission();
         loadPairedDevices();
@@ -179,13 +195,13 @@ public class MainActivity extends Activity {
         title.setTextColor(COLOR_TEXT);
 
         statusText = new TextView(this);
-        statusText.setText("未连接");
         statusText.setTextSize(13);
         statusText.setTextColor(COLOR_CYAN);
 
         deviceSpinner = new Spinner(this);
         deviceSpinner.setBackground(panelBackground(COLOR_PANEL_ALT));
         screenSwitchButton = button("调试", COLOR_PANEL_ALT, v -> toggleScreen());
+        connectButton = button("连接", COLOR_PURPLE, v -> connectSelectedDevice());
 
         if (portrait) {
             topBar.setOrientation(LinearLayout.VERTICAL);
@@ -202,7 +218,7 @@ public class MainActivity extends Activity {
             deviceRow.setGravity(Gravity.CENTER_VERTICAL);
             deviceRow.addView(deviceSpinner, new LinearLayout.LayoutParams(0, dp(44), 1f));
             deviceRow.addView(button("刷新", COLOR_PANEL_ALT, v -> loadPairedDevices()), compactButtonParams());
-            deviceRow.addView(button("连接", COLOR_PURPLE, v -> connectSelectedDevice()), compactButtonParams());
+            deviceRow.addView(connectButton, compactButtonParams());
             topBar.addView(deviceRow, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(48)));
@@ -211,7 +227,7 @@ public class MainActivity extends Activity {
             topBar.addView(statusText, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 0.75f));
             topBar.addView(deviceSpinner, new LinearLayout.LayoutParams(0, dp(44), 1.7f));
             topBar.addView(button("刷新", COLOR_PANEL_ALT, v -> loadPairedDevices()), smallButtonParams());
-            topBar.addView(button("连接", COLOR_PURPLE, v -> connectSelectedDevice()), smallButtonParams());
+            topBar.addView(connectButton, smallButtonParams());
             topBar.addView(screenSwitchButton, smallButtonParams());
         }
         root.addView(topBar);
@@ -228,6 +244,7 @@ public class MainActivity extends Activity {
         } else {
             showControlScreen(false);
         }
+        updateConnectionStatusUi();
         return root;
     }
 
@@ -455,6 +472,7 @@ public class MainActivity extends Activity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setContentView(createUi());
+        loadPairedDevices();
     }
 
     private LinearLayout createLoopTabs() {
@@ -465,6 +483,7 @@ public class MainActivity extends Activity {
             int color = selectedLoop == loop ? COLOR_PURPLE : COLOR_PANEL_ALT;
             Button tab = button(LOOP_LABELS[i], color, v -> {
                 selectedLoop = loop;
+                savePidValues();
                 showDebugScreen(false);
             });
             tabs.addView(tab, tallActionButtonParams());
@@ -496,9 +515,11 @@ public class MainActivity extends Activity {
         row.addView(name, new LinearLayout.LayoutParams(dp(56), LinearLayout.LayoutParams.WRAP_CONTENT));
 
         PidSliderView slider = new PidSliderView(this);
-        slider.setProgressFraction(valueToProgressFraction(selectedLoop, pidIndex, pidValues[selectedLoop][pidIndex]));
+        final int loop = selectedLoop;
+        slider.setProgressFraction(valueToProgressFraction(loop, pidIndex, pidValues[loop][pidIndex]));
         slider.setOnValueChangeListener((fraction, released) -> {
-            pidValues[selectedLoop][pidIndex] = fractionToValue(selectedLoop, pidIndex, fraction);
+            pidValues[loop][pidIndex] = fractionToValue(loop, pidIndex, fraction);
+            savePidValues();
             updatePidValueText(pidIndex);
             if (released) {
                 sendSelectedPid();
@@ -522,6 +543,51 @@ public class MainActivity extends Activity {
             System.arraycopy(PID_DEFAULTS[loop], 0, pidValues[loop], 0, PID_DEFAULTS[loop].length);
             System.arraycopy(PID_MAX_DEFAULTS[loop], 0, pidMaxValues[loop], 0, PID_MAX_DEFAULTS[loop].length);
         }
+    }
+
+    private void loadPidValues() {
+        resetPidValues();
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        selectedLoop = prefs.getInt(PREF_SELECTED_LOOP, LOOP_SPEED);
+        if (selectedLoop < LOOP_SPEED || selectedLoop > LOOP_TURN) {
+            selectedLoop = LOOP_SPEED;
+        }
+        for (int loop = 0; loop < PID_DEFAULTS.length; loop++) {
+            for (int pid = 0; pid < PID_LABELS.length; pid++) {
+                float max = prefs.getFloat(pidMaxKey(loop, pid), pidMaxValues[loop][pid]);
+                float value = prefs.getFloat(pidValueKey(loop, pid), pidValues[loop][pid]);
+                if (max <= 0.0f) {
+                    max = PID_MAX_DEFAULTS[loop][pid];
+                }
+                if (value < 0.0f) {
+                    value = 0.0f;
+                } else if (value > max) {
+                    value = max;
+                }
+                pidMaxValues[loop][pid] = max;
+                pidValues[loop][pid] = value;
+            }
+        }
+    }
+
+    private void savePidValues() {
+        SharedPreferences.Editor editor = getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit();
+        editor.putInt(PREF_SELECTED_LOOP, selectedLoop);
+        for (int loop = 0; loop < PID_DEFAULTS.length; loop++) {
+            for (int pid = 0; pid < PID_LABELS.length; pid++) {
+                editor.putFloat(pidValueKey(loop, pid), pidValues[loop][pid]);
+                editor.putFloat(pidMaxKey(loop, pid), pidMaxValues[loop][pid]);
+            }
+        }
+        editor.apply();
+    }
+
+    private String pidValueKey(int loop, int pid) {
+        return "pid_value_" + loop + "_" + pid;
+    }
+
+    private String pidMaxKey(int loop, int pid) {
+        return "pid_max_" + loop + "_" + pid;
     }
 
     private int valueToProgress(int loop, int pidIndex, float value) {
@@ -628,6 +694,7 @@ public class MainActivity extends Activity {
                 pidValues[selectedLoop][i] = next[i];
             }
         }
+        savePidValues();
         showDebugScreen(false);
     }
 
@@ -868,6 +935,7 @@ public class MainActivity extends Activity {
             names.add("未找到已配对设备");
         }
         deviceSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, names));
+        restoreSelectedDevice();
     }
 
     @SuppressLint("MissingPermission")
@@ -883,53 +951,149 @@ public class MainActivity extends Activity {
         }
 
         BluetoothDevice device = devices.get(deviceSpinner.getSelectedItemPosition());
-        statusText.setText("正在连接 " + device.getName());
+        selectedDeviceAddress = device.getAddress();
+        setConnectingState(deviceName(device));
         new Thread(() -> {
+            int token = connectionToken;
             try {
                 closeSocket();
                 BluetoothSocket nextSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
                 bluetoothAdapter.cancelDiscovery();
                 nextSocket.connect();
-                socket = nextSocket;
-                outputStream = socket.getOutputStream();
-                inputStream = socket.getInputStream();
-                startReceiveThread();
-                runOnUiThread(() -> statusText.setText("已连接 " + device.getName()));
+                synchronized (MainActivity.this) {
+                    socket = nextSocket;
+                    outputStream = socket.getOutputStream();
+                    inputStream = socket.getInputStream();
+                }
+                setConnectedState(deviceName(device), device.getAddress(), token);
+                startReceiveThread(token);
             } catch (IOException e) {
                 closeSocket();
-                runOnUiThread(() -> {
-                    statusText.setText("连接失败");
-                    toast("连接失败，请确认模块已配对且未被其他APP占用");
-                });
+                setDisconnectedState("连接失败", COLOR_RED, token);
+                runOnUiThread(() -> toast("连接失败，请确认模块已配对且未被其他APP占用"));
             }
         }).start();
     }
 
-    private void startReceiveThread() {
+    private void startReceiveThread(int token) {
         receiveThread = new Thread(() -> {
+            InputStream stream = inputStream;
             try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String received = line.trim();
                     runOnUiThread(() -> handleTelemetry(received));
                 }
             } catch (IOException ignored) {
-                runOnUiThread(() -> statusText.setText("连接已断开"));
+            } finally {
+                setDisconnectedState("连接已断开", COLOR_RED, token);
+                closeSocketForToken(token);
             }
         });
+        receiveThread.setName("BalanceCarBtRx");
         receiveThread.start();
     }
 
+    private void restoreSelectedDevice() {
+        if (deviceSpinner == null || selectedDeviceAddress == null) {
+            return;
+        }
+        for (int i = 0; i < devices.size(); i++) {
+            if (selectedDeviceAddress.equals(devices.get(i).getAddress())) {
+                deviceSpinner.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    private String deviceName(BluetoothDevice device) {
+        String name = device.getName();
+        return name == null || name.trim().isEmpty() ? device.getAddress() : name;
+    }
+
+    private synchronized boolean hasActiveConnection() {
+        return bluetoothConnected && outputStream != null && socket != null && socket.isConnected();
+    }
+
+    private synchronized void setConnectingState(String deviceName) {
+        connectionToken++;
+        bluetoothConnecting = true;
+        bluetoothConnected = false;
+        pendingDeviceName = deviceName;
+        disconnectedMessage = "未连接";
+        disconnectedColor = COLOR_CYAN;
+        updateConnectionStatusUi();
+    }
+
+    private synchronized void setConnectedState(String deviceName, String deviceAddress, int token) {
+        if (token != connectionToken) {
+            return;
+        }
+        bluetoothConnecting = false;
+        bluetoothConnected = true;
+        connectedDeviceName = deviceName;
+        connectedDeviceAddress = deviceAddress;
+        selectedDeviceAddress = deviceAddress;
+        pendingDeviceName = null;
+        runOnUiThread(this::updateConnectionStatusUi);
+    }
+
+    private synchronized void setDisconnectedState(String message, int color, int token) {
+        if (token != connectionToken) {
+            return;
+        }
+        bluetoothConnecting = false;
+        bluetoothConnected = false;
+        connectedDeviceName = null;
+        connectedDeviceAddress = null;
+        pendingDeviceName = null;
+        disconnectedMessage = message;
+        disconnectedColor = color;
+        runOnUiThread(this::updateConnectionStatusUi);
+    }
+
+    private void updateConnectionStatusUi() {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            runOnUiThread(this::updateConnectionStatusUi);
+            return;
+        }
+        if (statusText == null) {
+            return;
+        }
+        if (bluetoothConnected) {
+            statusText.setText("已连接 " + connectedDeviceName);
+            statusText.setTextColor(COLOR_GREEN);
+            if (connectButton != null) {
+                connectButton.setText("重连");
+            }
+            return;
+        }
+        if (bluetoothConnecting) {
+            statusText.setText("正在连接 " + pendingDeviceName);
+            statusText.setTextColor(COLOR_AMBER);
+            if (connectButton != null) {
+                connectButton.setText("连接中");
+            }
+            return;
+        }
+        statusText.setText(disconnectedMessage);
+        statusText.setTextColor(disconnectedColor);
+        if (connectButton != null) {
+            connectButton.setText("连接");
+        }
+    }
+
     private void handleTelemetry(String line) {
-        if (line.startsWith("DBG ")) {
-            handleDebugTelemetry(line.substring(4));
+        String cleanLine = line.trim();
+        if (cleanLine.startsWith("DBG")) {
+            handleDebugTelemetry(cleanLine.length() > 3 ? cleanLine.substring(3).trim() : "");
             return;
         }
-        if (!line.startsWith("OLED ")) {
+        if (!cleanLine.startsWith("OLED ")) {
             return;
         }
-        String payload = line.substring(5);
+        String payload = cleanLine.substring(5);
         String[] parts = payload.split("\\|");
         if (telemetryView != null) {
             telemetryView.setTelemetry(
@@ -941,11 +1105,11 @@ public class MainActivity extends Activity {
     }
 
     private void handleDebugTelemetry(String payload) {
-        String[] parts = payload.split("\\s+");
+        String[] parts = payload.trim().split("[\\s,;:=]+");
         if (parts.length < 3) {
             return;
         }
-        int loop = loopFromCommand(parts[0]);
+        int loop = loopFromCommand(parts[0].toUpperCase(Locale.US));
         if (loop < 0) {
             return;
         }
@@ -971,6 +1135,11 @@ public class MainActivity extends Activity {
         System.arraycopy(waveActuals[loop], 1, waveActuals[loop], 0, WAVE_POINTS - 1);
         waveTargets[loop][WAVE_POINTS - 1] = target;
         waveActuals[loop][WAVE_POINTS - 1] = actual;
+        latestWaveTargets[loop] = target;
+        latestWaveActuals[loop] = actual;
+        if (waveSampleCounts[loop] < WAVE_POINTS) {
+            waveSampleCounts[loop]++;
+        }
         if (debugWaveView != null) {
             debugWaveView.invalidate();
         }
@@ -981,19 +1150,28 @@ public class MainActivity extends Activity {
             commandText.setText("发送: " + command);
         }
         OutputStream out = outputStream;
-        if (out == null) {
+        if (out == null || !hasActiveConnection()) {
             if (showToastWhenDisconnected) {
                 toast("蓝牙未连接");
             }
+            updateConnectionStatusUi();
             return;
         }
         try {
             out.write((command + "\n").getBytes(StandardCharsets.UTF_8));
             out.flush();
         } catch (IOException e) {
-            statusText.setText("发送失败，连接已断开");
-            closeSocket();
+            int token = connectionToken;
+            setDisconnectedState("发送失败，连接已断开", COLOR_RED, token);
+            closeSocketForToken(token);
         }
+    }
+
+    private synchronized void closeSocketForToken(int token) {
+        if (token != connectionToken) {
+            return;
+        }
+        closeSocket();
     }
 
     private synchronized void closeSocket() {
@@ -1143,10 +1321,16 @@ public class MainActivity extends Activity {
             super.onDraw(canvas);
             float w = getWidth();
             float h = getHeight();
+            if (w <= 0.0f || h <= 0.0f) {
+                return;
+            }
             float left = dp(34);
             float top = dp(10);
             float right = w - dp(12);
             float bottom = h - dp(24);
+            if (right <= left + dp(20) || bottom <= top + dp(20)) {
+                return;
+            }
             RectF plot = new RectF(left, top, right, bottom);
 
             paint.setStyle(Paint.Style.FILL);
@@ -1158,6 +1342,7 @@ public class MainActivity extends Activity {
             float scale = waveScale(loop);
             drawWave(canvas, plot, waveTargets[loop], scale, COLOR_AMBER, 3.0f);
             drawWave(canvas, plot, waveActuals[loop], scale, COLOR_BLUE, 3.0f);
+            drawLatestMarkers(canvas, plot, scale);
 
             paint.setStyle(Paint.Style.FILL);
             paint.setTypeface(Typeface.DEFAULT_BOLD);
@@ -1168,6 +1353,15 @@ public class MainActivity extends Activity {
             paint.setColor(COLOR_BLUE);
             canvas.drawText("Actual", plot.left + dp(104), plot.top + dp(26), paint);
 
+            paint.setTextAlign(Paint.Align.LEFT);
+            paint.setTextSize(16.0f);
+            paint.setTypeface(Typeface.DEFAULT);
+            paint.setColor(COLOR_MUTED);
+            canvas.drawText(String.format(Locale.US,
+                "T %.3f  A %.3f",
+                latestWaveTargets[loop],
+                latestWaveActuals[loop]), plot.left + dp(10), plot.bottom - dp(8), paint);
+
             paint.setTextAlign(Paint.Align.RIGHT);
             paint.setTextSize(18.0f);
             paint.setColor(COLOR_MUTED);
@@ -1177,8 +1371,9 @@ public class MainActivity extends Activity {
 
             paint.setTextAlign(Paint.Align.RIGHT);
             paint.setTextSize(17.0f);
-            paint.setColor(waveAutoScale ? COLOR_PURPLE : COLOR_MUTED);
-            canvas.drawText(waveAutoScale ? "AUTO" : "MANUAL", plot.right - dp(10), plot.top + dp(26), paint);
+            paint.setColor(waveSampleCounts[loop] > 0 ? (waveAutoScale ? COLOR_PURPLE : COLOR_MUTED) : COLOR_AMBER);
+            canvas.drawText(waveSampleCounts[loop] > 0 ? (waveAutoScale ? "AUTO" : "MANUAL") : "NO DBG",
+                plot.right - dp(10), plot.top + dp(26), paint);
         }
 
         private void drawGrid(Canvas canvas, RectF plot) {
@@ -1197,6 +1392,11 @@ public class MainActivity extends Activity {
             paint.setStrokeWidth(2.0f);
             paint.setColor(COLOR_STROKE);
             canvas.drawRoundRect(plot, dp(8), dp(8), paint);
+
+            paint.setStrokeWidth(2.0f);
+            paint.setColor(Color.rgb(112, 122, 142));
+            float cy = plot.centerY();
+            canvas.drawLine(plot.left + dp(4), cy, plot.right - dp(4), cy, paint);
         }
 
         private float waveScale(int loop) {
@@ -1236,6 +1436,35 @@ public class MainActivity extends Activity {
             paint.setStrokeWidth(strokeWidth);
             paint.setColor(color);
             canvas.drawPath(path, paint);
+        }
+
+        private void drawLatestMarkers(Canvas canvas, RectF plot, float scale) {
+            if (waveSampleCounts[loop] <= 0) {
+                return;
+            }
+            float x = plot.right - dp(8);
+            drawMarker(canvas, x, valueToY(plot, latestWaveTargets[loop], scale), COLOR_AMBER);
+            drawMarker(canvas, x - dp(12), valueToY(plot, latestWaveActuals[loop], scale), COLOR_BLUE);
+        }
+
+        private void drawMarker(Canvas canvas, float x, float y, int color) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(color);
+            canvas.drawCircle(x, y, dp(4), paint);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(2.0f);
+            paint.setColor(Color.rgb(8, 10, 14));
+            canvas.drawCircle(x, y, dp(5), paint);
+        }
+
+        private float valueToY(RectF plot, float value, float scale) {
+            float normalized = value / scale;
+            if (normalized > 1.0f) {
+                normalized = 1.0f;
+            } else if (normalized < -1.0f) {
+                normalized = -1.0f;
+            }
+            return plot.centerY() - normalized * plot.height() * 0.46f;
         }
     }
 
