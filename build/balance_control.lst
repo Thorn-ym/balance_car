@@ -1,4 +1,4 @@
-ARM GAS  D:\TMP\cckbiAF2.s 			page 1
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -58,16 +58,16 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   30:Core/Src/balance_car/balance_control.c ****     .angle_offset = 4.5f,      /* Ozone: 竖直时调这个，让g_balance_state.angle接近0 */
   31:Core/Src/balance_car/balance_control.c ****     .fall_angle_limit = 40.0f, /* Ozone: 倒车保护阈值，超过后自动停机 */
   32:Core/Src/balance_car/balance_control.c **** };
-ARM GAS  D:\TMP\cckbiAF2.s 			page 2
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 2
 
 
   33:Core/Src/balance_car/balance_control.c **** 
   34:Core/Src/balance_car/balance_control.c **** volatile BalanceCarState_t g_balance_state = {0}; /* Ozone: 运行状态观察区，不建议手动
   35:Core/Src/balance_car/balance_control.c **** 
   36:Core/Src/balance_car/balance_control.c **** PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
-  37:Core/Src/balance_car/balance_control.c ****     .Kp = 19.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
-  38:Core/Src/balance_car/balance_control.c ****     .Ki = 0.0f,             /* 积分: 初调可先设0，最后再少量加 */
-  39:Core/Src/balance_car/balance_control.c ****     .Kd = 14.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
+  37:Core/Src/balance_car/balance_control.c ****     .Kp = 12.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
+  38:Core/Src/balance_car/balance_control.c ****     .Ki = 0.25f,             /* 积分: 初调可先设0，最后再少量加 */
+  39:Core/Src/balance_car/balance_control.c ****     .Kd = 8.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
   40:Core/Src/balance_car/balance_control.c ****     .OutMax = 100.0f,
   41:Core/Src/balance_car/balance_control.c ****     .OutMin = -100.0f,
   42:Core/Src/balance_car/balance_control.c ****     .OutOffset = 3.0f,      /* 电机死区补偿；初调可先设0 */
@@ -76,8 +76,8 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   45:Core/Src/balance_car/balance_control.c **** };
   46:Core/Src/balance_car/balance_control.c **** 
   47:Core/Src/balance_car/balance_control.c **** PID_t g_speed_pid = {       /* Ozone: 速度环，角度环稳定后再调 */
-  48:Core/Src/balance_car/balance_control.c ****     .Kp = 0.8f,
-  49:Core/Src/balance_car/balance_control.c ****     .Ki = 0.02f, 
+  48:Core/Src/balance_car/balance_control.c ****     .Kp = 0.60f,
+  49:Core/Src/balance_car/balance_control.c ****     .Ki = 0.07f, 
   50:Core/Src/balance_car/balance_control.c ****     .Kd = 0,
   51:Core/Src/balance_car/balance_control.c ****     .OutMax = 5.0f,
   52:Core/Src/balance_car/balance_control.c ****     .OutMin = -5.0f,
@@ -86,11 +86,11 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   55:Core/Src/balance_car/balance_control.c **** };
   56:Core/Src/balance_car/balance_control.c **** 
   57:Core/Src/balance_car/balance_control.c **** PID_t g_turn_pid = {        /* Ozone: 转向环，速度环稳定后最后调 */
-  58:Core/Src/balance_car/balance_control.c ****     .Kp = 0,
+  58:Core/Src/balance_car/balance_control.c ****     .Kp = 3,
   59:Core/Src/balance_car/balance_control.c ****     .Ki = 0,
   60:Core/Src/balance_car/balance_control.c ****     .Kd = 0.0f,
-  61:Core/Src/balance_car/balance_control.c ****     .OutMax = 3.0f,
-  62:Core/Src/balance_car/balance_control.c ****     .OutMin = -3.0f,
+  61:Core/Src/balance_car/balance_control.c ****     .OutMax = 5.0f,
+  62:Core/Src/balance_car/balance_control.c ****     .OutMin = -5.0f,
   63:Core/Src/balance_car/balance_control.c ****     .ErrorIntMax = 20.0f,
   64:Core/Src/balance_car/balance_control.c ****     .ErrorIntMin = -20.0f,
   65:Core/Src/balance_car/balance_control.c **** };
@@ -118,7 +118,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   87:Core/Src/balance_car/balance_control.c **** {
   88:Core/Src/balance_car/balance_control.c ****     GPIO_PinState led_state = (g_balance_debug.run_enable != 0U) ? RUN_LED_ON : RUN_LED_OFF;
   89:Core/Src/balance_car/balance_control.c ****     HAL_GPIO_WritePin(RUN_LED_PORT, RUN_LED_PIN, led_state);
-ARM GAS  D:\TMP\cckbiAF2.s 			page 3
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 3
 
 
   90:Core/Src/balance_car/balance_control.c **** }
@@ -178,7 +178,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   70 000a 0022     		movs	r2, #0
   71 000c 9A72     		strb	r2, [r3, #10]
  103:Core/Src/balance_car/balance_control.c **** }
-ARM GAS  D:\TMP\cckbiAF2.s 			page 4
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 4
 
 
   72              		.loc 1 103 1 view .LVU11
@@ -238,7 +238,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   97              		.loc 1 134 1 is_stmt 0 view .LVU13
   98 0000 10B5     		push	{r4, lr}
   99              	.LCFI0:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 5
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 5
 
 
  100              		.cfi_def_cfa_offset 8
@@ -298,7 +298,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  145              		.align	1
  146              		.syntax unified
  147              		.thumb
-ARM GAS  D:\TMP\cckbiAF2.s 			page 6
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 6
 
 
  148              		.thumb_func
@@ -358,7 +358,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   83:Core/Src/balance_car/balance_control.c **** }
  192              		.loc 1 83 5 view .LVU35
  193 0026 3246     		mov	r2, r6
-ARM GAS  D:\TMP\cckbiAF2.s 			page 7
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 7
 
 
  194 0028 2946     		mov	r1, r5
@@ -418,7 +418,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  243 0016 019B     		ldr	r3, [sp, #4]
  244              	.LBE10:
  107:Core/Src/balance_car/balance_control.c **** 
-ARM GAS  D:\TMP\cckbiAF2.s 			page 8
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 8
 
 
  245              		.loc 1 107 5 view .LVU43
@@ -478,7 +478,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  291              		.loc 1 88 5 view .LVU53
   88:Core/Src/balance_car/balance_control.c ****     HAL_GPIO_WritePin(RUN_LED_PORT, RUN_LED_PIN, led_state);
  292              		.loc 1 88 47 is_stmt 0 view .LVU54
-ARM GAS  D:\TMP\cckbiAF2.s 			page 9
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 9
 
 
  293 0002 054B     		ldr	r3, .L24
@@ -538,7 +538,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  344              		.thumb_func
  346              	BalanceCar_ResetPidAndOutputs:
  347              	.LFB71:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 10
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 10
 
 
  122:Core/Src/balance_car/balance_control.c ****     PID_Init(&g_angle_pid);
@@ -598,7 +598,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  131:Core/Src/balance_car/balance_control.c **** 
  388              		.loc 1 131 1 view .LVU75
  389 002e 08BD     		pop	{r3, pc}
-ARM GAS  D:\TMP\cckbiAF2.s 			page 11
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 11
 
 
  390              	.L31:
@@ -658,7 +658,7 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  437              	.LVL16:
  152:Core/Src/balance_car/balance_control.c **** }
  438              		.loc 1 152 1 is_stmt 0 view .LVU88
-ARM GAS  D:\TMP\cckbiAF2.s 			page 12
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 12
 
 
  439 001c 08BD     		pop	{r3, pc}
@@ -670,8 +670,8 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  445              	.LFE73:
  447              		.global	__aeabi_i2f
  448              		.global	__aeabi_fsub
- 449              		.global	__aeabi_fmul
- 450              		.global	__aeabi_fdiv
+ 449              		.global	__aeabi_fdiv
+ 450              		.global	__aeabi_fmul
  451              		.global	__aeabi_fadd
  452              		.section	.text.BalanceCar_RunAngleLoop,"ax",%progbits
  453              		.align	1
@@ -687,253 +687,226 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  461              		.cfi_startproc
  462              		@ args = 0, pretend = 0, frame = 16
  463              		@ frame_needed = 0, uses_anonymous_args = 0
- 464 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 464 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
  465              	.LCFI11:
- 466              		.cfi_def_cfa_offset 32
- 467              		.cfi_offset 4, -32
- 468              		.cfi_offset 5, -28
- 469              		.cfi_offset 6, -24
- 470              		.cfi_offset 7, -20
- 471              		.cfi_offset 8, -16
- 472              		.cfi_offset 9, -12
- 473              		.cfi_offset 10, -8
- 474              		.cfi_offset 14, -4
- 475 0004 84B0     		sub	sp, sp, #16
- 476              	.LCFI12:
- 477              		.cfi_def_cfa_offset 48
+ 466              		.cfi_def_cfa_offset 28
+ 467              		.cfi_offset 4, -28
+ 468              		.cfi_offset 5, -24
+ 469              		.cfi_offset 6, -20
+ 470              		.cfi_offset 7, -16
+ 471              		.cfi_offset 8, -12
+ 472              		.cfi_offset 9, -8
+ 473              		.cfi_offset 14, -4
+ 474 0004 85B0     		sub	sp, sp, #20
+ 475              	.LCFI12:
+ 476              		.cfi_def_cfa_offset 48
  156:Core/Src/balance_car/balance_control.c ****     Mpu6050Raw_t raw;
- 478              		.loc 1 156 5 view .LVU90
+ 477              		.loc 1 156 5 view .LVU90
  157:Core/Src/balance_car/balance_control.c **** 
  158:Core/Src/balance_car/balance_control.c ****     if (Mpu6050_ReadRaw(&raw) != HAL_OK) {
- 479              		.loc 1 158 5 view .LVU91
- 480              		.loc 1 158 9 is_stmt 0 view .LVU92
- 481 0006 01A8     		add	r0, sp, #4
- 482 0008 FFF7FEFF 		bl	Mpu6050_ReadRaw
- 483              	.LVL17:
- 484              		.loc 1 158 8 discriminator 1 view .LVU93
- 485 000c 0028     		cmp	r0, #0
- 486 000e 7DD1     		bne	.L47
+ 478              		.loc 1 158 5 view .LVU91
+ 479              		.loc 1 158 9 is_stmt 0 view .LVU92
+ 480 0006 01A8     		add	r0, sp, #4
+ 481 0008 FFF7FEFF 		bl	Mpu6050_ReadRaw
+ 482              	.LVL17:
+ 483              		.loc 1 158 8 discriminator 1 view .LVU93
+ 484 000c 0028     		cmp	r0, #0
+ 485 000e 6FD1     		bne	.L47
  159:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_MPU_READ);
  160:Core/Src/balance_car/balance_control.c ****         g_balance_state.imu_ready = 0U;
  161:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
  162:Core/Src/balance_car/balance_control.c ****         return;
  163:Core/Src/balance_car/balance_control.c ****     }
-ARM GAS  D:\TMP\cckbiAF2.s 			page 13
-
-
  164:Core/Src/balance_car/balance_control.c **** 
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 13
+
+
  165:Core/Src/balance_car/balance_control.c ****     g_balance_state.imu_ready = 1U;
- 487              		.loc 1 165 5 is_stmt 1 view .LVU94
- 488              		.loc 1 165 31 is_stmt 0 view .LVU95
- 489 0010 634C     		ldr	r4, .L48
- 490 0012 0123     		movs	r3, #1
- 491 0014 6372     		strb	r3, [r4, #9]
+ 486              		.loc 1 165 5 is_stmt 1 view .LVU94
+ 487              		.loc 1 165 31 is_stmt 0 view .LVU95
+ 488 0010 5C4C     		ldr	r4, .L48
+ 489 0012 0123     		movs	r3, #1
+ 490 0014 6372     		strb	r3, [r4, #9]
  166:Core/Src/balance_car/balance_control.c ****     g_balance_state.ax = raw.ax;
- 492              		.loc 1 166 5 is_stmt 1 view .LVU96
- 493              		.loc 1 166 29 is_stmt 0 view .LVU97
- 494 0016 BDF90480 		ldrsh	r8, [sp, #4]
- 495              		.loc 1 166 24 view .LVU98
- 496 001a A4F81080 		strh	r8, [r4, #16]	@ movhi
+ 491              		.loc 1 166 5 is_stmt 1 view .LVU96
+ 492              		.loc 1 166 29 is_stmt 0 view .LVU97
+ 493 0016 BDF90470 		ldrsh	r7, [sp, #4]
+ 494              		.loc 1 166 24 view .LVU98
+ 495 001a 2782     		strh	r7, [r4, #16]	@ movhi
  167:Core/Src/balance_car/balance_control.c ****     g_balance_state.ay = raw.ay;
- 497              		.loc 1 167 5 is_stmt 1 view .LVU99
- 498              		.loc 1 167 29 is_stmt 0 view .LVU100
- 499 001e BDF90630 		ldrsh	r3, [sp, #6]
- 500              		.loc 1 167 24 view .LVU101
- 501 0022 6382     		strh	r3, [r4, #18]	@ movhi
+ 496              		.loc 1 167 5 is_stmt 1 view .LVU99
+ 497              		.loc 1 167 29 is_stmt 0 view .LVU100
+ 498 001c BDF90630 		ldrsh	r3, [sp, #6]
+ 499              		.loc 1 167 24 view .LVU101
+ 500 0020 6382     		strh	r3, [r4, #18]	@ movhi
  168:Core/Src/balance_car/balance_control.c ****     g_balance_state.az = raw.az;
- 502              		.loc 1 168 5 is_stmt 1 view .LVU102
- 503              		.loc 1 168 29 is_stmt 0 view .LVU103
- 504 0024 BDF90870 		ldrsh	r7, [sp, #8]
- 505              		.loc 1 168 24 view .LVU104
- 506 0028 A782     		strh	r7, [r4, #20]	@ movhi
+ 501              		.loc 1 168 5 is_stmt 1 view .LVU102
+ 502              		.loc 1 168 29 is_stmt 0 view .LVU103
+ 503 0022 BDF90860 		ldrsh	r6, [sp, #8]
+ 504              		.loc 1 168 24 view .LVU104
+ 505 0026 A682     		strh	r6, [r4, #20]	@ movhi
  169:Core/Src/balance_car/balance_control.c ****     g_balance_state.gx = raw.gx;
- 507              		.loc 1 169 5 is_stmt 1 view .LVU105
- 508              		.loc 1 169 29 is_stmt 0 view .LVU106
- 509 002a BDF90A30 		ldrsh	r3, [sp, #10]
- 510              		.loc 1 169 24 view .LVU107
- 511 002e E382     		strh	r3, [r4, #22]	@ movhi
+ 506              		.loc 1 169 5 is_stmt 1 view .LVU105
+ 507              		.loc 1 169 29 is_stmt 0 view .LVU106
+ 508 0028 BDF90A30 		ldrsh	r3, [sp, #10]
+ 509              		.loc 1 169 24 view .LVU107
+ 510 002c E382     		strh	r3, [r4, #22]	@ movhi
  170:Core/Src/balance_car/balance_control.c ****     g_balance_state.gy = raw.gy;
- 512              		.loc 1 170 5 is_stmt 1 view .LVU108
- 513              		.loc 1 170 29 is_stmt 0 view .LVU109
- 514 0030 BDF90C00 		ldrsh	r0, [sp, #12]
- 515              		.loc 1 170 24 view .LVU110
- 516 0034 2083     		strh	r0, [r4, #24]	@ movhi
+ 511              		.loc 1 170 5 is_stmt 1 view .LVU108
+ 512              		.loc 1 170 29 is_stmt 0 view .LVU109
+ 513 002e BDF90C00 		ldrsh	r0, [sp, #12]
+ 514              		.loc 1 170 24 view .LVU110
+ 515 0032 2083     		strh	r0, [r4, #24]	@ movhi
  171:Core/Src/balance_car/balance_control.c ****     g_balance_state.gz = raw.gz;
- 517              		.loc 1 171 5 is_stmt 1 view .LVU111
- 518              		.loc 1 171 29 is_stmt 0 view .LVU112
- 519 0036 BDF90E90 		ldrsh	r9, [sp, #14]
- 520              		.loc 1 171 24 view .LVU113
- 521 003a A4F81A90 		strh	r9, [r4, #26]	@ movhi
+ 516              		.loc 1 171 5 is_stmt 1 view .LVU111
+ 517              		.loc 1 171 29 is_stmt 0 view .LVU112
+ 518 0034 BDF90E30 		ldrsh	r3, [sp, #14]
+ 519              		.loc 1 171 24 view .LVU113
+ 520 0038 6383     		strh	r3, [r4, #26]	@ movhi
  172:Core/Src/balance_car/balance_control.c **** 
  173:Core/Src/balance_car/balance_control.c ****     float gy_calibrated = (float)raw.gy - g_balance_debug.gyro_y_offset;
- 522              		.loc 1 173 5 is_stmt 1 view .LVU114
- 523              		.loc 1 173 27 is_stmt 0 view .LVU115
- 524 003e FFF7FEFF 		bl	__aeabi_i2f
- 525              	.LVL18:
- 526              		.loc 1 173 58 view .LVU116
- 527 0042 584E     		ldr	r6, .L48+4
- 528 0044 F168     		ldr	r1, [r6, #12]	@ float
- 529              		.loc 1 173 11 view .LVU117
- 530 0046 FFF7FEFF 		bl	__aeabi_fsub
- 531              	.LVL19:
- 532 004a 0546     		mov	r5, r0
- 533              	.LVL20:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 14
+ 521              		.loc 1 173 5 is_stmt 1 view .LVU114
+ 522              		.loc 1 173 27 is_stmt 0 view .LVU115
+ 523 003a FFF7FEFF 		bl	__aeabi_i2f
+ 524              	.LVL18:
+ 525              		.loc 1 173 58 view .LVU116
+ 526 003e DFF84881 		ldr	r8, .L48+4
+ 527 0042 D8F80C10 		ldr	r1, [r8, #12]	@ float
+ 528              		.loc 1 173 11 view .LVU117
+ 529 0046 FFF7FEFF 		bl	__aeabi_fsub
+ 530              	.LVL19:
+ 531 004a 0546     		mov	r5, r0
+ 532              	.LVL20:
+ 174:Core/Src/balance_car/balance_control.c ****     // float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 14
 
 
- 174:Core/Src/balance_car/balance_control.c ****     float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
- 534              		.loc 1 174 5 is_stmt 1 view .LVU118
- 535              		.loc 1 174 27 is_stmt 0 view .LVU119
- 536 004c 4846     		mov	r0, r9
- 537              	.LVL21:
- 538              		.loc 1 174 27 view .LVU120
- 539 004e FFF7FEFF 		bl	__aeabi_i2f
- 540              	.LVL22:
- 541              		.loc 1 174 58 view .LVU121
- 542 0052 3169     		ldr	r1, [r6, #16]	@ float
- 543              		.loc 1 174 11 view .LVU122
- 544 0054 FFF7FEFF 		bl	__aeabi_fsub
- 545              	.LVL23:
- 175:Core/Src/balance_car/balance_control.c ****     float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
- 546              		.loc 1 175 5 is_stmt 1 view .LVU123
- 547              		.loc 1 175 39 is_stmt 0 view .LVU124
- 548 0058 4FF06051 		mov	r1, #939524096
- 549 005c FFF7FEFF 		bl	__aeabi_fmul
- 550              	.LVL24:
- 551              		.loc 1 175 11 view .LVU125
- 552 0060 5149     		ldr	r1, .L48+8
- 553 0062 FFF7FEFF 		bl	__aeabi_fmul
- 554              	.LVL25:
- 555 0066 8146     		mov	r9, r0
- 556              	.LVL26:
+ 175:Core/Src/balance_car/balance_control.c ****     // float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
  176:Core/Src/balance_car/balance_control.c ****     float angle_acc = -atan2f((float)raw.ax, (float)raw.az) / PI_F * 180.0f;
- 557              		.loc 1 176 5 is_stmt 1 view .LVU126
- 558              		.loc 1 176 24 is_stmt 0 view .LVU127
- 559 0068 3846     		mov	r0, r7
- 560              	.LVL27:
- 561              		.loc 1 176 24 view .LVU128
- 562 006a FFF7FEFF 		bl	__aeabi_i2f
- 563              	.LVL28:
- 564 006e 0746     		mov	r7, r0
- 565 0070 4046     		mov	r0, r8
- 566 0072 FFF7FEFF 		bl	__aeabi_i2f
- 567              	.LVL29:
- 568 0076 3946     		mov	r1, r7
- 569 0078 FFF7FEFF 		bl	atan2f
- 570              	.LVL30:
- 571              		.loc 1 176 23 discriminator 1 view .LVU129
- 572 007c 00F10040 		add	r0, r0, #-2147483648
- 573              		.loc 1 176 61 discriminator 1 view .LVU130
- 574 0080 4A49     		ldr	r1, .L48+12
- 575 0082 FFF7FEFF 		bl	__aeabi_fdiv
- 576              	.LVL31:
- 577              		.loc 1 176 11 discriminator 1 view .LVU131
- 578 0086 4A49     		ldr	r1, .L48+16
- 579 0088 FFF7FEFF 		bl	__aeabi_fmul
- 580              	.LVL32:
+ 533              		.loc 1 176 5 is_stmt 1 view .LVU118
+ 534              		.loc 1 176 24 is_stmt 0 view .LVU119
+ 535 004c 3046     		mov	r0, r6
+ 536              	.LVL21:
+ 537              		.loc 1 176 24 view .LVU120
+ 538 004e FFF7FEFF 		bl	__aeabi_i2f
+ 539              	.LVL22:
+ 540 0052 0646     		mov	r6, r0
+ 541 0054 3846     		mov	r0, r7
+ 542 0056 FFF7FEFF 		bl	__aeabi_i2f
+ 543              	.LVL23:
+ 544 005a 3146     		mov	r1, r6
+ 545 005c FFF7FEFF 		bl	atan2f
+ 546              	.LVL24:
+ 547              		.loc 1 176 23 discriminator 1 view .LVU121
+ 548 0060 00F10040 		add	r0, r0, #-2147483648
+ 549              		.loc 1 176 61 discriminator 1 view .LVU122
+ 550 0064 4949     		ldr	r1, .L48+8
+ 551 0066 FFF7FEFF 		bl	__aeabi_fdiv
+ 552              	.LVL25:
+ 553              		.loc 1 176 11 discriminator 1 view .LVU123
+ 554 006a 4949     		ldr	r1, .L48+12
+ 555 006c FFF7FEFF 		bl	__aeabi_fmul
+ 556              	.LVL26:
  177:Core/Src/balance_car/balance_control.c ****     angle_acc += g_balance_debug.angle_offset;
- 581              		.loc 1 177 5 is_stmt 1 view .LVU132
- 582              		.loc 1 177 33 is_stmt 0 view .LVU133
- 583 008c B169     		ldr	r1, [r6, #24]	@ float
- 584              		.loc 1 177 15 view .LVU134
- 585 008e FFF7FEFF 		bl	__aeabi_fadd
- 586              	.LVL33:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 15
-
-
- 587              		.loc 1 177 15 view .LVU135
- 588 0092 8046     		mov	r8, r0
- 589              	.LVL34:
+ 557              		.loc 1 177 5 is_stmt 1 view .LVU124
+ 558              		.loc 1 177 33 is_stmt 0 view .LVU125
+ 559 0070 D8F81810 		ldr	r1, [r8, #24]	@ float
+ 560              		.loc 1 177 15 view .LVU126
+ 561 0074 FFF7FEFF 		bl	__aeabi_fadd
+ 562              	.LVL27:
+ 563              		.loc 1 177 15 view .LVU127
+ 564 0078 0746     		mov	r7, r0
+ 565              	.LVL28:
  178:Core/Src/balance_car/balance_control.c **** 
  179:Core/Src/balance_car/balance_control.c ****     float angle_gyro = s_angle + gy_calibrated / 32768.0f * 2000.0f * ANGLE_LOOP_PERIOD_S;
- 590              		.loc 1 179 5 is_stmt 1 view .LVU136
- 591              		.loc 1 179 48 is_stmt 0 view .LVU137
- 592 0094 4FF06051 		mov	r1, #939524096
- 593 0098 2846     		mov	r0, r5
- 594              	.LVL35:
- 595              		.loc 1 179 48 view .LVU138
- 596 009a FFF7FEFF 		bl	__aeabi_fmul
- 597              	.LVL36:
- 598              		.loc 1 179 59 view .LVU139
- 599 009e 4249     		ldr	r1, .L48+8
- 600 00a0 FFF7FEFF 		bl	__aeabi_fmul
- 601              	.LVL37:
- 602              		.loc 1 179 69 view .LVU140
- 603 00a4 4349     		ldr	r1, .L48+20
- 604 00a6 FFF7FEFF 		bl	__aeabi_fmul
- 605              	.LVL38:
- 606              		.loc 1 179 32 view .LVU141
- 607 00aa DFF80CA1 		ldr	r10, .L48+24
- 608              		.loc 1 179 11 view .LVU142
- 609 00ae DAF80010 		ldr	r1, [r10]	@ float
- 610 00b2 FFF7FEFF 		bl	__aeabi_fadd
- 611              	.LVL39:
- 612 00b6 0746     		mov	r7, r0
- 613              	.LVL40:
+ 566              		.loc 1 179 5 is_stmt 1 view .LVU128
+ 567              		.loc 1 179 48 is_stmt 0 view .LVU129
+ 568 007a 4FF06051 		mov	r1, #939524096
+ 569 007e 2846     		mov	r0, r5
+ 570              	.LVL29:
+ 571              		.loc 1 179 48 view .LVU130
+ 572 0080 FFF7FEFF 		bl	__aeabi_fmul
+ 573              	.LVL30:
+ 574              		.loc 1 179 59 view .LVU131
+ 575 0084 4349     		ldr	r1, .L48+16
+ 576 0086 FFF7FEFF 		bl	__aeabi_fmul
+ 577              	.LVL31:
+ 578              		.loc 1 179 69 view .LVU132
+ 579 008a 4349     		ldr	r1, .L48+20
+ 580 008c FFF7FEFF 		bl	__aeabi_fmul
+ 581              	.LVL32:
+ 582              		.loc 1 179 32 view .LVU133
+ 583 0090 DFF80891 		ldr	r9, .L48+24
+ 584              		.loc 1 179 11 view .LVU134
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 15
+
+
+ 585 0094 D9F80010 		ldr	r1, [r9]	@ float
+ 586 0098 FFF7FEFF 		bl	__aeabi_fadd
+ 587              	.LVL33:
+ 588 009c 0646     		mov	r6, r0
+ 589              	.LVL34:
  180:Core/Src/balance_car/balance_control.c ****     float alpha = 0.01f;
- 614              		.loc 1 180 5 is_stmt 1 view .LVU143
+ 590              		.loc 1 180 5 is_stmt 1 view .LVU135
  181:Core/Src/balance_car/balance_control.c ****     s_angle = alpha * angle_acc + (1.0f - alpha) * angle_gyro;
- 615              		.loc 1 181 5 view .LVU144
- 616              		.loc 1 181 21 is_stmt 0 view .LVU145
- 617 00b8 3E49     		ldr	r1, .L48+20
- 618 00ba 4046     		mov	r0, r8
- 619              	.LVL41:
- 620              		.loc 1 181 21 view .LVU146
- 621 00bc FFF7FEFF 		bl	__aeabi_fmul
- 622              	.LVL42:
- 623 00c0 0546     		mov	r5, r0
- 624              	.LVL43:
- 625              		.loc 1 181 50 view .LVU147
- 626 00c2 3E49     		ldr	r1, .L48+28
- 627 00c4 3846     		mov	r0, r7
- 628 00c6 FFF7FEFF 		bl	__aeabi_fmul
- 629              	.LVL44:
- 630 00ca 0146     		mov	r1, r0
- 631              		.loc 1 181 33 view .LVU148
- 632 00cc 2846     		mov	r0, r5
- 633 00ce FFF7FEFF 		bl	__aeabi_fadd
- 634              	.LVL45:
- 635 00d2 0546     		mov	r5, r0
- 636              		.loc 1 181 13 view .LVU149
- 637 00d4 CAF80000 		str	r0, [r10]	@ float
+ 591              		.loc 1 181 5 view .LVU136
+ 592              		.loc 1 181 21 is_stmt 0 view .LVU137
+ 593 009e 3E49     		ldr	r1, .L48+20
+ 594 00a0 3846     		mov	r0, r7
+ 595              	.LVL35:
+ 596              		.loc 1 181 21 view .LVU138
+ 597 00a2 FFF7FEFF 		bl	__aeabi_fmul
+ 598              	.LVL36:
+ 599 00a6 0546     		mov	r5, r0
+ 600              	.LVL37:
+ 601              		.loc 1 181 50 view .LVU139
+ 602 00a8 3D49     		ldr	r1, .L48+28
+ 603 00aa 3046     		mov	r0, r6
+ 604 00ac FFF7FEFF 		bl	__aeabi_fmul
+ 605              	.LVL38:
+ 606 00b0 0146     		mov	r1, r0
+ 607              		.loc 1 181 33 view .LVU140
+ 608 00b2 2846     		mov	r0, r5
+ 609 00b4 FFF7FEFF 		bl	__aeabi_fadd
+ 610              	.LVL39:
+ 611 00b8 0546     		mov	r5, r0
+ 612              		.loc 1 181 13 view .LVU141
+ 613 00ba C9F80000 		str	r0, [r9]	@ float
  182:Core/Src/balance_car/balance_control.c **** 
  183:Core/Src/balance_car/balance_control.c ****     g_balance_state.angle_acc = angle_acc;
-ARM GAS  D:\TMP\cckbiAF2.s 			page 16
-
-
- 638              		.loc 1 183 5 is_stmt 1 view .LVU150
- 639              		.loc 1 183 31 is_stmt 0 view .LVU151
- 640 00d8 C4F81C80 		str	r8, [r4, #28]	@ float
+ 614              		.loc 1 183 5 is_stmt 1 view .LVU142
+ 615              		.loc 1 183 31 is_stmt 0 view .LVU143
+ 616 00be E761     		str	r7, [r4, #28]	@ float
  184:Core/Src/balance_car/balance_control.c ****     g_balance_state.angle_gyro = angle_gyro;
- 641              		.loc 1 184 5 is_stmt 1 view .LVU152
- 642              		.loc 1 184 32 is_stmt 0 view .LVU153
- 643 00dc 2762     		str	r7, [r4, #32]	@ float
+ 617              		.loc 1 184 5 is_stmt 1 view .LVU144
+ 618              		.loc 1 184 32 is_stmt 0 view .LVU145
+ 619 00c0 2662     		str	r6, [r4, #32]	@ float
  185:Core/Src/balance_car/balance_control.c ****     g_balance_state.angle = s_angle;
- 644              		.loc 1 185 5 is_stmt 1 view .LVU154
- 645              		.loc 1 185 27 is_stmt 0 view .LVU155
- 646 00de 6062     		str	r0, [r4, #36]	@ float
- 186:Core/Src/balance_car/balance_control.c ****     g_balance_state.gyro_z_rate = gyro_z_rate;
- 647              		.loc 1 186 5 is_stmt 1 view .LVU156
- 648              		.loc 1 186 33 is_stmt 0 view .LVU157
- 649 00e0 C4F82890 		str	r9, [r4, #40]	@ float
+ 620              		.loc 1 185 5 is_stmt 1 view .LVU146
+ 621              		.loc 1 185 27 is_stmt 0 view .LVU147
+ 622 00c2 6062     		str	r0, [r4, #36]	@ float
+ 186:Core/Src/balance_car/balance_control.c ****     // g_balance_state.gyro_z_rate = gyro_z_rate;
  187:Core/Src/balance_car/balance_control.c **** 
  188:Core/Src/balance_car/balance_control.c ****     if (s_angle > g_balance_debug.fall_angle_limit || s_angle < -g_balance_debug.fall_angle_limit) 
- 650              		.loc 1 188 5 is_stmt 1 view .LVU158
- 651              		.loc 1 188 34 is_stmt 0 view .LVU159
- 652 00e4 F169     		ldr	r1, [r6, #28]	@ float
- 653              		.loc 1 188 8 view .LVU160
- 654 00e6 FFF7FEFF 		bl	__aeabi_fcmpgt
- 655              	.LVL46:
- 656 00ea D0B9     		cbnz	r0, .L39
- 657              		.loc 1 188 81 discriminator 1 view .LVU161
- 658 00ec F169     		ldr	r1, [r6, #28]	@ float
- 659              		.loc 1 188 65 discriminator 1 view .LVU162
- 660 00ee 01F10041 		add	r1, r1, #-2147483648
- 661              		.loc 1 188 52 discriminator 1 view .LVU163
- 662 00f2 2846     		mov	r0, r5
- 663 00f4 FFF7FEFF 		bl	__aeabi_fcmplt
- 664              	.LVL47:
- 665 00f8 98B9     		cbnz	r0, .L39
+ 623              		.loc 1 188 5 is_stmt 1 view .LVU148
+ 624              		.loc 1 188 34 is_stmt 0 view .LVU149
+ 625 00c4 D8F81C10 		ldr	r1, [r8, #28]	@ float
+ 626              		.loc 1 188 8 view .LVU150
+ 627 00c8 FFF7FEFF 		bl	__aeabi_fcmpgt
+ 628              	.LVL40:
+ 629 00cc D8B9     		cbnz	r0, .L39
+ 630              		.loc 1 188 81 discriminator 1 view .LVU151
+ 631 00ce D8F81C10 		ldr	r1, [r8, #28]	@ float
+ 632              		.loc 1 188 65 discriminator 1 view .LVU152
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 16
+
+
+ 633 00d2 01F10041 		add	r1, r1, #-2147483648
+ 634              		.loc 1 188 52 discriminator 1 view .LVU153
+ 635 00d6 2846     		mov	r0, r5
+ 636 00d8 FFF7FEFF 		bl	__aeabi_fcmplt
+ 637              	.LVL41:
+ 638 00dc 98B9     		cbnz	r0, .L39
  189:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_FALL);
  190:Core/Src/balance_car/balance_control.c ****         g_balance_debug.run_enable = 0U;
  191:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
@@ -941,53 +914,53 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  193:Core/Src/balance_car/balance_control.c ****     }
  194:Core/Src/balance_car/balance_control.c **** 
  195:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.run_enable == 0U || g_balance_state.imu_ready == 0U) {
- 666              		.loc 1 195 5 is_stmt 1 view .LVU164
- 667              		.loc 1 195 24 is_stmt 0 view .LVU165
- 668 00fa 2A4B     		ldr	r3, .L48+4
- 669 00fc 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 670              		.loc 1 195 8 view .LVU166
- 671 00fe 13B1     		cbz	r3, .L42
- 672              		.loc 1 195 60 discriminator 1 view .LVU167
- 673 0100 274B     		ldr	r3, .L48
- 674 0102 5B7A     		ldrb	r3, [r3, #9]	@ zero_extendqisi2
- 675              		.loc 1 195 42 discriminator 1 view .LVU168
- 676 0104 B3B9     		cbnz	r3, .L43
- 677              	.L42:
+ 639              		.loc 1 195 5 is_stmt 1 view .LVU154
+ 640              		.loc 1 195 24 is_stmt 0 view .LVU155
+ 641 00de 2A4B     		ldr	r3, .L48+4
+ 642 00e0 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 643              		.loc 1 195 8 view .LVU156
+ 644 00e2 13B1     		cbz	r3, .L42
+ 645              		.loc 1 195 60 discriminator 1 view .LVU157
+ 646 00e4 274B     		ldr	r3, .L48
+ 647 00e6 5B7A     		ldrb	r3, [r3, #9]	@ zero_extendqisi2
+ 648              		.loc 1 195 42 discriminator 1 view .LVU158
+ 649 00e8 B3B9     		cbnz	r3, .L43
+ 650              	.L42:
  196:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 678              		.loc 1 196 9 is_stmt 1 view .LVU169
- 679 0106 FFF7FEFF 		bl	BalanceCar_Stop
- 680              	.LVL48:
+ 651              		.loc 1 196 9 is_stmt 1 view .LVU159
+ 652 00ea FFF7FEFF 		bl	BalanceCar_Stop
+ 653              	.LVL42:
  197:Core/Src/balance_car/balance_control.c ****         return;
-ARM GAS  D:\TMP\cckbiAF2.s 			page 17
-
-
- 681              		.loc 1 197 9 view .LVU170
- 682 010a 07E0     		b	.L36
- 683              	.LVL49:
- 684              	.L47:
+ 654              		.loc 1 197 9 view .LVU160
+ 655 00ee 07E0     		b	.L36
+ 656              	.LVL43:
+ 657              	.L47:
  159:Core/Src/balance_car/balance_control.c ****         g_balance_state.imu_ready = 0U;
- 685              		.loc 1 159 9 view .LVU171
- 686 010c 0220     		movs	r0, #2
- 687 010e FFF7FEFF 		bl	BalanceCar_SetFault
- 688              	.LVL50:
+ 658              		.loc 1 159 9 view .LVU161
+ 659 00f0 0220     		movs	r0, #2
+ 660 00f2 FFF7FEFF 		bl	BalanceCar_SetFault
+ 661              	.LVL44:
  160:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 689              		.loc 1 160 9 view .LVU172
+ 662              		.loc 1 160 9 view .LVU162
  160:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 690              		.loc 1 160 35 is_stmt 0 view .LVU173
- 691 0112 234B     		ldr	r3, .L48
- 692 0114 0022     		movs	r2, #0
- 693 0116 5A72     		strb	r2, [r3, #9]
+ 663              		.loc 1 160 35 is_stmt 0 view .LVU163
+ 664 00f6 234B     		ldr	r3, .L48
+ 665 00f8 0022     		movs	r2, #0
+ 666 00fa 5A72     		strb	r2, [r3, #9]
  161:Core/Src/balance_car/balance_control.c ****         return;
- 694              		.loc 1 161 9 is_stmt 1 view .LVU174
- 695 0118 FFF7FEFF 		bl	BalanceCar_Stop
- 696              	.LVL51:
+ 667              		.loc 1 161 9 is_stmt 1 view .LVU164
+ 668 00fc FFF7FEFF 		bl	BalanceCar_Stop
+ 669              	.LVL45:
  162:Core/Src/balance_car/balance_control.c ****     }
- 697              		.loc 1 162 9 view .LVU175
- 698              	.L36:
+ 670              		.loc 1 162 9 view .LVU165
+ 671              	.L36:
  198:Core/Src/balance_car/balance_control.c ****     }
  199:Core/Src/balance_car/balance_control.c **** 
  200:Core/Src/balance_car/balance_control.c ****     g_balance_state.run_active = 1U;
  201:Core/Src/balance_car/balance_control.c ****     g_angle_pid.Actual = s_angle;
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 17
+
+
  202:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_angle_pid);
  203:Core/Src/balance_car/balance_control.c **** 
  204:Core/Src/balance_car/balance_control.c ****     float ave_pwm = g_angle_pid.Out;
@@ -1003,324 +976,321 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  214:Core/Src/balance_car/balance_control.c ****     g_balance_state.right_pwm = right;
  215:Core/Src/balance_car/balance_control.c ****     TB6612_SetMotors(left, right);
  216:Core/Src/balance_car/balance_control.c **** }
- 699              		.loc 1 216 1 is_stmt 0 view .LVU176
- 700 011c 04B0     		add	sp, sp, #16
- 701              	.LCFI13:
- 702              		.cfi_remember_state
- 703              		.cfi_def_cfa_offset 32
- 704              		@ sp needed
- 705 011e BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
- 706              	.LVL52:
- 707              	.L39:
- 708              	.LCFI14:
- 709              		.cfi_restore_state
+ 672              		.loc 1 216 1 is_stmt 0 view .LVU166
+ 673 0100 05B0     		add	sp, sp, #20
+ 674              	.LCFI13:
+ 675              		.cfi_remember_state
+ 676              		.cfi_def_cfa_offset 28
+ 677              		@ sp needed
+ 678 0102 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 679              	.LVL46:
+ 680              	.L39:
+ 681              	.LCFI14:
+ 682              		.cfi_restore_state
  189:Core/Src/balance_car/balance_control.c ****         g_balance_debug.run_enable = 0U;
- 710              		.loc 1 189 9 is_stmt 1 view .LVU177
- 711 0122 0420     		movs	r0, #4
- 712 0124 FFF7FEFF 		bl	BalanceCar_SetFault
-ARM GAS  D:\TMP\cckbiAF2.s 			page 18
-
-
- 713              	.LVL53:
+ 683              		.loc 1 189 9 is_stmt 1 view .LVU167
+ 684 0106 0420     		movs	r0, #4
+ 685 0108 FFF7FEFF 		bl	BalanceCar_SetFault
+ 686              	.LVL47:
  190:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 714              		.loc 1 190 9 view .LVU178
+ 687              		.loc 1 190 9 view .LVU168
  190:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 715              		.loc 1 190 36 is_stmt 0 view .LVU179
- 716 0128 1E4B     		ldr	r3, .L48+4
- 717 012a 0022     		movs	r2, #0
- 718 012c 1A70     		strb	r2, [r3]
+ 688              		.loc 1 190 36 is_stmt 0 view .LVU169
+ 689 010c 1E4B     		ldr	r3, .L48+4
+ 690 010e 0022     		movs	r2, #0
+ 691 0110 1A70     		strb	r2, [r3]
  191:Core/Src/balance_car/balance_control.c ****         return;
- 719              		.loc 1 191 9 is_stmt 1 view .LVU180
- 720 012e FFF7FEFF 		bl	BalanceCar_Stop
- 721              	.LVL54:
+ 692              		.loc 1 191 9 is_stmt 1 view .LVU170
+ 693 0112 FFF7FEFF 		bl	BalanceCar_Stop
+ 694              	.LVL48:
  192:Core/Src/balance_car/balance_control.c ****     }
- 722              		.loc 1 192 9 view .LVU181
- 723 0132 F3E7     		b	.L36
- 724              	.L43:
+ 695              		.loc 1 192 9 view .LVU171
+ 696 0116 F3E7     		b	.L36
+ 697              	.L43:
  200:Core/Src/balance_car/balance_control.c ****     g_angle_pid.Actual = s_angle;
- 725              		.loc 1 200 5 view .LVU182
+ 698              		.loc 1 200 5 view .LVU172
  200:Core/Src/balance_car/balance_control.c ****     g_angle_pid.Actual = s_angle;
- 726              		.loc 1 200 32 is_stmt 0 view .LVU183
- 727 0134 1A4C     		ldr	r4, .L48
- 728 0136 0123     		movs	r3, #1
- 729 0138 2372     		strb	r3, [r4, #8]
+ 699              		.loc 1 200 32 is_stmt 0 view .LVU173
+ 700 0118 1A4C     		ldr	r4, .L48
+ 701 011a 0123     		movs	r3, #1
+ 702 011c 2372     		strb	r3, [r4, #8]
  201:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_angle_pid);
- 730              		.loc 1 201 5 is_stmt 1 view .LVU184
+ 703              		.loc 1 201 5 is_stmt 1 view .LVU174
  201:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_angle_pid);
- 731              		.loc 1 201 24 is_stmt 0 view .LVU185
- 732 013a 214E     		ldr	r6, .L48+32
- 733 013c 7560     		str	r5, [r6, #4]	@ float
+ 704              		.loc 1 201 24 is_stmt 0 view .LVU175
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 18
+
+
+ 705 011e 214E     		ldr	r6, .L48+32
+ 706              	.LVL49:
+ 201:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_angle_pid);
+ 707              		.loc 1 201 24 view .LVU176
+ 708 0120 7560     		str	r5, [r6, #4]	@ float
  202:Core/Src/balance_car/balance_control.c **** 
- 734              		.loc 1 202 5 is_stmt 1 view .LVU186
- 735 013e 3046     		mov	r0, r6
- 736 0140 FFF7FEFF 		bl	PID_Update
- 737              	.LVL55:
+ 709              		.loc 1 202 5 is_stmt 1 view .LVU177
+ 710 0122 3046     		mov	r0, r6
+ 711 0124 FFF7FEFF 		bl	PID_Update
+ 712              	.LVL50:
  204:Core/Src/balance_car/balance_control.c ****     float left_pwm = ave_pwm + s_dif_pwm / 2.0f;
- 738              		.loc 1 204 5 view .LVU187
+ 713              		.loc 1 204 5 view .LVU178
  204:Core/Src/balance_car/balance_control.c ****     float left_pwm = ave_pwm + s_dif_pwm / 2.0f;
- 739              		.loc 1 204 11 is_stmt 0 view .LVU188
- 740 0144 F768     		ldr	r7, [r6, #12]	@ float
- 741              	.LVL56:
+ 714              		.loc 1 204 11 is_stmt 0 view .LVU179
+ 715 0128 F768     		ldr	r7, [r6, #12]	@ float
+ 716              	.LVL51:
  205:Core/Src/balance_car/balance_control.c ****     float right_pwm = ave_pwm - s_dif_pwm / 2.0f;
- 742              		.loc 1 205 5 is_stmt 1 view .LVU189
+ 717              		.loc 1 205 5 is_stmt 1 view .LVU180
  205:Core/Src/balance_car/balance_control.c ****     float right_pwm = ave_pwm - s_dif_pwm / 2.0f;
- 743              		.loc 1 205 42 is_stmt 0 view .LVU190
- 744 0146 1F4B     		ldr	r3, .L48+36
- 745 0148 D3F80080 		ldr	r8, [r3]	@ float
- 746              	.LVL57:
+ 718              		.loc 1 205 42 is_stmt 0 view .LVU181
+ 719 012a 1F4B     		ldr	r3, .L48+36
+ 720 012c D3F80080 		ldr	r8, [r3]	@ float
+ 721 0130 4FF07C51 		mov	r1, #1056964608
+ 722 0134 4046     		mov	r0, r8
+ 723 0136 FFF7FEFF 		bl	__aeabi_fmul
+ 724              	.LVL52:
+ 725 013a 0646     		mov	r6, r0
  205:Core/Src/balance_car/balance_control.c ****     float right_pwm = ave_pwm - s_dif_pwm / 2.0f;
- 747              		.loc 1 205 42 view .LVU191
- 748 014c 4FF07C51 		mov	r1, #1056964608
- 749 0150 4046     		mov	r0, r8
- 750 0152 FFF7FEFF 		bl	__aeabi_fmul
- 751              	.LVL58:
- 752 0156 0646     		mov	r6, r0
- 205:Core/Src/balance_car/balance_control.c ****     float right_pwm = ave_pwm - s_dif_pwm / 2.0f;
- 753              		.loc 1 205 11 view .LVU192
- 754 0158 3946     		mov	r1, r7
-ARM GAS  D:\TMP\cckbiAF2.s 			page 19
+ 726              		.loc 1 205 11 view .LVU182
+ 727 013c 3946     		mov	r1, r7
+ 728 013e FFF7FEFF 		bl	__aeabi_fadd
+ 729              	.LVL53:
+ 730 0142 0546     		mov	r5, r0
+ 731              	.LVL54:
+ 206:Core/Src/balance_car/balance_control.c **** 
+ 732              		.loc 1 206 5 is_stmt 1 view .LVU183
+ 206:Core/Src/balance_car/balance_control.c **** 
+ 733              		.loc 1 206 11 is_stmt 0 view .LVU184
+ 734 0144 3146     		mov	r1, r6
+ 735 0146 3846     		mov	r0, r7
+ 736              	.LVL55:
+ 206:Core/Src/balance_car/balance_control.c **** 
+ 737              		.loc 1 206 11 view .LVU185
+ 738 0148 FFF7FEFF 		bl	__aeabi_fsub
+ 739              	.LVL56:
+ 740 014c 0646     		mov	r6, r0
+ 741              	.LVL57:
+ 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
+ 742              		.loc 1 208 5 is_stmt 1 view .LVU186
+ 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
+ 743              		.loc 1 208 20 is_stmt 0 view .LVU187
+ 744 014e 2846     		mov	r0, r5
+ 745              	.LVL58:
+ 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
+ 746              		.loc 1 208 20 view .LVU188
+ 747 0150 FFF7FEFF 		bl	BalanceCar_ClampPwm
+ 748              	.LVL59:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 19
 
 
- 755 015a FFF7FEFF 		bl	__aeabi_fadd
- 756              	.LVL59:
- 757 015e 0546     		mov	r5, r0
- 758              	.LVL60:
- 206:Core/Src/balance_car/balance_control.c **** 
- 759              		.loc 1 206 5 is_stmt 1 view .LVU193
- 206:Core/Src/balance_car/balance_control.c **** 
- 760              		.loc 1 206 11 is_stmt 0 view .LVU194
- 761 0160 3146     		mov	r1, r6
- 762 0162 3846     		mov	r0, r7
- 763              	.LVL61:
- 206:Core/Src/balance_car/balance_control.c **** 
- 764              		.loc 1 206 11 view .LVU195
- 765 0164 FFF7FEFF 		bl	__aeabi_fsub
- 766              	.LVL62:
- 767 0168 0646     		mov	r6, r0
- 768              	.LVL63:
- 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
- 769              		.loc 1 208 5 is_stmt 1 view .LVU196
- 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
- 770              		.loc 1 208 20 is_stmt 0 view .LVU197
- 771 016a 2846     		mov	r0, r5
- 772              	.LVL64:
- 208:Core/Src/balance_car/balance_control.c ****     int16_t right = BalanceCar_ClampPwm(right_pwm);
- 773              		.loc 1 208 20 view .LVU198
- 774 016c FFF7FEFF 		bl	BalanceCar_ClampPwm
- 775              	.LVL65:
- 776 0170 0546     		mov	r5, r0
- 777              	.LVL66:
+ 749 0154 0546     		mov	r5, r0
+ 750              	.LVL60:
  209:Core/Src/balance_car/balance_control.c **** 
- 778              		.loc 1 209 5 is_stmt 1 view .LVU199
+ 751              		.loc 1 209 5 is_stmt 1 view .LVU189
  209:Core/Src/balance_car/balance_control.c **** 
- 779              		.loc 1 209 21 is_stmt 0 view .LVU200
- 780 0172 3046     		mov	r0, r6
- 781 0174 FFF7FEFF 		bl	BalanceCar_ClampPwm
- 782              	.LVL67:
- 783 0178 0646     		mov	r6, r0
- 784              	.LVL68:
+ 752              		.loc 1 209 21 is_stmt 0 view .LVU190
+ 753 0156 3046     		mov	r0, r6
+ 754 0158 FFF7FEFF 		bl	BalanceCar_ClampPwm
+ 755              	.LVL61:
+ 756 015c 0646     		mov	r6, r0
+ 757              	.LVL62:
  211:Core/Src/balance_car/balance_control.c ****     g_balance_state.dif_pwm = BalanceCar_ClampPwm(s_dif_pwm);
- 785              		.loc 1 211 5 is_stmt 1 view .LVU201
+ 758              		.loc 1 211 5 is_stmt 1 view .LVU191
  211:Core/Src/balance_car/balance_control.c ****     g_balance_state.dif_pwm = BalanceCar_ClampPwm(s_dif_pwm);
- 786              		.loc 1 211 31 is_stmt 0 view .LVU202
- 787 017a 3846     		mov	r0, r7
- 788 017c FFF7FEFF 		bl	BalanceCar_ClampPwm
- 789              	.LVL69:
+ 759              		.loc 1 211 31 is_stmt 0 view .LVU192
+ 760 015e 3846     		mov	r0, r7
+ 761 0160 FFF7FEFF 		bl	BalanceCar_ClampPwm
+ 762              	.LVL63:
  211:Core/Src/balance_car/balance_control.c ****     g_balance_state.dif_pwm = BalanceCar_ClampPwm(s_dif_pwm);
- 790              		.loc 1 211 29 discriminator 1 view .LVU203
- 791 0180 A4F84400 		strh	r0, [r4, #68]	@ movhi
+ 763              		.loc 1 211 29 discriminator 1 view .LVU193
+ 764 0164 A4F84400 		strh	r0, [r4, #68]	@ movhi
  212:Core/Src/balance_car/balance_control.c ****     g_balance_state.left_pwm = left;
- 792              		.loc 1 212 5 is_stmt 1 view .LVU204
+ 765              		.loc 1 212 5 is_stmt 1 view .LVU194
  212:Core/Src/balance_car/balance_control.c ****     g_balance_state.left_pwm = left;
- 793              		.loc 1 212 31 is_stmt 0 view .LVU205
- 794 0184 4046     		mov	r0, r8
- 795 0186 FFF7FEFF 		bl	BalanceCar_ClampPwm
- 796              	.LVL70:
+ 766              		.loc 1 212 31 is_stmt 0 view .LVU195
+ 767 0168 4046     		mov	r0, r8
+ 768 016a FFF7FEFF 		bl	BalanceCar_ClampPwm
+ 769              	.LVL64:
  212:Core/Src/balance_car/balance_control.c ****     g_balance_state.left_pwm = left;
- 797              		.loc 1 212 29 discriminator 1 view .LVU206
-ARM GAS  D:\TMP\cckbiAF2.s 			page 20
-
-
- 798 018a A4F84600 		strh	r0, [r4, #70]	@ movhi
+ 770              		.loc 1 212 29 discriminator 1 view .LVU196
+ 771 016e A4F84600 		strh	r0, [r4, #70]	@ movhi
  213:Core/Src/balance_car/balance_control.c ****     g_balance_state.right_pwm = right;
- 799              		.loc 1 213 5 is_stmt 1 view .LVU207
+ 772              		.loc 1 213 5 is_stmt 1 view .LVU197
  213:Core/Src/balance_car/balance_control.c ****     g_balance_state.right_pwm = right;
- 800              		.loc 1 213 30 is_stmt 0 view .LVU208
- 801 018e A4F84050 		strh	r5, [r4, #64]	@ movhi
+ 773              		.loc 1 213 30 is_stmt 0 view .LVU198
+ 774 0172 A4F84050 		strh	r5, [r4, #64]	@ movhi
  214:Core/Src/balance_car/balance_control.c ****     TB6612_SetMotors(left, right);
- 802              		.loc 1 214 5 is_stmt 1 view .LVU209
+ 775              		.loc 1 214 5 is_stmt 1 view .LVU199
  214:Core/Src/balance_car/balance_control.c ****     TB6612_SetMotors(left, right);
- 803              		.loc 1 214 31 is_stmt 0 view .LVU210
- 804 0192 A4F84260 		strh	r6, [r4, #66]	@ movhi
+ 776              		.loc 1 214 31 is_stmt 0 view .LVU200
+ 777 0176 A4F84260 		strh	r6, [r4, #66]	@ movhi
  215:Core/Src/balance_car/balance_control.c **** }
- 805              		.loc 1 215 5 is_stmt 1 view .LVU211
- 806 0196 3146     		mov	r1, r6
- 807 0198 2846     		mov	r0, r5
- 808 019a FFF7FEFF 		bl	TB6612_SetMotors
- 809              	.LVL71:
- 810 019e BDE7     		b	.L36
- 811              	.L49:
- 812              		.align	2
- 813              	.L48:
- 814 01a0 00000000 		.word	g_balance_state
- 815 01a4 00000000 		.word	g_balance_debug
- 816 01a8 0000FA44 		.word	1157234688
- 817 01ac D00F4940 		.word	1078530000
- 818 01b0 00003443 		.word	1127481344
- 819 01b4 0AD7233C 		.word	1008981770
- 820 01b8 00000000 		.word	s_angle
- 821 01bc A4707D3F 		.word	1065185444
- 822 01c0 00000000 		.word	g_angle_pid
- 823 01c4 00000000 		.word	s_dif_pwm
- 824              		.cfi_endproc
- 825              	.LFE74:
- 827              		.section	.text.BalanceCar_RunSpeedLoop,"ax",%progbits
- 828              		.align	1
- 829              		.syntax unified
- 830              		.thumb
- 831              		.thumb_func
- 833              	BalanceCar_RunSpeedLoop:
- 834              	.LFB75:
+ 778              		.loc 1 215 5 is_stmt 1 view .LVU201
+ 779 017a 3146     		mov	r1, r6
+ 780 017c 2846     		mov	r0, r5
+ 781 017e FFF7FEFF 		bl	TB6612_SetMotors
+ 782              	.LVL65:
+ 783 0182 BDE7     		b	.L36
+ 784              	.L49:
+ 785              		.align	2
+ 786              	.L48:
+ 787 0184 00000000 		.word	g_balance_state
+ 788 0188 00000000 		.word	g_balance_debug
+ 789 018c D00F4940 		.word	1078530000
+ 790 0190 00003443 		.word	1127481344
+ 791 0194 0000FA44 		.word	1157234688
+ 792 0198 0AD7233C 		.word	1008981770
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 20
+
+
+ 793 019c 00000000 		.word	s_angle
+ 794 01a0 A4707D3F 		.word	1065185444
+ 795 01a4 00000000 		.word	g_angle_pid
+ 796 01a8 00000000 		.word	s_dif_pwm
+ 797              		.cfi_endproc
+ 798              	.LFE74:
+ 800              		.section	.text.BalanceCar_RunSpeedLoop,"ax",%progbits
+ 801              		.align	1
+ 802              		.syntax unified
+ 803              		.thumb
+ 804              		.thumb_func
+ 806              	BalanceCar_RunSpeedLoop:
+ 807              	.LFB75:
  217:Core/Src/balance_car/balance_control.c **** 
  218:Core/Src/balance_car/balance_control.c **** static void BalanceCar_RunSpeedLoop(void)
  219:Core/Src/balance_car/balance_control.c **** {
- 835              		.loc 1 219 1 view -0
- 836              		.cfi_startproc
- 837              		@ args = 0, pretend = 0, frame = 0
- 838              		@ frame_needed = 0, uses_anonymous_args = 0
- 839 0000 70B5     		push	{r4, r5, r6, lr}
- 840              	.LCFI15:
- 841              		.cfi_def_cfa_offset 16
- 842              		.cfi_offset 4, -16
- 843              		.cfi_offset 5, -12
- 844              		.cfi_offset 6, -8
- 845              		.cfi_offset 14, -4
+ 808              		.loc 1 219 1 view -0
+ 809              		.cfi_startproc
+ 810              		@ args = 0, pretend = 0, frame = 0
+ 811              		@ frame_needed = 0, uses_anonymous_args = 0
+ 812 0000 70B5     		push	{r4, r5, r6, lr}
+ 813              	.LCFI15:
+ 814              		.cfi_def_cfa_offset 16
+ 815              		.cfi_offset 4, -16
+ 816              		.cfi_offset 5, -12
+ 817              		.cfi_offset 6, -8
+ 818              		.cfi_offset 14, -4
  220:Core/Src/balance_car/balance_control.c ****     int16_t left_delta = Encoder_GetLeftDelta();
- 846              		.loc 1 220 5 view .LVU213
- 847              		.loc 1 220 26 is_stmt 0 view .LVU214
-ARM GAS  D:\TMP\cckbiAF2.s 			page 21
-
-
- 848 0002 FFF7FEFF 		bl	Encoder_GetLeftDelta
- 849              	.LVL72:
- 850 0006 0546     		mov	r5, r0
- 851              	.LVL73:
+ 819              		.loc 1 220 5 view .LVU203
+ 820              		.loc 1 220 26 is_stmt 0 view .LVU204
+ 821 0002 FFF7FEFF 		bl	Encoder_GetLeftDelta
+ 822              	.LVL66:
+ 823 0006 0546     		mov	r5, r0
+ 824              	.LVL67:
  221:Core/Src/balance_car/balance_control.c ****     int16_t right_delta = Encoder_GetRightDelta();
- 852              		.loc 1 221 5 is_stmt 1 view .LVU215
- 853              		.loc 1 221 27 is_stmt 0 view .LVU216
- 854 0008 FFF7FEFF 		bl	Encoder_GetRightDelta
- 855              	.LVL74:
- 856 000c 0446     		mov	r4, r0
- 857              	.LVL75:
+ 825              		.loc 1 221 5 is_stmt 1 view .LVU205
+ 826              		.loc 1 221 27 is_stmt 0 view .LVU206
+ 827 0008 FFF7FEFF 		bl	Encoder_GetRightDelta
+ 828              	.LVL68:
+ 829 000c 0446     		mov	r4, r0
+ 830              	.LVL69:
  222:Core/Src/balance_car/balance_control.c **** 
  223:Core/Src/balance_car/balance_control.c ****     float left_speed = (float)left_delta / ENCODER_MAGNET_LINES / SPEED_LOOP_PERIOD_S / MOTOR_REDUC
- 858              		.loc 1 223 5 is_stmt 1 view .LVU217
- 859              		.loc 1 223 24 is_stmt 0 view .LVU218
- 860 000e 2846     		mov	r0, r5
- 861 0010 FFF7FEFF 		bl	__aeabi_i2f
- 862              	.LVL76:
- 863              		.loc 1 223 42 view .LVU219
- 864 0014 2849     		ldr	r1, .L54
- 865 0016 FFF7FEFF 		bl	__aeabi_fdiv
- 866              	.LVL77:
- 867              		.loc 1 223 65 view .LVU220
- 868 001a 2849     		ldr	r1, .L54+4
- 869 001c FFF7FEFF 		bl	__aeabi_fdiv
- 870              	.LVL78:
- 871              		.loc 1 223 11 view .LVU221
- 872 0020 2749     		ldr	r1, .L54+8
- 873 0022 FFF7FEFF 		bl	__aeabi_fdiv
- 874              	.LVL79:
- 875 0026 0546     		mov	r5, r0
- 876              	.LVL80:
+ 831              		.loc 1 223 5 is_stmt 1 view .LVU207
+ 832              		.loc 1 223 24 is_stmt 0 view .LVU208
+ 833 000e 2846     		mov	r0, r5
+ 834 0010 FFF7FEFF 		bl	__aeabi_i2f
+ 835              	.LVL70:
+ 836              		.loc 1 223 42 view .LVU209
+ 837 0014 2749     		ldr	r1, .L54
+ 838 0016 FFF7FEFF 		bl	__aeabi_fdiv
+ 839              	.LVL71:
+ 840              		.loc 1 223 65 view .LVU210
+ 841 001a 2749     		ldr	r1, .L54+4
+ 842 001c FFF7FEFF 		bl	__aeabi_fdiv
+ 843              	.LVL72:
+ 844              		.loc 1 223 11 view .LVU211
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 21
+
+
+ 845 0020 2649     		ldr	r1, .L54+8
+ 846 0022 FFF7FEFF 		bl	__aeabi_fdiv
+ 847              	.LVL73:
+ 848 0026 0546     		mov	r5, r0
+ 849              	.LVL74:
  224:Core/Src/balance_car/balance_control.c ****     float right_speed = (float)right_delta / ENCODER_MAGNET_LINES / SPEED_LOOP_PERIOD_S / MOTOR_RED
- 877              		.loc 1 224 5 is_stmt 1 view .LVU222
- 878              		.loc 1 224 25 is_stmt 0 view .LVU223
- 879 0028 2046     		mov	r0, r4
- 880              	.LVL81:
- 881              		.loc 1 224 25 view .LVU224
- 882 002a FFF7FEFF 		bl	__aeabi_i2f
- 883              	.LVL82:
- 884              		.loc 1 224 44 view .LVU225
- 885 002e 2249     		ldr	r1, .L54
- 886 0030 FFF7FEFF 		bl	__aeabi_fdiv
- 887              	.LVL83:
- 888              		.loc 1 224 67 view .LVU226
- 889 0034 2149     		ldr	r1, .L54+4
- 890 0036 FFF7FEFF 		bl	__aeabi_fdiv
- 891              	.LVL84:
- 892              		.loc 1 224 11 view .LVU227
- 893 003a 2149     		ldr	r1, .L54+8
- 894 003c FFF7FEFF 		bl	__aeabi_fdiv
- 895              	.LVL85:
- 896 0040 0446     		mov	r4, r0
- 897              	.LVL86:
+ 850              		.loc 1 224 5 is_stmt 1 view .LVU212
+ 851              		.loc 1 224 25 is_stmt 0 view .LVU213
+ 852 0028 2046     		mov	r0, r4
+ 853              	.LVL75:
+ 854              		.loc 1 224 25 view .LVU214
+ 855 002a FFF7FEFF 		bl	__aeabi_i2f
+ 856              	.LVL76:
+ 857              		.loc 1 224 44 view .LVU215
+ 858 002e 2149     		ldr	r1, .L54
+ 859 0030 FFF7FEFF 		bl	__aeabi_fdiv
+ 860              	.LVL77:
+ 861              		.loc 1 224 67 view .LVU216
+ 862 0034 2049     		ldr	r1, .L54+4
+ 863 0036 FFF7FEFF 		bl	__aeabi_fdiv
+ 864              	.LVL78:
+ 865              		.loc 1 224 11 view .LVU217
+ 866 003a 2049     		ldr	r1, .L54+8
+ 867 003c FFF7FEFF 		bl	__aeabi_fdiv
+ 868              	.LVL79:
+ 869 0040 0446     		mov	r4, r0
+ 870              	.LVL80:
  225:Core/Src/balance_car/balance_control.c ****     float ave_speed = (left_speed + right_speed) / 2.0f;
- 898              		.loc 1 225 5 is_stmt 1 view .LVU228
- 899              		.loc 1 225 35 is_stmt 0 view .LVU229
-ARM GAS  D:\TMP\cckbiAF2.s 			page 22
-
-
- 900 0042 0146     		mov	r1, r0
- 901 0044 2846     		mov	r0, r5
- 902              	.LVL87:
- 903              		.loc 1 225 35 view .LVU230
- 904 0046 FFF7FEFF 		bl	__aeabi_fadd
- 905              	.LVL88:
- 906              		.loc 1 225 11 view .LVU231
- 907 004a 4FF07C51 		mov	r1, #1056964608
- 908 004e FFF7FEFF 		bl	__aeabi_fmul
- 909              	.LVL89:
- 910 0052 0646     		mov	r6, r0
- 911              	.LVL90:
+ 871              		.loc 1 225 5 is_stmt 1 view .LVU218
+ 872              		.loc 1 225 35 is_stmt 0 view .LVU219
+ 873 0042 0146     		mov	r1, r0
+ 874 0044 2846     		mov	r0, r5
+ 875              	.LVL81:
+ 876              		.loc 1 225 35 view .LVU220
+ 877 0046 FFF7FEFF 		bl	__aeabi_fadd
+ 878              	.LVL82:
+ 879              		.loc 1 225 11 view .LVU221
+ 880 004a 4FF07C51 		mov	r1, #1056964608
+ 881 004e FFF7FEFF 		bl	__aeabi_fmul
+ 882              	.LVL83:
+ 883 0052 0646     		mov	r6, r0
+ 884              	.LVL84:
  226:Core/Src/balance_car/balance_control.c ****     float dif_speed = left_speed - right_speed;
- 912              		.loc 1 226 5 is_stmt 1 view .LVU232
- 913              		.loc 1 226 11 is_stmt 0 view .LVU233
- 914 0054 2146     		mov	r1, r4
- 915 0056 2846     		mov	r0, r5
- 916              	.LVL91:
- 917              		.loc 1 226 11 view .LVU234
- 918 0058 FFF7FEFF 		bl	__aeabi_fsub
- 919              	.LVL92:
+ 885              		.loc 1 226 5 is_stmt 1 view .LVU222
+ 886              		.loc 1 226 11 is_stmt 0 view .LVU223
+ 887 0054 2146     		mov	r1, r4
+ 888 0056 2846     		mov	r0, r5
+ 889              	.LVL85:
+ 890              		.loc 1 226 11 view .LVU224
+ 891 0058 FFF7FEFF 		bl	__aeabi_fsub
+ 892              	.LVL86:
  227:Core/Src/balance_car/balance_control.c **** 
  228:Core/Src/balance_car/balance_control.c ****     g_balance_state.left_speed = left_speed;
- 920              		.loc 1 228 5 is_stmt 1 view .LVU235
- 921              		.loc 1 228 32 is_stmt 0 view .LVU236
- 922 005c 194B     		ldr	r3, .L54+12
- 923 005e 1D63     		str	r5, [r3, #48]	@ float
+ 893              		.loc 1 228 5 is_stmt 1 view .LVU225
+ 894              		.loc 1 228 32 is_stmt 0 view .LVU226
+ 895 005c 184B     		ldr	r3, .L54+12
+ 896 005e 1D63     		str	r5, [r3, #48]	@ float
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 22
+
+
  229:Core/Src/balance_car/balance_control.c ****     g_balance_state.right_speed = right_speed;
- 924              		.loc 1 229 5 is_stmt 1 view .LVU237
- 925              		.loc 1 229 33 is_stmt 0 view .LVU238
- 926 0060 5C63     		str	r4, [r3, #52]	@ float
+ 897              		.loc 1 229 5 is_stmt 1 view .LVU227
+ 898              		.loc 1 229 33 is_stmt 0 view .LVU228
+ 899 0060 5C63     		str	r4, [r3, #52]	@ float
  230:Core/Src/balance_car/balance_control.c ****     g_balance_state.ave_speed = ave_speed;
- 927              		.loc 1 230 5 is_stmt 1 view .LVU239
- 928              		.loc 1 230 31 is_stmt 0 view .LVU240
- 929 0062 9E63     		str	r6, [r3, #56]	@ float
+ 900              		.loc 1 230 5 is_stmt 1 view .LVU229
+ 901              		.loc 1 230 31 is_stmt 0 view .LVU230
+ 902 0062 9E63     		str	r6, [r3, #56]	@ float
  231:Core/Src/balance_car/balance_control.c ****     g_balance_state.dif_speed = dif_speed;
- 930              		.loc 1 231 5 is_stmt 1 view .LVU241
- 931              		.loc 1 231 31 is_stmt 0 view .LVU242
- 932 0064 D863     		str	r0, [r3, #60]	@ float
+ 903              		.loc 1 231 5 is_stmt 1 view .LVU231
+ 904              		.loc 1 231 31 is_stmt 0 view .LVU232
+ 905 0064 D863     		str	r0, [r3, #60]	@ float
  232:Core/Src/balance_car/balance_control.c **** 
  233:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.run_enable == 0U || g_balance_state.run_active == 0U) {
- 933              		.loc 1 233 5 is_stmt 1 view .LVU243
- 934              		.loc 1 233 24 is_stmt 0 view .LVU244
- 935 0066 184B     		ldr	r3, .L54+16
- 936 0068 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 937              		.loc 1 233 8 view .LVU245
- 938 006a 13B1     		cbz	r3, .L50
- 939              		.loc 1 233 60 discriminator 1 view .LVU246
- 940 006c 154B     		ldr	r3, .L54+12
- 941 006e 1B7A     		ldrb	r3, [r3, #8]	@ zero_extendqisi2
- 942              		.loc 1 233 42 discriminator 1 view .LVU247
- 943 0070 03B9     		cbnz	r3, .L53
- 944              	.LVL93:
- 945              	.L50:
+ 906              		.loc 1 233 5 is_stmt 1 view .LVU233
+ 907              		.loc 1 233 24 is_stmt 0 view .LVU234
+ 908 0066 174B     		ldr	r3, .L54+16
+ 909 0068 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 910              		.loc 1 233 8 view .LVU235
+ 911 006a 13B1     		cbz	r3, .L50
+ 912              		.loc 1 233 60 discriminator 1 view .LVU236
+ 913 006c 144B     		ldr	r3, .L54+12
+ 914 006e 1B7A     		ldrb	r3, [r3, #8]	@ zero_extendqisi2
+ 915              		.loc 1 233 42 discriminator 1 view .LVU237
+ 916 0070 03B9     		cbnz	r3, .L53
+ 917              	.LVL87:
+ 918              	.L50:
  234:Core/Src/balance_car/balance_control.c ****         return;
  235:Core/Src/balance_car/balance_control.c ****     }
  236:Core/Src/balance_car/balance_control.c **** 
-ARM GAS  D:\TMP\cckbiAF2.s 			page 23
-
-
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Target = g_balance_debug.speed_target;
  238:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
  239:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_speed_pid);
@@ -1329,506 +1299,498 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  242:Core/Src/balance_car/balance_control.c ****     float turn_rate_target = -g_balance_debug.turn_target * g_balance_debug.turn_gyro_scale;
  243:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
  244:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Target = turn_rate_target;
- 245:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Actual = g_balance_state.gyro_z_rate;
+ 245:Core/Src/balance_car/balance_control.c ****     // g_turn_pid.Actual = g_balance_state.gyro_z_rate;
  246:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_turn_pid);
  247:Core/Src/balance_car/balance_control.c ****     s_dif_pwm = g_turn_pid.Out * 5.0f;
  248:Core/Src/balance_car/balance_control.c **** }
- 946              		.loc 1 248 1 view .LVU248
- 947 0072 70BD     		pop	{r4, r5, r6, pc}
- 948              	.LVL94:
- 949              	.L53:
+ 919              		.loc 1 248 1 view .LVU238
+ 920 0072 70BD     		pop	{r4, r5, r6, pc}
+ 921              	.LVL88:
+ 922              	.L53:
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
- 950              		.loc 1 237 5 is_stmt 1 view .LVU249
+ 923              		.loc 1 237 5 is_stmt 1 view .LVU239
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
- 951              		.loc 1 237 41 is_stmt 0 view .LVU250
- 952 0074 144D     		ldr	r5, .L54+16
- 953              	.LVL95:
+ 924              		.loc 1 237 41 is_stmt 0 view .LVU240
+ 925 0074 134D     		ldr	r5, .L54+16
+ 926              	.LVL89:
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
- 954              		.loc 1 237 41 view .LVU251
- 955 0076 6B68     		ldr	r3, [r5, #4]	@ float
+ 927              		.loc 1 237 41 view .LVU241
+ 928 0076 6B68     		ldr	r3, [r5, #4]	@ float
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
- 956              		.loc 1 237 24 view .LVU252
- 957 0078 144C     		ldr	r4, .L54+20
- 958              	.LVL96:
+ 929              		.loc 1 237 24 view .LVU242
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 23
+
+
+ 930 0078 134C     		ldr	r4, .L54+20
+ 931              	.LVL90:
  237:Core/Src/balance_car/balance_control.c ****     g_speed_pid.Actual = ave_speed;
- 959              		.loc 1 237 24 view .LVU253
- 960 007a 2360     		str	r3, [r4]	@ float
+ 932              		.loc 1 237 24 view .LVU243
+ 933 007a 2360     		str	r3, [r4]	@ float
  238:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_speed_pid);
- 961              		.loc 1 238 5 is_stmt 1 view .LVU254
+ 934              		.loc 1 238 5 is_stmt 1 view .LVU244
  238:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_speed_pid);
- 962              		.loc 1 238 24 is_stmt 0 view .LVU255
- 963 007c 6660     		str	r6, [r4, #4]	@ float
+ 935              		.loc 1 238 24 is_stmt 0 view .LVU245
+ 936 007c 6660     		str	r6, [r4, #4]	@ float
  239:Core/Src/balance_car/balance_control.c ****     g_angle_pid.Target = g_speed_pid.Out;
- 964              		.loc 1 239 5 is_stmt 1 view .LVU256
- 965 007e 2046     		mov	r0, r4
- 966              	.LVL97:
+ 937              		.loc 1 239 5 is_stmt 1 view .LVU246
+ 938 007e 2046     		mov	r0, r4
+ 939              	.LVL91:
  239:Core/Src/balance_car/balance_control.c ****     g_angle_pid.Target = g_speed_pid.Out;
- 967              		.loc 1 239 5 is_stmt 0 view .LVU257
- 968 0080 FFF7FEFF 		bl	PID_Update
- 969              	.LVL98:
+ 940              		.loc 1 239 5 is_stmt 0 view .LVU247
+ 941 0080 FFF7FEFF 		bl	PID_Update
+ 942              	.LVL92:
  240:Core/Src/balance_car/balance_control.c **** 
- 970              		.loc 1 240 5 is_stmt 1 view .LVU258
+ 943              		.loc 1 240 5 is_stmt 1 view .LVU248
  240:Core/Src/balance_car/balance_control.c **** 
- 971              		.loc 1 240 37 is_stmt 0 view .LVU259
- 972 0084 E268     		ldr	r2, [r4, #12]	@ float
+ 944              		.loc 1 240 37 is_stmt 0 view .LVU249
+ 945 0084 E268     		ldr	r2, [r4, #12]	@ float
  240:Core/Src/balance_car/balance_control.c **** 
- 973              		.loc 1 240 24 view .LVU260
- 974 0086 124B     		ldr	r3, .L54+24
- 975 0088 1A60     		str	r2, [r3]	@ float
+ 946              		.loc 1 240 24 view .LVU250
+ 947 0086 114B     		ldr	r3, .L54+24
+ 948 0088 1A60     		str	r2, [r3]	@ float
  242:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
- 976              		.loc 1 242 5 is_stmt 1 view .LVU261
+ 949              		.loc 1 242 5 is_stmt 1 view .LVU251
  242:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
-ARM GAS  D:\TMP\cckbiAF2.s 			page 24
-
-
- 977              		.loc 1 242 46 is_stmt 0 view .LVU262
- 978 008a A868     		ldr	r0, [r5, #8]	@ float
+ 950              		.loc 1 242 46 is_stmt 0 view .LVU252
+ 951 008a A868     		ldr	r0, [r5, #8]	@ float
  242:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
- 979              		.loc 1 242 30 view .LVU263
- 980 008c 00F10040 		add	r0, r0, #-2147483648
+ 952              		.loc 1 242 30 view .LVU253
+ 953 008c 00F10040 		add	r0, r0, #-2147483648
  242:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
- 981              		.loc 1 242 76 view .LVU264
- 982 0090 6969     		ldr	r1, [r5, #20]	@ float
+ 954              		.loc 1 242 76 view .LVU254
+ 955 0090 6969     		ldr	r1, [r5, #20]	@ float
  242:Core/Src/balance_car/balance_control.c ****     g_balance_state.turn_rate_target = turn_rate_target;
- 983              		.loc 1 242 11 view .LVU265
- 984 0092 FFF7FEFF 		bl	__aeabi_fmul
- 985              	.LVL99:
+ 956              		.loc 1 242 11 view .LVU255
+ 957 0092 FFF7FEFF 		bl	__aeabi_fmul
+ 958              	.LVL93:
  243:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Target = turn_rate_target;
- 986              		.loc 1 243 5 is_stmt 1 view .LVU266
+ 959              		.loc 1 243 5 is_stmt 1 view .LVU256
  243:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Target = turn_rate_target;
- 987              		.loc 1 243 38 is_stmt 0 view .LVU267
- 988 0096 0B4B     		ldr	r3, .L54+12
- 989 0098 D862     		str	r0, [r3, #44]	@ float
- 244:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Actual = g_balance_state.gyro_z_rate;
- 990              		.loc 1 244 5 is_stmt 1 view .LVU268
- 244:Core/Src/balance_car/balance_control.c ****     g_turn_pid.Actual = g_balance_state.gyro_z_rate;
- 991              		.loc 1 244 23 is_stmt 0 view .LVU269
- 992 009a 0E4C     		ldr	r4, .L54+28
- 993 009c 2060     		str	r0, [r4]	@ float
- 245:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_turn_pid);
- 994              		.loc 1 245 5 is_stmt 1 view .LVU270
- 245:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_turn_pid);
- 995              		.loc 1 245 40 is_stmt 0 view .LVU271
- 996 009e 9B6A     		ldr	r3, [r3, #40]	@ float
- 245:Core/Src/balance_car/balance_control.c ****     PID_Update(&g_turn_pid);
- 997              		.loc 1 245 23 view .LVU272
- 998 00a0 6360     		str	r3, [r4, #4]	@ float
+ 960              		.loc 1 243 38 is_stmt 0 view .LVU257
+ 961 0096 0A4B     		ldr	r3, .L54+12
+ 962 0098 D862     		str	r0, [r3, #44]	@ float
+ 244:Core/Src/balance_car/balance_control.c ****     // g_turn_pid.Actual = g_balance_state.gyro_z_rate;
+ 963              		.loc 1 244 5 is_stmt 1 view .LVU258
+ 244:Core/Src/balance_car/balance_control.c ****     // g_turn_pid.Actual = g_balance_state.gyro_z_rate;
+ 964              		.loc 1 244 23 is_stmt 0 view .LVU259
+ 965 009a 0D4C     		ldr	r4, .L54+28
+ 966 009c 2060     		str	r0, [r4]	@ float
  246:Core/Src/balance_car/balance_control.c ****     s_dif_pwm = g_turn_pid.Out * 5.0f;
- 999              		.loc 1 246 5 is_stmt 1 view .LVU273
- 1000 00a2 2046     		mov	r0, r4
- 1001              	.LVL100:
- 246:Core/Src/balance_car/balance_control.c ****     s_dif_pwm = g_turn_pid.Out * 5.0f;
- 1002              		.loc 1 246 5 is_stmt 0 view .LVU274
- 1003 00a4 FFF7FEFF 		bl	PID_Update
- 1004              	.LVL101:
- 247:Core/Src/balance_car/balance_control.c **** }
- 1005              		.loc 1 247 5 is_stmt 1 view .LVU275
- 247:Core/Src/balance_car/balance_control.c **** }
- 1006              		.loc 1 247 32 is_stmt 0 view .LVU276
- 1007 00a8 0B49     		ldr	r1, .L54+32
- 1008 00aa E068     		ldr	r0, [r4, #12]	@ float
- 1009 00ac FFF7FEFF 		bl	__aeabi_fmul
- 1010              	.LVL102:
- 247:Core/Src/balance_car/balance_control.c **** }
- 1011              		.loc 1 247 15 view .LVU277
- 1012 00b0 0A4B     		ldr	r3, .L54+36
- 1013 00b2 1860     		str	r0, [r3]	@ float
- 1014 00b4 DDE7     		b	.L50
- 1015              	.L55:
- 1016 00b6 00BF     		.align	2
- 1017              	.L54:
- 1018 00b8 00005041 		.word	1095761920
-ARM GAS  D:\TMP\cckbiAF2.s 			page 25
+ 967              		.loc 1 246 5 is_stmt 1 view .LVU260
+ 968 009e 2046     		mov	r0, r4
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 24
 
 
- 1019 00bc CDCC4C3D 		.word	1028443341
- 1020 00c0 0000F041 		.word	1106247680
- 1021 00c4 00000000 		.word	g_balance_state
- 1022 00c8 00000000 		.word	g_balance_debug
- 1023 00cc 00000000 		.word	g_speed_pid
- 1024 00d0 00000000 		.word	g_angle_pid
- 1025 00d4 00000000 		.word	g_turn_pid
- 1026 00d8 0000A040 		.word	1084227584
- 1027 00dc 00000000 		.word	s_dif_pwm
- 1028              		.cfi_endproc
- 1029              	.LFE75:
- 1031              		.section	.text.BalanceCar_Init,"ax",%progbits
- 1032              		.align	1
- 1033              		.global	BalanceCar_Init
- 1034              		.syntax unified
- 1035              		.thumb
- 1036              		.thumb_func
- 1038              	BalanceCar_Init:
- 1039              	.LFB76:
+ 969              	.LVL94:
+ 246:Core/Src/balance_car/balance_control.c ****     s_dif_pwm = g_turn_pid.Out * 5.0f;
+ 970              		.loc 1 246 5 is_stmt 0 view .LVU261
+ 971 00a0 FFF7FEFF 		bl	PID_Update
+ 972              	.LVL95:
+ 247:Core/Src/balance_car/balance_control.c **** }
+ 973              		.loc 1 247 5 is_stmt 1 view .LVU262
+ 247:Core/Src/balance_car/balance_control.c **** }
+ 974              		.loc 1 247 32 is_stmt 0 view .LVU263
+ 975 00a4 0B49     		ldr	r1, .L54+32
+ 976 00a6 E068     		ldr	r0, [r4, #12]	@ float
+ 977 00a8 FFF7FEFF 		bl	__aeabi_fmul
+ 978              	.LVL96:
+ 247:Core/Src/balance_car/balance_control.c **** }
+ 979              		.loc 1 247 15 view .LVU264
+ 980 00ac 0A4B     		ldr	r3, .L54+36
+ 981 00ae 1860     		str	r0, [r3]	@ float
+ 982 00b0 DFE7     		b	.L50
+ 983              	.L55:
+ 984 00b2 00BF     		.align	2
+ 985              	.L54:
+ 986 00b4 00005041 		.word	1095761920
+ 987 00b8 CDCC4C3D 		.word	1028443341
+ 988 00bc 0000F041 		.word	1106247680
+ 989 00c0 00000000 		.word	g_balance_state
+ 990 00c4 00000000 		.word	g_balance_debug
+ 991 00c8 00000000 		.word	g_speed_pid
+ 992 00cc 00000000 		.word	g_angle_pid
+ 993 00d0 00000000 		.word	g_turn_pid
+ 994 00d4 0000A040 		.word	1084227584
+ 995 00d8 00000000 		.word	s_dif_pwm
+ 996              		.cfi_endproc
+ 997              	.LFE75:
+ 999              		.section	.text.BalanceCar_Init,"ax",%progbits
+ 1000              		.align	1
+ 1001              		.global	BalanceCar_Init
+ 1002              		.syntax unified
+ 1003              		.thumb
+ 1004              		.thumb_func
+ 1006              	BalanceCar_Init:
+ 1007              	.LFB76:
  249:Core/Src/balance_car/balance_control.c **** 
  250:Core/Src/balance_car/balance_control.c **** HAL_StatusTypeDef BalanceCar_Init(void)
  251:Core/Src/balance_car/balance_control.c **** {
- 1040              		.loc 1 251 1 is_stmt 1 view -0
- 1041              		.cfi_startproc
- 1042              		@ args = 0, pretend = 0, frame = 0
- 1043              		@ frame_needed = 0, uses_anonymous_args = 0
- 1044 0000 10B5     		push	{r4, lr}
- 1045              	.LCFI16:
- 1046              		.cfi_def_cfa_offset 8
- 1047              		.cfi_offset 4, -8
- 1048              		.cfi_offset 14, -4
+ 1008              		.loc 1 251 1 is_stmt 1 view -0
+ 1009              		.cfi_startproc
+ 1010              		@ args = 0, pretend = 0, frame = 0
+ 1011              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1012 0000 10B5     		push	{r4, lr}
+ 1013              	.LCFI16:
+ 1014              		.cfi_def_cfa_offset 8
+ 1015              		.cfi_offset 4, -8
+ 1016              		.cfi_offset 14, -4
  252:Core/Src/balance_car/balance_control.c ****     HAL_StatusTypeDef status = HAL_OK;
- 1049              		.loc 1 252 5 view .LVU279
- 1050              	.LVL103:
+ 1017              		.loc 1 252 5 view .LVU266
+ 1018              	.LVL97:
  253:Core/Src/balance_car/balance_control.c **** 
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 25
+
+
  254:Core/Src/balance_car/balance_control.c ****     BalanceCar_ButtonInit();
- 1051              		.loc 1 254 5 view .LVU280
- 1052 0002 FFF7FEFF 		bl	BalanceCar_ButtonInit
- 1053              	.LVL104:
+ 1019              		.loc 1 254 5 view .LVU267
+ 1020 0002 FFF7FEFF 		bl	BalanceCar_ButtonInit
+ 1021              	.LVL98:
  255:Core/Src/balance_car/balance_control.c ****     BalanceCar_ResetPidAndOutputs();
- 1054              		.loc 1 255 5 view .LVU281
- 1055 0006 FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
- 1056              	.LVL105:
+ 1022              		.loc 1 255 5 view .LVU268
+ 1023 0006 FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
+ 1024              	.LVL99:
  256:Core/Src/balance_car/balance_control.c **** 
  257:Core/Src/balance_car/balance_control.c ****     if (TB6612_Init() != HAL_OK) {
- 1057              		.loc 1 257 5 view .LVU282
- 1058              		.loc 1 257 9 is_stmt 0 view .LVU283
- 1059 000a FFF7FEFF 		bl	TB6612_Init
- 1060              	.LVL106:
- 1061              		.loc 1 257 8 discriminator 1 view .LVU284
- 1062 000e 0446     		mov	r4, r0
- 1063 0010 68BB     		cbnz	r0, .L64
- 1064              	.LVL107:
- 1065              	.L57:
+ 1025              		.loc 1 257 5 view .LVU269
+ 1026              		.loc 1 257 9 is_stmt 0 view .LVU270
+ 1027 000a FFF7FEFF 		bl	TB6612_Init
+ 1028              	.LVL100:
+ 1029              		.loc 1 257 8 discriminator 1 view .LVU271
+ 1030 000e 0446     		mov	r4, r0
+ 1031 0010 68BB     		cbnz	r0, .L64
+ 1032              	.LVL101:
+ 1033              	.L57:
  258:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_MOTOR_INIT);
  259:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
  260:Core/Src/balance_car/balance_control.c ****     }
-ARM GAS  D:\TMP\cckbiAF2.s 			page 26
-
-
  261:Core/Src/balance_car/balance_control.c ****     if (Encoder_Init() != HAL_OK) {
- 1066              		.loc 1 261 5 is_stmt 1 view .LVU285
- 1067              		.loc 1 261 9 is_stmt 0 view .LVU286
- 1068 0012 FFF7FEFF 		bl	Encoder_Init
- 1069              	.LVL108:
- 1070              		.loc 1 261 8 discriminator 1 view .LVU287
- 1071 0016 78BB     		cbnz	r0, .L65
- 1072              	.LVL109:
- 1073              	.L58:
+ 1034              		.loc 1 261 5 is_stmt 1 view .LVU272
+ 1035              		.loc 1 261 9 is_stmt 0 view .LVU273
+ 1036 0012 FFF7FEFF 		bl	Encoder_Init
+ 1037              	.LVL102:
+ 1038              		.loc 1 261 8 discriminator 1 view .LVU274
+ 1039 0016 78BB     		cbnz	r0, .L65
+ 1040              	.LVL103:
+ 1041              	.L58:
  262:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_ENCODER_INIT);
  263:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
  264:Core/Src/balance_car/balance_control.c ****     }
  265:Core/Src/balance_car/balance_control.c ****     if (Mpu6050_Init() != HAL_OK) {
- 1074              		.loc 1 265 5 is_stmt 1 view .LVU288
- 1075              		.loc 1 265 9 is_stmt 0 view .LVU289
- 1076 0018 FFF7FEFF 		bl	Mpu6050_Init
- 1077              	.LVL110:
- 1078              		.loc 1 265 8 discriminator 1 view .LVU290
- 1079 001c 88BB     		cbnz	r0, .L66
+ 1042              		.loc 1 265 5 is_stmt 1 view .LVU275
+ 1043              		.loc 1 265 9 is_stmt 0 view .LVU276
+ 1044 0018 FFF7FEFF 		bl	Mpu6050_Init
+ 1045              	.LVL104:
+ 1046              		.loc 1 265 8 discriminator 1 view .LVU277
+ 1047 001c 88BB     		cbnz	r0, .L66
  266:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_MPU_INIT);
  267:Core/Src/balance_car/balance_control.c ****         g_balance_state.imu_ready = 0U;
  268:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
  269:Core/Src/balance_car/balance_control.c ****     } else {
  270:Core/Src/balance_car/balance_control.c ****         g_balance_state.imu_ready = 1U;
- 1080              		.loc 1 270 9 is_stmt 1 view .LVU291
- 1081              		.loc 1 270 35 is_stmt 0 view .LVU292
- 1082 001e 1D4B     		ldr	r3, .L67
- 1083 0020 0122     		movs	r2, #1
- 1084 0022 5A72     		strb	r2, [r3, #9]
- 1085              	.LVL111:
- 1086              	.L60:
+ 1048              		.loc 1 270 9 is_stmt 1 view .LVU278
+ 1049              		.loc 1 270 35 is_stmt 0 view .LVU279
+ 1050 001e 1D4B     		ldr	r3, .L67
+ 1051 0020 0122     		movs	r2, #1
+ 1052 0022 5A72     		strb	r2, [r3, #9]
+ 1053              	.LVL105:
+ 1054              	.L60:
  271:Core/Src/balance_car/balance_control.c ****     }
  272:Core/Src/balance_car/balance_control.c ****     g_balance_state.mpu_id = Mpu6050_GetLastId();
- 1087              		.loc 1 272 5 is_stmt 1 view .LVU293
- 1088              		.loc 1 272 30 is_stmt 0 view .LVU294
- 1089 0024 FFF7FEFF 		bl	Mpu6050_GetLastId
- 1090              	.LVL112:
- 1091              		.loc 1 272 28 discriminator 1 view .LVU295
- 1092 0028 1A4B     		ldr	r3, .L67
- 1093 002a D872     		strb	r0, [r3, #11]
+ 1055              		.loc 1 272 5 is_stmt 1 view .LVU280
+ 1056              		.loc 1 272 30 is_stmt 0 view .LVU281
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 26
+
+
+ 1057 0024 FFF7FEFF 		bl	Mpu6050_GetLastId
+ 1058              	.LVL106:
+ 1059              		.loc 1 272 28 discriminator 1 view .LVU282
+ 1060 0028 1A4B     		ldr	r3, .L67
+ 1061 002a D872     		strb	r0, [r3, #11]
  273:Core/Src/balance_car/balance_control.c **** 
  274:Core/Src/balance_car/balance_control.c ****     (void)AppSensors_Init();
- 1094              		.loc 1 274 5 is_stmt 1 view .LVU296
- 1095              		.loc 1 274 11 is_stmt 0 view .LVU297
- 1096 002c FFF7FEFF 		bl	AppSensors_Init
- 1097              	.LVL113:
+ 1062              		.loc 1 274 5 is_stmt 1 view .LVU283
+ 1063              		.loc 1 274 11 is_stmt 0 view .LVU284
+ 1064 002c FFF7FEFF 		bl	AppSensors_Init
+ 1065              	.LVL107:
  275:Core/Src/balance_car/balance_control.c ****     (void)RemoteControl_Init();
- 1098              		.loc 1 275 5 is_stmt 1 view .LVU298
- 1099              		.loc 1 275 11 is_stmt 0 view .LVU299
- 1100 0030 FFF7FEFF 		bl	RemoteControl_Init
- 1101              	.LVL114:
+ 1066              		.loc 1 275 5 is_stmt 1 view .LVU285
+ 1067              		.loc 1 275 11 is_stmt 0 view .LVU286
+ 1068 0030 FFF7FEFF 		bl	RemoteControl_Init
+ 1069              	.LVL108:
  276:Core/Src/balance_car/balance_control.c ****     (void)RaspiLink_Init();
- 1102              		.loc 1 276 5 is_stmt 1 view .LVU300
- 1103              		.loc 1 276 11 is_stmt 0 view .LVU301
- 1104 0034 FFF7FEFF 		bl	RaspiLink_Init
- 1105              	.LVL115:
+ 1070              		.loc 1 276 5 is_stmt 1 view .LVU287
+ 1071              		.loc 1 276 11 is_stmt 0 view .LVU288
+ 1072 0034 FFF7FEFF 		bl	RaspiLink_Init
+ 1073              	.LVL109:
  277:Core/Src/balance_car/balance_control.c **** 
-ARM GAS  D:\TMP\cckbiAF2.s 			page 27
-
-
  278:Core/Src/balance_car/balance_control.c ****     s_htim4.Instance = TIM4;
- 1106              		.loc 1 278 5 is_stmt 1 view .LVU302
- 1107              		.loc 1 278 22 is_stmt 0 view .LVU303
- 1108 0038 1748     		ldr	r0, .L67+4
- 1109 003a 184B     		ldr	r3, .L67+8
- 1110 003c 0360     		str	r3, [r0]
+ 1074              		.loc 1 278 5 is_stmt 1 view .LVU289
+ 1075              		.loc 1 278 22 is_stmt 0 view .LVU290
+ 1076 0038 1748     		ldr	r0, .L67+4
+ 1077 003a 184B     		ldr	r3, .L67+8
+ 1078 003c 0360     		str	r3, [r0]
  279:Core/Src/balance_car/balance_control.c ****     s_htim4.Init.Prescaler = 64U - 1U;
- 1111              		.loc 1 279 5 is_stmt 1 view .LVU304
- 1112              		.loc 1 279 28 is_stmt 0 view .LVU305
- 1113 003e 3F23     		movs	r3, #63
- 1114 0040 4360     		str	r3, [r0, #4]
+ 1079              		.loc 1 279 5 is_stmt 1 view .LVU291
+ 1080              		.loc 1 279 28 is_stmt 0 view .LVU292
+ 1081 003e 3F23     		movs	r3, #63
+ 1082 0040 4360     		str	r3, [r0, #4]
  280:Core/Src/balance_car/balance_control.c ****     s_htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
- 1115              		.loc 1 280 5 is_stmt 1 view .LVU306
- 1116              		.loc 1 280 30 is_stmt 0 view .LVU307
- 1117 0042 0023     		movs	r3, #0
- 1118 0044 8360     		str	r3, [r0, #8]
+ 1083              		.loc 1 280 5 is_stmt 1 view .LVU293
+ 1084              		.loc 1 280 30 is_stmt 0 view .LVU294
+ 1085 0042 0023     		movs	r3, #0
+ 1086 0044 8360     		str	r3, [r0, #8]
  281:Core/Src/balance_car/balance_control.c ****     s_htim4.Init.Period = 1000U - 1U;
- 1119              		.loc 1 281 5 is_stmt 1 view .LVU308
- 1120              		.loc 1 281 25 is_stmt 0 view .LVU309
- 1121 0046 40F2E732 		movw	r2, #999
- 1122 004a C260     		str	r2, [r0, #12]
+ 1087              		.loc 1 281 5 is_stmt 1 view .LVU295
+ 1088              		.loc 1 281 25 is_stmt 0 view .LVU296
+ 1089 0046 40F2E732 		movw	r2, #999
+ 1090 004a C260     		str	r2, [r0, #12]
  282:Core/Src/balance_car/balance_control.c ****     s_htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
- 1123              		.loc 1 282 5 is_stmt 1 view .LVU310
- 1124              		.loc 1 282 32 is_stmt 0 view .LVU311
- 1125 004c 0361     		str	r3, [r0, #16]
+ 1091              		.loc 1 282 5 is_stmt 1 view .LVU297
+ 1092              		.loc 1 282 32 is_stmt 0 view .LVU298
+ 1093 004c 0361     		str	r3, [r0, #16]
  283:Core/Src/balance_car/balance_control.c ****     s_htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
- 1126              		.loc 1 283 5 is_stmt 1 view .LVU312
- 1127              		.loc 1 283 36 is_stmt 0 view .LVU313
- 1128 004e 8361     		str	r3, [r0, #24]
+ 1094              		.loc 1 283 5 is_stmt 1 view .LVU299
+ 1095              		.loc 1 283 36 is_stmt 0 view .LVU300
+ 1096 004e 8361     		str	r3, [r0, #24]
  284:Core/Src/balance_car/balance_control.c ****     if (HAL_TIM_Base_Init(&s_htim4) != HAL_OK || HAL_TIM_Base_Start_IT(&s_htim4) != HAL_OK) {
- 1129              		.loc 1 284 5 is_stmt 1 view .LVU314
- 1130              		.loc 1 284 9 is_stmt 0 view .LVU315
- 1131 0050 FFF7FEFF 		bl	HAL_TIM_Base_Init
- 1132              	.LVL116:
- 1133              		.loc 1 284 8 discriminator 1 view .LVU316
- 1134 0054 18B9     		cbnz	r0, .L61
- 1135              		.loc 1 284 50 discriminator 1 view .LVU317
- 1136 0056 1048     		ldr	r0, .L67+4
- 1137 0058 FFF7FEFF 		bl	HAL_TIM_Base_Start_IT
- 1138              	.LVL117:
- 1139              		.loc 1 284 47 discriminator 1 view .LVU318
- 1140 005c 18B1     		cbz	r0, .L62
- 1141              	.L61:
+ 1097              		.loc 1 284 5 is_stmt 1 view .LVU301
+ 1098              		.loc 1 284 9 is_stmt 0 view .LVU302
+ 1099 0050 FFF7FEFF 		bl	HAL_TIM_Base_Init
+ 1100              	.LVL110:
+ 1101              		.loc 1 284 8 discriminator 1 view .LVU303
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 27
+
+
+ 1102 0054 18B9     		cbnz	r0, .L61
+ 1103              		.loc 1 284 50 discriminator 1 view .LVU304
+ 1104 0056 1048     		ldr	r0, .L67+4
+ 1105 0058 FFF7FEFF 		bl	HAL_TIM_Base_Start_IT
+ 1106              	.LVL111:
+ 1107              		.loc 1 284 47 discriminator 1 view .LVU305
+ 1108 005c 18B1     		cbz	r0, .L62
+ 1109              	.L61:
  285:Core/Src/balance_car/balance_control.c ****         BalanceCar_SetFault(BALANCE_FAULT_TIMER_INIT);
- 1142              		.loc 1 285 9 is_stmt 1 view .LVU319
- 1143 005e 4020     		movs	r0, #64
- 1144 0060 FFF7FEFF 		bl	BalanceCar_SetFault
- 1145              	.LVL118:
+ 1110              		.loc 1 285 9 is_stmt 1 view .LVU306
+ 1111 005e 4020     		movs	r0, #64
+ 1112 0060 FFF7FEFF 		bl	BalanceCar_SetFault
+ 1113              	.LVL112:
  286:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
- 1146              		.loc 1 286 9 view .LVU320
- 1147              		.loc 1 286 16 is_stmt 0 view .LVU321
- 1148 0064 0124     		movs	r4, #1
- 1149              	.LVL119:
- 1150              	.L62:
+ 1114              		.loc 1 286 9 view .LVU307
+ 1115              		.loc 1 286 16 is_stmt 0 view .LVU308
+ 1116 0064 0124     		movs	r4, #1
+ 1117              	.LVL113:
+ 1118              	.L62:
  287:Core/Src/balance_car/balance_control.c ****     }
  288:Core/Src/balance_car/balance_control.c **** 
  289:Core/Src/balance_car/balance_control.c ****     BalanceCar_Stop();
-ARM GAS  D:\TMP\cckbiAF2.s 			page 28
-
-
- 1151              		.loc 1 289 5 is_stmt 1 view .LVU322
- 1152 0066 FFF7FEFF 		bl	BalanceCar_Stop
- 1153              	.LVL120:
+ 1119              		.loc 1 289 5 is_stmt 1 view .LVU309
+ 1120 0066 FFF7FEFF 		bl	BalanceCar_Stop
+ 1121              	.LVL114:
  290:Core/Src/balance_car/balance_control.c ****     return status;
- 1154              		.loc 1 290 5 view .LVU323
+ 1122              		.loc 1 290 5 view .LVU310
  291:Core/Src/balance_car/balance_control.c **** }
- 1155              		.loc 1 291 1 is_stmt 0 view .LVU324
- 1156 006a 2046     		mov	r0, r4
- 1157 006c 10BD     		pop	{r4, pc}
- 1158              	.LVL121:
- 1159              	.L64:
+ 1123              		.loc 1 291 1 is_stmt 0 view .LVU311
+ 1124 006a 2046     		mov	r0, r4
+ 1125 006c 10BD     		pop	{r4, pc}
+ 1126              	.LVL115:
+ 1127              	.L64:
  258:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
- 1160              		.loc 1 258 9 is_stmt 1 view .LVU325
- 1161 006e 1020     		movs	r0, #16
- 1162 0070 FFF7FEFF 		bl	BalanceCar_SetFault
- 1163              	.LVL122:
+ 1128              		.loc 1 258 9 is_stmt 1 view .LVU312
+ 1129 006e 1020     		movs	r0, #16
+ 1130 0070 FFF7FEFF 		bl	BalanceCar_SetFault
+ 1131              	.LVL116:
  259:Core/Src/balance_car/balance_control.c ****     }
- 1164              		.loc 1 259 9 view .LVU326
+ 1132              		.loc 1 259 9 view .LVU313
  259:Core/Src/balance_car/balance_control.c ****     }
- 1165              		.loc 1 259 16 is_stmt 0 view .LVU327
- 1166 0074 0124     		movs	r4, #1
- 1167 0076 CCE7     		b	.L57
- 1168              	.LVL123:
- 1169              	.L65:
+ 1133              		.loc 1 259 16 is_stmt 0 view .LVU314
+ 1134 0074 0124     		movs	r4, #1
+ 1135 0076 CCE7     		b	.L57
+ 1136              	.LVL117:
+ 1137              	.L65:
  262:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
- 1170              		.loc 1 262 9 is_stmt 1 view .LVU328
- 1171 0078 2020     		movs	r0, #32
- 1172 007a FFF7FEFF 		bl	BalanceCar_SetFault
- 1173              	.LVL124:
+ 1138              		.loc 1 262 9 is_stmt 1 view .LVU315
+ 1139 0078 2020     		movs	r0, #32
+ 1140 007a FFF7FEFF 		bl	BalanceCar_SetFault
+ 1141              	.LVL118:
  263:Core/Src/balance_car/balance_control.c ****     }
- 1174              		.loc 1 263 9 view .LVU329
+ 1142              		.loc 1 263 9 view .LVU316
  263:Core/Src/balance_car/balance_control.c ****     }
- 1175              		.loc 1 263 16 is_stmt 0 view .LVU330
- 1176 007e 0124     		movs	r4, #1
- 1177 0080 CAE7     		b	.L58
- 1178              	.LVL125:
- 1179              	.L66:
+ 1143              		.loc 1 263 16 is_stmt 0 view .LVU317
+ 1144 007e 0124     		movs	r4, #1
+ 1145 0080 CAE7     		b	.L58
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 28
+
+
+ 1146              	.LVL119:
+ 1147              	.L66:
  266:Core/Src/balance_car/balance_control.c ****         g_balance_state.imu_ready = 0U;
- 1180              		.loc 1 266 9 is_stmt 1 view .LVU331
- 1181 0082 0120     		movs	r0, #1
- 1182 0084 FFF7FEFF 		bl	BalanceCar_SetFault
- 1183              	.LVL126:
+ 1148              		.loc 1 266 9 is_stmt 1 view .LVU318
+ 1149 0082 0120     		movs	r0, #1
+ 1150 0084 FFF7FEFF 		bl	BalanceCar_SetFault
+ 1151              	.LVL120:
  267:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
- 1184              		.loc 1 267 9 view .LVU332
+ 1152              		.loc 1 267 9 view .LVU319
  267:Core/Src/balance_car/balance_control.c ****         status = HAL_ERROR;
- 1185              		.loc 1 267 35 is_stmt 0 view .LVU333
- 1186 0088 024B     		ldr	r3, .L67
- 1187 008a 0022     		movs	r2, #0
- 1188 008c 5A72     		strb	r2, [r3, #9]
+ 1153              		.loc 1 267 35 is_stmt 0 view .LVU320
+ 1154 0088 024B     		ldr	r3, .L67
+ 1155 008a 0022     		movs	r2, #0
+ 1156 008c 5A72     		strb	r2, [r3, #9]
  268:Core/Src/balance_car/balance_control.c ****     } else {
- 1189              		.loc 1 268 9 is_stmt 1 view .LVU334
- 1190              	.LVL127:
+ 1157              		.loc 1 268 9 is_stmt 1 view .LVU321
+ 1158              	.LVL121:
  268:Core/Src/balance_car/balance_control.c ****     } else {
- 1191              		.loc 1 268 16 is_stmt 0 view .LVU335
- 1192 008e 0124     		movs	r4, #1
- 1193 0090 C8E7     		b	.L60
- 1194              	.L68:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 29
-
-
- 1195 0092 00BF     		.align	2
- 1196              	.L67:
- 1197 0094 00000000 		.word	g_balance_state
- 1198 0098 00000000 		.word	s_htim4
- 1199 009c 00080040 		.word	1073743872
- 1200              		.cfi_endproc
- 1201              	.LFE76:
- 1203              		.section	.text.BalanceCar_Background,"ax",%progbits
- 1204              		.align	1
- 1205              		.global	BalanceCar_Background
- 1206              		.syntax unified
- 1207              		.thumb
- 1208              		.thumb_func
- 1210              	BalanceCar_Background:
- 1211              	.LFB77:
+ 1159              		.loc 1 268 16 is_stmt 0 view .LVU322
+ 1160 008e 0124     		movs	r4, #1
+ 1161 0090 C8E7     		b	.L60
+ 1162              	.L68:
+ 1163 0092 00BF     		.align	2
+ 1164              	.L67:
+ 1165 0094 00000000 		.word	g_balance_state
+ 1166 0098 00000000 		.word	s_htim4
+ 1167 009c 00080040 		.word	1073743872
+ 1168              		.cfi_endproc
+ 1169              	.LFE76:
+ 1171              		.section	.text.BalanceCar_Background,"ax",%progbits
+ 1172              		.align	1
+ 1173              		.global	BalanceCar_Background
+ 1174              		.syntax unified
+ 1175              		.thumb
+ 1176              		.thumb_func
+ 1178              	BalanceCar_Background:
+ 1179              	.LFB77:
  292:Core/Src/balance_car/balance_control.c **** 
  293:Core/Src/balance_car/balance_control.c **** void BalanceCar_Background(void)
  294:Core/Src/balance_car/balance_control.c **** {
- 1212              		.loc 1 294 1 is_stmt 1 view -0
- 1213              		.cfi_startproc
- 1214              		@ args = 0, pretend = 0, frame = 0
- 1215              		@ frame_needed = 0, uses_anonymous_args = 0
- 1216 0000 08B5     		push	{r3, lr}
- 1217              	.LCFI17:
- 1218              		.cfi_def_cfa_offset 8
- 1219              		.cfi_offset 3, -8
- 1220              		.cfi_offset 14, -4
+ 1180              		.loc 1 294 1 is_stmt 1 view -0
+ 1181              		.cfi_startproc
+ 1182              		@ args = 0, pretend = 0, frame = 0
+ 1183              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1184 0000 08B5     		push	{r3, lr}
+ 1185              	.LCFI17:
+ 1186              		.cfi_def_cfa_offset 8
+ 1187              		.cfi_offset 3, -8
+ 1188              		.cfi_offset 14, -4
  295:Core/Src/balance_car/balance_control.c ****     RaspiLink_Background();
- 1221              		.loc 1 295 5 view .LVU337
- 1222 0002 FFF7FEFF 		bl	RaspiLink_Background
- 1223              	.LVL128:
+ 1189              		.loc 1 295 5 view .LVU324
+ 1190 0002 FFF7FEFF 		bl	RaspiLink_Background
+ 1191              	.LVL122:
  296:Core/Src/balance_car/balance_control.c ****     AppSensors_Background();
- 1224              		.loc 1 296 5 view .LVU338
- 1225 0006 FFF7FEFF 		bl	AppSensors_Background
- 1226              	.LVL129:
+ 1192              		.loc 1 296 5 view .LVU325
+ 1193 0006 FFF7FEFF 		bl	AppSensors_Background
+ 1194              	.LVL123:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 29
+
+
  297:Core/Src/balance_car/balance_control.c ****     RemoteControl_Background();
- 1227              		.loc 1 297 5 view .LVU339
- 1228 000a FFF7FEFF 		bl	RemoteControl_Background
- 1229              	.LVL130:
+ 1195              		.loc 1 297 5 view .LVU326
+ 1196 000a FFF7FEFF 		bl	RemoteControl_Background
+ 1197              	.LVL124:
  298:Core/Src/balance_car/balance_control.c **** 
  299:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.clear_fault_request != 0U) {
- 1230              		.loc 1 299 5 view .LVU340
- 1231              		.loc 1 299 24 is_stmt 0 view .LVU341
- 1232 000e 234B     		ldr	r3, .L82
- 1233 0010 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
- 1234              		.loc 1 299 8 view .LVU342
- 1235 0012 23B1     		cbz	r3, .L70
+ 1198              		.loc 1 299 5 view .LVU327
+ 1199              		.loc 1 299 24 is_stmt 0 view .LVU328
+ 1200 000e 234B     		ldr	r3, .L82
+ 1201 0010 9B78     		ldrb	r3, [r3, #2]	@ zero_extendqisi2
+ 1202              		.loc 1 299 8 view .LVU329
+ 1203 0012 23B1     		cbz	r3, .L70
  300:Core/Src/balance_car/balance_control.c ****         g_balance_debug.clear_fault_request = 0U;
- 1236              		.loc 1 300 9 is_stmt 1 view .LVU343
- 1237              		.loc 1 300 45 is_stmt 0 view .LVU344
- 1238 0014 0023     		movs	r3, #0
- 1239 0016 214A     		ldr	r2, .L82
- 1240 0018 9370     		strb	r3, [r2, #2]
+ 1204              		.loc 1 300 9 is_stmt 1 view .LVU330
+ 1205              		.loc 1 300 45 is_stmt 0 view .LVU331
+ 1206 0014 0023     		movs	r3, #0
+ 1207 0016 214A     		ldr	r2, .L82
+ 1208 0018 9370     		strb	r3, [r2, #2]
  301:Core/Src/balance_car/balance_control.c ****         g_balance_state.fault_flags = BALANCE_FAULT_NONE;
- 1241              		.loc 1 301 9 is_stmt 1 view .LVU345
- 1242              		.loc 1 301 37 is_stmt 0 view .LVU346
- 1243 001a 214A     		ldr	r2, .L82+4
-ARM GAS  D:\TMP\cckbiAF2.s 			page 30
-
-
- 1244 001c 5360     		str	r3, [r2, #4]
- 1245              	.L70:
+ 1209              		.loc 1 301 9 is_stmt 1 view .LVU332
+ 1210              		.loc 1 301 37 is_stmt 0 view .LVU333
+ 1211 001a 214A     		ldr	r2, .L82+4
+ 1212 001c 5360     		str	r3, [r2, #4]
+ 1213              	.L70:
  302:Core/Src/balance_car/balance_control.c ****     }
  303:Core/Src/balance_car/balance_control.c **** 
  304:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.reset_pid_request != 0U) {
- 1246              		.loc 1 304 5 is_stmt 1 view .LVU347
- 1247              		.loc 1 304 24 is_stmt 0 view .LVU348
- 1248 001e 1F4B     		ldr	r3, .L82
- 1249 0020 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
- 1250              		.loc 1 304 8 view .LVU349
- 1251 0022 53B9     		cbnz	r3, .L79
- 1252              	.L71:
+ 1214              		.loc 1 304 5 is_stmt 1 view .LVU334
+ 1215              		.loc 1 304 24 is_stmt 0 view .LVU335
+ 1216 001e 1F4B     		ldr	r3, .L82
+ 1217 0020 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 1218              		.loc 1 304 8 view .LVU336
+ 1219 0022 53B9     		cbnz	r3, .L79
+ 1220              	.L71:
  305:Core/Src/balance_car/balance_control.c ****         g_balance_debug.reset_pid_request = 0U;
  306:Core/Src/balance_car/balance_control.c ****         BalanceCar_ResetPidAndOutputs();
  307:Core/Src/balance_car/balance_control.c ****     }
  308:Core/Src/balance_car/balance_control.c **** 
  309:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.run_enable != 0U && s_last_run_enable == 0U) {
- 1253              		.loc 1 309 5 is_stmt 1 view .LVU350
- 1254              		.loc 1 309 24 is_stmt 0 view .LVU351
- 1255 0024 1D4B     		ldr	r3, .L82
- 1256 0026 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1257              		.loc 1 309 8 view .LVU352
- 1258 0028 13B1     		cbz	r3, .L72
- 1259              		.loc 1 309 63 discriminator 1 view .LVU353
- 1260 002a 1E4B     		ldr	r3, .L82+8
- 1261 002c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1262              		.loc 1 309 42 discriminator 1 view .LVU354
- 1263 002e 53B1     		cbz	r3, .L80
- 1264              	.L72:
+ 1221              		.loc 1 309 5 is_stmt 1 view .LVU337
+ 1222              		.loc 1 309 24 is_stmt 0 view .LVU338
+ 1223 0024 1D4B     		ldr	r3, .L82
+ 1224 0026 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1225              		.loc 1 309 8 view .LVU339
+ 1226 0028 13B1     		cbz	r3, .L72
+ 1227              		.loc 1 309 63 discriminator 1 view .LVU340
+ 1228 002a 1E4B     		ldr	r3, .L82+8
+ 1229 002c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1230              		.loc 1 309 42 discriminator 1 view .LVU341
+ 1231 002e 53B1     		cbz	r3, .L80
+ 1232              	.L72:
  310:Core/Src/balance_car/balance_control.c ****         BalanceCar_ClearRuntimeFaults();
  311:Core/Src/balance_car/balance_control.c ****         BalanceCar_ResetPidAndOutputs();
  312:Core/Src/balance_car/balance_control.c ****         s_angle = g_balance_state.angle;
  313:Core/Src/balance_car/balance_control.c ****     }
  314:Core/Src/balance_car/balance_control.c ****     s_last_run_enable = g_balance_debug.run_enable;
- 1265              		.loc 1 314 5 is_stmt 1 view .LVU355
- 1266              		.loc 1 314 40 is_stmt 0 view .LVU356
- 1267 0030 1A4B     		ldr	r3, .L82
- 1268 0032 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
- 1269              		.loc 1 314 23 view .LVU357
- 1270 0034 1B4B     		ldr	r3, .L82+8
- 1271 0036 1A70     		strb	r2, [r3]
+ 1233              		.loc 1 314 5 is_stmt 1 view .LVU342
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 30
+
+
+ 1234              		.loc 1 314 40 is_stmt 0 view .LVU343
+ 1235 0030 1A4B     		ldr	r3, .L82
+ 1236 0032 1A78     		ldrb	r2, [r3]	@ zero_extendqisi2
+ 1237              		.loc 1 314 23 view .LVU344
+ 1238 0034 1B4B     		ldr	r3, .L82+8
+ 1239 0036 1A70     		strb	r2, [r3]
  315:Core/Src/balance_car/balance_control.c **** 
  316:Core/Src/balance_car/balance_control.c ****     while (s_angle_tick_pending != 0U) {
- 1272              		.loc 1 316 5 is_stmt 1 view .LVU358
- 1273              		.loc 1 316 11 is_stmt 0 view .LVU359
- 1274 0038 17E0     		b	.L73
- 1275              	.L79:
+ 1240              		.loc 1 316 5 is_stmt 1 view .LVU345
+ 1241              		.loc 1 316 11 is_stmt 0 view .LVU346
+ 1242 0038 17E0     		b	.L73
+ 1243              	.L79:
  305:Core/Src/balance_car/balance_control.c ****         BalanceCar_ResetPidAndOutputs();
- 1276              		.loc 1 305 9 is_stmt 1 view .LVU360
+ 1244              		.loc 1 305 9 is_stmt 1 view .LVU347
  305:Core/Src/balance_car/balance_control.c ****         BalanceCar_ResetPidAndOutputs();
- 1277              		.loc 1 305 43 is_stmt 0 view .LVU361
- 1278 003a 184B     		ldr	r3, .L82
- 1279 003c 0022     		movs	r2, #0
- 1280 003e 5A70     		strb	r2, [r3, #1]
+ 1245              		.loc 1 305 43 is_stmt 0 view .LVU348
+ 1246 003a 184B     		ldr	r3, .L82
+ 1247 003c 0022     		movs	r2, #0
+ 1248 003e 5A70     		strb	r2, [r3, #1]
  306:Core/Src/balance_car/balance_control.c ****     }
- 1281              		.loc 1 306 9 is_stmt 1 view .LVU362
- 1282 0040 FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
-ARM GAS  D:\TMP\cckbiAF2.s 			page 31
-
-
- 1283              	.LVL131:
- 1284 0044 EEE7     		b	.L71
- 1285              	.L80:
+ 1249              		.loc 1 306 9 is_stmt 1 view .LVU349
+ 1250 0040 FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
+ 1251              	.LVL125:
+ 1252 0044 EEE7     		b	.L71
+ 1253              	.L80:
  310:Core/Src/balance_car/balance_control.c ****         BalanceCar_ResetPidAndOutputs();
- 1286              		.loc 1 310 9 view .LVU363
- 1287 0046 FFF7FEFF 		bl	BalanceCar_ClearRuntimeFaults
- 1288              	.LVL132:
+ 1254              		.loc 1 310 9 view .LVU350
+ 1255 0046 FFF7FEFF 		bl	BalanceCar_ClearRuntimeFaults
+ 1256              	.LVL126:
  311:Core/Src/balance_car/balance_control.c ****         s_angle = g_balance_state.angle;
- 1289              		.loc 1 311 9 view .LVU364
- 1290 004a FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
- 1291              	.LVL133:
+ 1257              		.loc 1 311 9 view .LVU351
+ 1258 004a FFF7FEFF 		bl	BalanceCar_ResetPidAndOutputs
+ 1259              	.LVL127:
  312:Core/Src/balance_car/balance_control.c ****     }
- 1292              		.loc 1 312 9 view .LVU365
+ 1260              		.loc 1 312 9 view .LVU352
  312:Core/Src/balance_car/balance_control.c ****     }
- 1293              		.loc 1 312 34 is_stmt 0 view .LVU366
- 1294 004e 144B     		ldr	r3, .L82+4
- 1295 0050 5A6A     		ldr	r2, [r3, #36]	@ float
+ 1261              		.loc 1 312 34 is_stmt 0 view .LVU353
+ 1262 004e 144B     		ldr	r3, .L82+4
+ 1263 0050 5A6A     		ldr	r2, [r3, #36]	@ float
  312:Core/Src/balance_car/balance_control.c ****     }
- 1296              		.loc 1 312 17 view .LVU367
- 1297 0052 154B     		ldr	r3, .L82+12
- 1298 0054 1A60     		str	r2, [r3]	@ float
- 1299 0056 EBE7     		b	.L72
- 1300              	.L74:
+ 1264              		.loc 1 312 17 view .LVU354
+ 1265 0052 154B     		ldr	r3, .L82+12
+ 1266 0054 1A60     		str	r2, [r3]	@ float
+ 1267 0056 EBE7     		b	.L72
+ 1268              	.L74:
  317:Core/Src/balance_car/balance_control.c ****         __disable_irq();
- 1301              		.loc 1 317 9 is_stmt 1 view .LVU368
- 1302              	.LBB11:
- 1303              	.LBI11:
- 1304              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+ 1269              		.loc 1 317 9 is_stmt 1 view .LVU355
+ 1270              	.LBB11:
+ 1271              	.LBI11:
+ 1272              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
    1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
    2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
    3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
@@ -1836,6 +1798,9 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
    5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
    6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
    7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 31
+
+
    8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
    9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
   10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
@@ -1858,9 +1823,6 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
   28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
   29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
-ARM GAS  D:\TMP\cckbiAF2.s 			page 32
-
-
   30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
   31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
   32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -1896,6 +1858,9 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
   63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 32
+
+
   65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
   66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
@@ -1918,9 +1883,6 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
   84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
   85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
-ARM GAS  D:\TMP\cckbiAF2.s 			page 33
-
-
   87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
   88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
   89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
@@ -1956,6 +1918,9 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
  120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
  121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 33
+
+
  122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -1975,697 +1940,694 @@ ARM GAS  D:\TMP\cckbiAF2.s 			page 1
  138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
  139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
- 1305              		.loc 2 140 27 view .LVU369
- 1306              	.LBB12:
+ 1273              		.loc 2 140 27 view .LVU356
+ 1274              	.LBB12:
  141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
-ARM GAS  D:\TMP\cckbiAF2.s 			page 34
-
-
  142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
- 1307              		.loc 2 142 3 view .LVU370
- 1308              		.syntax unified
- 1309              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
- 1310 0058 72B6     		cpsid i
- 1311              	@ 0 "" 2
- 1312              		.thumb
- 1313              		.syntax unified
- 1314              	.LBE12:
- 1315              	.LBE11:
+ 1275              		.loc 2 142 3 view .LVU357
+ 1276              		.syntax unified
+ 1277              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 1278 0058 72B6     		cpsid i
+ 1279              	@ 0 "" 2
+ 1280              		.thumb
+ 1281              		.syntax unified
+ 1282              	.LBE12:
+ 1283              	.LBE11:
  318:Core/Src/balance_car/balance_control.c ****         s_angle_tick_pending--;
- 1316              		.loc 1 318 9 view .LVU371
- 1317              		.loc 1 318 29 is_stmt 0 view .LVU372
- 1318 005a 144A     		ldr	r2, .L82+16
- 1319 005c 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1320 005e 013B     		subs	r3, r3, #1
- 1321 0060 DBB2     		uxtb	r3, r3
- 1322 0062 1370     		strb	r3, [r2]
+ 1284              		.loc 1 318 9 view .LVU358
+ 1285              		.loc 1 318 29 is_stmt 0 view .LVU359
+ 1286 005a 144A     		ldr	r2, .L82+16
+ 1287 005c 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1288 005e 013B     		subs	r3, r3, #1
+ 1289 0060 DBB2     		uxtb	r3, r3
+ 1290 0062 1370     		strb	r3, [r2]
  319:Core/Src/balance_car/balance_control.c ****         __enable_irq();
- 1323              		.loc 1 319 9 is_stmt 1 view .LVU373
- 1324              	.LBB13:
- 1325              	.LBI13:
+ 1291              		.loc 1 319 9 is_stmt 1 view .LVU360
+ 1292              	.LBB13:
+ 1293              	.LBI13:
  129:Drivers/CMSIS/Include/cmsis_gcc.h **** {
- 1326              		.loc 2 129 27 view .LVU374
- 1327              	.LBB14:
+ 1294              		.loc 2 129 27 view .LVU361
+ 1295              	.LBB14:
  131:Drivers/CMSIS/Include/cmsis_gcc.h **** }
- 1328              		.loc 2 131 3 view .LVU375
- 1329              		.syntax unified
- 1330              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
- 1331 0064 62B6     		cpsie i
- 1332              	@ 0 "" 2
- 1333              		.thumb
- 1334              		.syntax unified
- 1335              	.LBE14:
- 1336              	.LBE13:
+ 1296              		.loc 2 131 3 view .LVU362
+ 1297              		.syntax unified
+ 1298              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 1299 0064 62B6     		cpsie i
+ 1300              	@ 0 "" 2
+ 1301              		.thumb
+ 1302              		.syntax unified
+ 1303              	.LBE14:
+ 1304              	.LBE13:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 34
+
+
  320:Core/Src/balance_car/balance_control.c ****         BalanceCar_RunAngleLoop();
- 1337              		.loc 1 320 9 view .LVU376
- 1338 0066 FFF7FEFF 		bl	BalanceCar_RunAngleLoop
- 1339              	.LVL134:
- 1340              	.L73:
+ 1305              		.loc 1 320 9 view .LVU363
+ 1306 0066 FFF7FEFF 		bl	BalanceCar_RunAngleLoop
+ 1307              	.LVL128:
+ 1308              	.L73:
  316:Core/Src/balance_car/balance_control.c ****         __disable_irq();
- 1341              		.loc 1 316 33 view .LVU377
- 1342 006a 104B     		ldr	r3, .L82+16
- 1343 006c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1344 006e 002B     		cmp	r3, #0
- 1345 0070 F2D1     		bne	.L74
- 1346 0072 08E0     		b	.L75
- 1347              	.L76:
+ 1309              		.loc 1 316 33 view .LVU364
+ 1310 006a 104B     		ldr	r3, .L82+16
+ 1311 006c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1312 006e 002B     		cmp	r3, #0
+ 1313 0070 F2D1     		bne	.L74
+ 1314 0072 08E0     		b	.L75
+ 1315              	.L76:
  321:Core/Src/balance_car/balance_control.c ****     }
  322:Core/Src/balance_car/balance_control.c **** 
  323:Core/Src/balance_car/balance_control.c ****     while (s_speed_tick_pending != 0U) {
  324:Core/Src/balance_car/balance_control.c ****         __disable_irq();
- 1348              		.loc 1 324 9 view .LVU378
- 1349              	.LBB15:
- 1350              	.LBI15:
+ 1316              		.loc 1 324 9 view .LVU365
+ 1317              	.LBB15:
+ 1318              	.LBI15:
  140:Drivers/CMSIS/Include/cmsis_gcc.h **** {
- 1351              		.loc 2 140 27 view .LVU379
-ARM GAS  D:\TMP\cckbiAF2.s 			page 35
-
-
- 1352              	.LBB16:
- 1353              		.loc 2 142 3 view .LVU380
- 1354              		.syntax unified
- 1355              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
- 1356 0074 72B6     		cpsid i
- 1357              	@ 0 "" 2
- 1358              		.thumb
- 1359              		.syntax unified
- 1360              	.LBE16:
- 1361              	.LBE15:
+ 1319              		.loc 2 140 27 view .LVU366
+ 1320              	.LBB16:
+ 1321              		.loc 2 142 3 view .LVU367
+ 1322              		.syntax unified
+ 1323              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 1324 0074 72B6     		cpsid i
+ 1325              	@ 0 "" 2
+ 1326              		.thumb
+ 1327              		.syntax unified
+ 1328              	.LBE16:
+ 1329              	.LBE15:
  325:Core/Src/balance_car/balance_control.c ****         s_speed_tick_pending--;
- 1362              		.loc 1 325 9 view .LVU381
- 1363              		.loc 1 325 29 is_stmt 0 view .LVU382
- 1364 0076 0E4A     		ldr	r2, .L82+20
- 1365 0078 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1366 007a 013B     		subs	r3, r3, #1
- 1367 007c DBB2     		uxtb	r3, r3
- 1368 007e 1370     		strb	r3, [r2]
+ 1330              		.loc 1 325 9 view .LVU368
+ 1331              		.loc 1 325 29 is_stmt 0 view .LVU369
+ 1332 0076 0E4A     		ldr	r2, .L82+20
+ 1333 0078 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1334 007a 013B     		subs	r3, r3, #1
+ 1335 007c DBB2     		uxtb	r3, r3
+ 1336 007e 1370     		strb	r3, [r2]
  326:Core/Src/balance_car/balance_control.c ****         __enable_irq();
- 1369              		.loc 1 326 9 is_stmt 1 view .LVU383
- 1370              	.LBB17:
- 1371              	.LBI17:
+ 1337              		.loc 1 326 9 is_stmt 1 view .LVU370
+ 1338              	.LBB17:
+ 1339              	.LBI17:
  129:Drivers/CMSIS/Include/cmsis_gcc.h **** {
- 1372              		.loc 2 129 27 view .LVU384
- 1373              	.LBB18:
+ 1340              		.loc 2 129 27 view .LVU371
+ 1341              	.LBB18:
  131:Drivers/CMSIS/Include/cmsis_gcc.h **** }
- 1374              		.loc 2 131 3 view .LVU385
- 1375              		.syntax unified
- 1376              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
- 1377 0080 62B6     		cpsie i
- 1378              	@ 0 "" 2
- 1379              		.thumb
- 1380              		.syntax unified
- 1381              	.LBE18:
- 1382              	.LBE17:
+ 1342              		.loc 2 131 3 view .LVU372
+ 1343              		.syntax unified
+ 1344              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 1345 0080 62B6     		cpsie i
+ 1346              	@ 0 "" 2
+ 1347              		.thumb
+ 1348              		.syntax unified
+ 1349              	.LBE18:
+ 1350              	.LBE17:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 35
+
+
  327:Core/Src/balance_car/balance_control.c ****         BalanceCar_RunSpeedLoop();
- 1383              		.loc 1 327 9 view .LVU386
- 1384 0082 FFF7FEFF 		bl	BalanceCar_RunSpeedLoop
- 1385              	.LVL135:
- 1386              	.L75:
+ 1351              		.loc 1 327 9 view .LVU373
+ 1352 0082 FFF7FEFF 		bl	BalanceCar_RunSpeedLoop
+ 1353              	.LVL129:
+ 1354              	.L75:
  323:Core/Src/balance_car/balance_control.c ****         __disable_irq();
- 1387              		.loc 1 323 33 view .LVU387
- 1388 0086 0A4B     		ldr	r3, .L82+20
- 1389 0088 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1390 008a 002B     		cmp	r3, #0
- 1391 008c F2D1     		bne	.L76
+ 1355              		.loc 1 323 33 view .LVU374
+ 1356 0086 0A4B     		ldr	r3, .L82+20
+ 1357 0088 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1358 008a 002B     		cmp	r3, #0
+ 1359 008c F2D1     		bne	.L76
  328:Core/Src/balance_car/balance_control.c ****     }
  329:Core/Src/balance_car/balance_control.c **** 
  330:Core/Src/balance_car/balance_control.c ****     if (g_balance_debug.run_enable == 0U) {
- 1392              		.loc 1 330 5 view .LVU388
- 1393              		.loc 1 330 24 is_stmt 0 view .LVU389
- 1394 008e 034B     		ldr	r3, .L82
- 1395 0090 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1396              		.loc 1 330 8 view .LVU390
- 1397 0092 03B1     		cbz	r3, .L81
- 1398              	.L69:
+ 1360              		.loc 1 330 5 view .LVU375
+ 1361              		.loc 1 330 24 is_stmt 0 view .LVU376
+ 1362 008e 034B     		ldr	r3, .L82
+ 1363 0090 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1364              		.loc 1 330 8 view .LVU377
+ 1365 0092 03B1     		cbz	r3, .L81
+ 1366              	.L69:
  331:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
-ARM GAS  D:\TMP\cckbiAF2.s 			page 36
-
-
  332:Core/Src/balance_car/balance_control.c ****     }
  333:Core/Src/balance_car/balance_control.c **** }
- 1399              		.loc 1 333 1 view .LVU391
- 1400 0094 08BD     		pop	{r3, pc}
- 1401              	.L81:
+ 1367              		.loc 1 333 1 view .LVU378
+ 1368 0094 08BD     		pop	{r3, pc}
+ 1369              	.L81:
  331:Core/Src/balance_car/balance_control.c ****         BalanceCar_Stop();
- 1402              		.loc 1 331 9 is_stmt 1 view .LVU392
- 1403 0096 FFF7FEFF 		bl	BalanceCar_Stop
- 1404              	.LVL136:
- 1405              		.loc 1 333 1 is_stmt 0 view .LVU393
- 1406 009a FBE7     		b	.L69
- 1407              	.L83:
- 1408              		.align	2
- 1409              	.L82:
- 1410 009c 00000000 		.word	g_balance_debug
- 1411 00a0 00000000 		.word	g_balance_state
- 1412 00a4 00000000 		.word	s_last_run_enable
- 1413 00a8 00000000 		.word	s_angle
- 1414 00ac 00000000 		.word	s_angle_tick_pending
- 1415 00b0 00000000 		.word	s_speed_tick_pending
- 1416              		.cfi_endproc
- 1417              	.LFE77:
- 1419              		.section	.text.BalanceCar_TimerTick1ms,"ax",%progbits
- 1420              		.align	1
- 1421              		.global	BalanceCar_TimerTick1ms
- 1422              		.syntax unified
- 1423              		.thumb
- 1424              		.thumb_func
- 1426              	BalanceCar_TimerTick1ms:
- 1427              	.LFB78:
+ 1370              		.loc 1 331 9 is_stmt 1 view .LVU379
+ 1371 0096 FFF7FEFF 		bl	BalanceCar_Stop
+ 1372              	.LVL130:
+ 1373              		.loc 1 333 1 is_stmt 0 view .LVU380
+ 1374 009a FBE7     		b	.L69
+ 1375              	.L83:
+ 1376              		.align	2
+ 1377              	.L82:
+ 1378 009c 00000000 		.word	g_balance_debug
+ 1379 00a0 00000000 		.word	g_balance_state
+ 1380 00a4 00000000 		.word	s_last_run_enable
+ 1381 00a8 00000000 		.word	s_angle
+ 1382 00ac 00000000 		.word	s_angle_tick_pending
+ 1383 00b0 00000000 		.word	s_speed_tick_pending
+ 1384              		.cfi_endproc
+ 1385              	.LFE77:
+ 1387              		.section	.text.BalanceCar_TimerTick1ms,"ax",%progbits
+ 1388              		.align	1
+ 1389              		.global	BalanceCar_TimerTick1ms
+ 1390              		.syntax unified
+ 1391              		.thumb
+ 1392              		.thumb_func
+ 1394              	BalanceCar_TimerTick1ms:
+ 1395              	.LFB78:
  334:Core/Src/balance_car/balance_control.c **** 
  335:Core/Src/balance_car/balance_control.c **** void BalanceCar_TimerTick1ms(void)
  336:Core/Src/balance_car/balance_control.c **** {
- 1428              		.loc 1 336 1 is_stmt 1 view -0
- 1429              		.cfi_startproc
- 1430              		@ args = 0, pretend = 0, frame = 0
- 1431              		@ frame_needed = 0, uses_anonymous_args = 0
- 1432 0000 08B5     		push	{r3, lr}
- 1433              	.LCFI18:
- 1434              		.cfi_def_cfa_offset 8
- 1435              		.cfi_offset 3, -8
- 1436              		.cfi_offset 14, -4
+ 1396              		.loc 1 336 1 is_stmt 1 view -0
+ 1397              		.cfi_startproc
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 36
+
+
+ 1398              		@ args = 0, pretend = 0, frame = 0
+ 1399              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1400 0000 08B5     		push	{r3, lr}
+ 1401              	.LCFI18:
+ 1402              		.cfi_def_cfa_offset 8
+ 1403              		.cfi_offset 3, -8
+ 1404              		.cfi_offset 14, -4
  337:Core/Src/balance_car/balance_control.c ****     static uint8_t count_angle;
- 1437              		.loc 1 337 5 view .LVU395
+ 1405              		.loc 1 337 5 view .LVU382
  338:Core/Src/balance_car/balance_control.c ****     static uint8_t count_speed;
- 1438              		.loc 1 338 5 view .LVU396
+ 1406              		.loc 1 338 5 view .LVU383
  339:Core/Src/balance_car/balance_control.c **** 
  340:Core/Src/balance_car/balance_control.c ****     g_balance_state.control_ms++;
- 1439              		.loc 1 340 5 view .LVU397
- 1440              		.loc 1 340 20 is_stmt 0 view .LVU398
- 1441 0002 1E4A     		ldr	r2, .L92
- 1442 0004 1368     		ldr	r3, [r2]
- 1443              		.loc 1 340 31 view .LVU399
- 1444 0006 0133     		adds	r3, r3, #1
- 1445 0008 1360     		str	r3, [r2]
+ 1407              		.loc 1 340 5 view .LVU384
+ 1408              		.loc 1 340 20 is_stmt 0 view .LVU385
+ 1409 0002 1E4A     		ldr	r2, .L92
+ 1410 0004 1368     		ldr	r3, [r2]
+ 1411              		.loc 1 340 31 view .LVU386
+ 1412 0006 0133     		adds	r3, r3, #1
+ 1413 0008 1360     		str	r3, [r2]
  341:Core/Src/balance_car/balance_control.c ****     BalanceCar_ButtonTick1ms();
- 1446              		.loc 1 341 5 is_stmt 1 view .LVU400
-ARM GAS  D:\TMP\cckbiAF2.s 			page 37
-
-
- 1447 000a FFF7FEFF 		bl	BalanceCar_ButtonTick1ms
- 1448              	.LVL137:
+ 1414              		.loc 1 341 5 is_stmt 1 view .LVU387
+ 1415 000a FFF7FEFF 		bl	BalanceCar_ButtonTick1ms
+ 1416              	.LVL131:
  342:Core/Src/balance_car/balance_control.c **** 
  343:Core/Src/balance_car/balance_control.c ****     count_angle++;
- 1449              		.loc 1 343 5 view .LVU401
- 1450              		.loc 1 343 16 is_stmt 0 view .LVU402
- 1451 000e 1C4A     		ldr	r2, .L92+4
- 1452 0010 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1453 0012 0133     		adds	r3, r3, #1
- 1454 0014 DBB2     		uxtb	r3, r3
- 1455 0016 1370     		strb	r3, [r2]
+ 1417              		.loc 1 343 5 view .LVU388
+ 1418              		.loc 1 343 16 is_stmt 0 view .LVU389
+ 1419 000e 1C4A     		ldr	r2, .L92+4
+ 1420 0010 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1421 0012 0133     		adds	r3, r3, #1
+ 1422 0014 DBB2     		uxtb	r3, r3
+ 1423 0016 1370     		strb	r3, [r2]
  344:Core/Src/balance_car/balance_control.c ****     if (count_angle >= 10U) {
- 1456              		.loc 1 344 5 is_stmt 1 view .LVU403
- 1457              		.loc 1 344 8 is_stmt 0 view .LVU404
- 1458 0018 092B     		cmp	r3, #9
- 1459 001a 0CD9     		bls	.L85
+ 1424              		.loc 1 344 5 is_stmt 1 view .LVU390
+ 1425              		.loc 1 344 8 is_stmt 0 view .LVU391
+ 1426 0018 092B     		cmp	r3, #9
+ 1427 001a 0CD9     		bls	.L85
  345:Core/Src/balance_car/balance_control.c ****         count_angle = 0U;
- 1460              		.loc 1 345 9 is_stmt 1 view .LVU405
- 1461              		.loc 1 345 21 is_stmt 0 view .LVU406
- 1462 001c 1346     		mov	r3, r2
- 1463 001e 0022     		movs	r2, #0
- 1464 0020 1A70     		strb	r2, [r3]
+ 1428              		.loc 1 345 9 is_stmt 1 view .LVU392
+ 1429              		.loc 1 345 21 is_stmt 0 view .LVU393
+ 1430 001c 1346     		mov	r3, r2
+ 1431 001e 0022     		movs	r2, #0
+ 1432 0020 1A70     		strb	r2, [r3]
  346:Core/Src/balance_car/balance_control.c ****         if (s_angle_tick_pending == 255U) {
- 1465              		.loc 1 346 9 is_stmt 1 view .LVU407
- 1466              		.loc 1 346 34 is_stmt 0 view .LVU408
- 1467 0022 184B     		ldr	r3, .L92+8
- 1468 0024 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1469 0026 DBB2     		uxtb	r3, r3
- 1470              		.loc 1 346 12 view .LVU409
- 1471 0028 FF2B     		cmp	r3, #255
- 1472 002a 19D0     		beq	.L90
+ 1433              		.loc 1 346 9 is_stmt 1 view .LVU394
+ 1434              		.loc 1 346 34 is_stmt 0 view .LVU395
+ 1435 0022 184B     		ldr	r3, .L92+8
+ 1436 0024 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1437 0026 DBB2     		uxtb	r3, r3
+ 1438              		.loc 1 346 12 view .LVU396
+ 1439 0028 FF2B     		cmp	r3, #255
+ 1440 002a 19D0     		beq	.L90
  347:Core/Src/balance_car/balance_control.c ****             BalanceCar_SetFault(BALANCE_FAULT_TIMER_OVERRUN);
  348:Core/Src/balance_car/balance_control.c ****             g_balance_state.timer_error_flag = 1U;
  349:Core/Src/balance_car/balance_control.c ****         } else {
  350:Core/Src/balance_car/balance_control.c ****             s_angle_tick_pending++;
- 1473              		.loc 1 350 13 is_stmt 1 view .LVU410
- 1474              		.loc 1 350 33 is_stmt 0 view .LVU411
- 1475 002c 154A     		ldr	r2, .L92+8
- 1476 002e 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1477 0030 0133     		adds	r3, r3, #1
- 1478 0032 DBB2     		uxtb	r3, r3
- 1479 0034 1370     		strb	r3, [r2]
- 1480              	.L85:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 37
+
+
+ 1441              		.loc 1 350 13 is_stmt 1 view .LVU397
+ 1442              		.loc 1 350 33 is_stmt 0 view .LVU398
+ 1443 002c 154A     		ldr	r2, .L92+8
+ 1444 002e 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1445 0030 0133     		adds	r3, r3, #1
+ 1446 0032 DBB2     		uxtb	r3, r3
+ 1447 0034 1370     		strb	r3, [r2]
+ 1448              	.L85:
  351:Core/Src/balance_car/balance_control.c ****         }
  352:Core/Src/balance_car/balance_control.c ****     }
  353:Core/Src/balance_car/balance_control.c **** 
  354:Core/Src/balance_car/balance_control.c ****     count_speed++;
- 1481              		.loc 1 354 5 is_stmt 1 view .LVU412
- 1482              		.loc 1 354 16 is_stmt 0 view .LVU413
- 1483 0036 144A     		ldr	r2, .L92+12
- 1484 0038 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1485 003a 0133     		adds	r3, r3, #1
- 1486 003c DBB2     		uxtb	r3, r3
- 1487 003e 1370     		strb	r3, [r2]
+ 1449              		.loc 1 354 5 is_stmt 1 view .LVU399
+ 1450              		.loc 1 354 16 is_stmt 0 view .LVU400
+ 1451 0036 144A     		ldr	r2, .L92+12
+ 1452 0038 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1453 003a 0133     		adds	r3, r3, #1
+ 1454 003c DBB2     		uxtb	r3, r3
+ 1455 003e 1370     		strb	r3, [r2]
  355:Core/Src/balance_car/balance_control.c ****     if (count_speed >= 50U) {
- 1488              		.loc 1 355 5 is_stmt 1 view .LVU414
- 1489              		.loc 1 355 8 is_stmt 0 view .LVU415
-ARM GAS  D:\TMP\cckbiAF2.s 			page 38
-
-
- 1490 0040 312B     		cmp	r3, #49
- 1491 0042 0CD9     		bls	.L84
+ 1456              		.loc 1 355 5 is_stmt 1 view .LVU401
+ 1457              		.loc 1 355 8 is_stmt 0 view .LVU402
+ 1458 0040 312B     		cmp	r3, #49
+ 1459 0042 0CD9     		bls	.L84
  356:Core/Src/balance_car/balance_control.c ****         count_speed = 0U;
- 1492              		.loc 1 356 9 is_stmt 1 view .LVU416
- 1493              		.loc 1 356 21 is_stmt 0 view .LVU417
- 1494 0044 1346     		mov	r3, r2
- 1495 0046 0022     		movs	r2, #0
- 1496 0048 1A70     		strb	r2, [r3]
+ 1460              		.loc 1 356 9 is_stmt 1 view .LVU403
+ 1461              		.loc 1 356 21 is_stmt 0 view .LVU404
+ 1462 0044 1346     		mov	r3, r2
+ 1463 0046 0022     		movs	r2, #0
+ 1464 0048 1A70     		strb	r2, [r3]
  357:Core/Src/balance_car/balance_control.c ****         if (s_speed_tick_pending == 255U) {
- 1497              		.loc 1 357 9 is_stmt 1 view .LVU418
- 1498              		.loc 1 357 34 is_stmt 0 view .LVU419
- 1499 004a 104B     		ldr	r3, .L92+16
- 1500 004c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
- 1501 004e DBB2     		uxtb	r3, r3
- 1502              		.loc 1 357 12 view .LVU420
- 1503 0050 FF2B     		cmp	r3, #255
- 1504 0052 0CD0     		beq	.L91
+ 1465              		.loc 1 357 9 is_stmt 1 view .LVU405
+ 1466              		.loc 1 357 34 is_stmt 0 view .LVU406
+ 1467 004a 104B     		ldr	r3, .L92+16
+ 1468 004c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1469 004e DBB2     		uxtb	r3, r3
+ 1470              		.loc 1 357 12 view .LVU407
+ 1471 0050 FF2B     		cmp	r3, #255
+ 1472 0052 0CD0     		beq	.L91
  358:Core/Src/balance_car/balance_control.c ****             BalanceCar_SetFault(BALANCE_FAULT_TIMER_OVERRUN);
  359:Core/Src/balance_car/balance_control.c ****             g_balance_state.timer_error_flag = 1U;
  360:Core/Src/balance_car/balance_control.c ****         } else {
  361:Core/Src/balance_car/balance_control.c ****             s_speed_tick_pending++;
- 1505              		.loc 1 361 13 is_stmt 1 view .LVU421
- 1506              		.loc 1 361 33 is_stmt 0 view .LVU422
- 1507 0054 0D4A     		ldr	r2, .L92+16
- 1508 0056 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
- 1509 0058 0133     		adds	r3, r3, #1
- 1510 005a DBB2     		uxtb	r3, r3
- 1511 005c 1370     		strb	r3, [r2]
- 1512              	.L84:
+ 1473              		.loc 1 361 13 is_stmt 1 view .LVU408
+ 1474              		.loc 1 361 33 is_stmt 0 view .LVU409
+ 1475 0054 0D4A     		ldr	r2, .L92+16
+ 1476 0056 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1477 0058 0133     		adds	r3, r3, #1
+ 1478 005a DBB2     		uxtb	r3, r3
+ 1479 005c 1370     		strb	r3, [r2]
+ 1480              	.L84:
  362:Core/Src/balance_car/balance_control.c ****         }
  363:Core/Src/balance_car/balance_control.c ****     }
  364:Core/Src/balance_car/balance_control.c **** }
- 1513              		.loc 1 364 1 view .LVU423
- 1514 005e 08BD     		pop	{r3, pc}
- 1515              	.L90:
+ 1481              		.loc 1 364 1 view .LVU410
+ 1482 005e 08BD     		pop	{r3, pc}
+ 1483              	.L90:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 38
+
+
  347:Core/Src/balance_car/balance_control.c ****             g_balance_state.timer_error_flag = 1U;
- 1516              		.loc 1 347 13 is_stmt 1 view .LVU424
- 1517 0060 0820     		movs	r0, #8
- 1518 0062 FFF7FEFF 		bl	BalanceCar_SetFault
- 1519              	.LVL138:
+ 1484              		.loc 1 347 13 is_stmt 1 view .LVU411
+ 1485 0060 0820     		movs	r0, #8
+ 1486 0062 FFF7FEFF 		bl	BalanceCar_SetFault
+ 1487              	.LVL132:
  348:Core/Src/balance_car/balance_control.c ****         } else {
- 1520              		.loc 1 348 13 view .LVU425
+ 1488              		.loc 1 348 13 view .LVU412
  348:Core/Src/balance_car/balance_control.c ****         } else {
- 1521              		.loc 1 348 46 is_stmt 0 view .LVU426
- 1522 0066 054B     		ldr	r3, .L92
- 1523 0068 0122     		movs	r2, #1
- 1524 006a 9A72     		strb	r2, [r3, #10]
- 1525 006c E3E7     		b	.L85
- 1526              	.L91:
+ 1489              		.loc 1 348 46 is_stmt 0 view .LVU413
+ 1490 0066 054B     		ldr	r3, .L92
+ 1491 0068 0122     		movs	r2, #1
+ 1492 006a 9A72     		strb	r2, [r3, #10]
+ 1493 006c E3E7     		b	.L85
+ 1494              	.L91:
  358:Core/Src/balance_car/balance_control.c ****             g_balance_state.timer_error_flag = 1U;
- 1527              		.loc 1 358 13 is_stmt 1 view .LVU427
- 1528 006e 0820     		movs	r0, #8
- 1529 0070 FFF7FEFF 		bl	BalanceCar_SetFault
- 1530              	.LVL139:
+ 1495              		.loc 1 358 13 is_stmt 1 view .LVU414
+ 1496 006e 0820     		movs	r0, #8
+ 1497 0070 FFF7FEFF 		bl	BalanceCar_SetFault
+ 1498              	.LVL133:
  359:Core/Src/balance_car/balance_control.c ****         } else {
- 1531              		.loc 1 359 13 view .LVU428
+ 1499              		.loc 1 359 13 view .LVU415
  359:Core/Src/balance_car/balance_control.c ****         } else {
-ARM GAS  D:\TMP\cckbiAF2.s 			page 39
-
-
- 1532              		.loc 1 359 46 is_stmt 0 view .LVU429
- 1533 0074 014B     		ldr	r3, .L92
- 1534 0076 0122     		movs	r2, #1
- 1535 0078 9A72     		strb	r2, [r3, #10]
- 1536 007a F0E7     		b	.L84
- 1537              	.L93:
- 1538              		.align	2
- 1539              	.L92:
- 1540 007c 00000000 		.word	g_balance_state
- 1541 0080 00000000 		.word	count_angle.1
- 1542 0084 00000000 		.word	s_angle_tick_pending
- 1543 0088 00000000 		.word	count_speed.0
- 1544 008c 00000000 		.word	s_speed_tick_pending
- 1545              		.cfi_endproc
- 1546              	.LFE78:
- 1548              		.section	.text.HAL_TIM_Base_MspInit,"ax",%progbits
- 1549              		.align	1
- 1550              		.global	HAL_TIM_Base_MspInit
- 1551              		.syntax unified
- 1552              		.thumb
- 1553              		.thumb_func
- 1555              	HAL_TIM_Base_MspInit:
- 1556              	.LVL140:
- 1557              	.LFB79:
+ 1500              		.loc 1 359 46 is_stmt 0 view .LVU416
+ 1501 0074 014B     		ldr	r3, .L92
+ 1502 0076 0122     		movs	r2, #1
+ 1503 0078 9A72     		strb	r2, [r3, #10]
+ 1504 007a F0E7     		b	.L84
+ 1505              	.L93:
+ 1506              		.align	2
+ 1507              	.L92:
+ 1508 007c 00000000 		.word	g_balance_state
+ 1509 0080 00000000 		.word	count_angle.1
+ 1510 0084 00000000 		.word	s_angle_tick_pending
+ 1511 0088 00000000 		.word	count_speed.0
+ 1512 008c 00000000 		.word	s_speed_tick_pending
+ 1513              		.cfi_endproc
+ 1514              	.LFE78:
+ 1516              		.section	.text.HAL_TIM_Base_MspInit,"ax",%progbits
+ 1517              		.align	1
+ 1518              		.global	HAL_TIM_Base_MspInit
+ 1519              		.syntax unified
+ 1520              		.thumb
+ 1521              		.thumb_func
+ 1523              	HAL_TIM_Base_MspInit:
+ 1524              	.LVL134:
+ 1525              	.LFB79:
  365:Core/Src/balance_car/balance_control.c **** 
  366:Core/Src/balance_car/balance_control.c **** void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim_base)
  367:Core/Src/balance_car/balance_control.c **** {
- 1558              		.loc 1 367 1 is_stmt 1 view -0
- 1559              		.cfi_startproc
- 1560              		@ args = 0, pretend = 0, frame = 8
- 1561              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1526              		.loc 1 367 1 is_stmt 1 view -0
+ 1527              		.cfi_startproc
+ 1528              		@ args = 0, pretend = 0, frame = 8
+ 1529              		@ frame_needed = 0, uses_anonymous_args = 0
  368:Core/Src/balance_car/balance_control.c ****     if (htim_base->Instance != TIM4) {
- 1562              		.loc 1 368 5 view .LVU431
- 1563              		.loc 1 368 18 is_stmt 0 view .LVU432
- 1564 0000 0268     		ldr	r2, [r0]
- 1565              		.loc 1 368 8 view .LVU433
- 1566 0002 0E4B     		ldr	r3, .L101
- 1567 0004 9A42     		cmp	r2, r3
- 1568 0006 00D0     		beq	.L100
- 1569 0008 7047     		bx	lr
- 1570              	.L100:
+ 1530              		.loc 1 368 5 view .LVU418
+ 1531              		.loc 1 368 18 is_stmt 0 view .LVU419
+ 1532 0000 0268     		ldr	r2, [r0]
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 39
+
+
+ 1533              		.loc 1 368 8 view .LVU420
+ 1534 0002 0E4B     		ldr	r3, .L101
+ 1535 0004 9A42     		cmp	r2, r3
+ 1536 0006 00D0     		beq	.L100
+ 1537 0008 7047     		bx	lr
+ 1538              	.L100:
  367:Core/Src/balance_car/balance_control.c ****     if (htim_base->Instance != TIM4) {
- 1571              		.loc 1 367 1 view .LVU434
- 1572 000a 00B5     		push	{lr}
- 1573              	.LCFI19:
- 1574              		.cfi_def_cfa_offset 4
- 1575              		.cfi_offset 14, -4
- 1576 000c 83B0     		sub	sp, sp, #12
- 1577              	.LCFI20:
- 1578              		.cfi_def_cfa_offset 16
+ 1539              		.loc 1 367 1 view .LVU421
+ 1540 000a 00B5     		push	{lr}
+ 1541              	.LCFI19:
+ 1542              		.cfi_def_cfa_offset 4
+ 1543              		.cfi_offset 14, -4
+ 1544 000c 83B0     		sub	sp, sp, #12
+ 1545              	.LCFI20:
+ 1546              		.cfi_def_cfa_offset 16
  369:Core/Src/balance_car/balance_control.c ****         return;
  370:Core/Src/balance_car/balance_control.c ****     }
  371:Core/Src/balance_car/balance_control.c **** 
  372:Core/Src/balance_car/balance_control.c ****     __HAL_RCC_TIM4_CLK_ENABLE();
- 1579              		.loc 1 372 5 is_stmt 1 view .LVU435
- 1580              	.LBB19:
- 1581              		.loc 1 372 5 view .LVU436
-ARM GAS  D:\TMP\cckbiAF2.s 			page 40
-
-
- 1582              		.loc 1 372 5 view .LVU437
- 1583 000e 03F50233 		add	r3, r3, #133120
- 1584 0012 DA69     		ldr	r2, [r3, #28]
- 1585 0014 42F00402 		orr	r2, r2, #4
- 1586 0018 DA61     		str	r2, [r3, #28]
- 1587              		.loc 1 372 5 view .LVU438
- 1588 001a DB69     		ldr	r3, [r3, #28]
- 1589 001c 03F00403 		and	r3, r3, #4
- 1590 0020 0193     		str	r3, [sp, #4]
- 1591              		.loc 1 372 5 view .LVU439
- 1592 0022 019B     		ldr	r3, [sp, #4]
- 1593              	.LBE19:
- 1594              		.loc 1 372 5 view .LVU440
+ 1547              		.loc 1 372 5 is_stmt 1 view .LVU422
+ 1548              	.LBB19:
+ 1549              		.loc 1 372 5 view .LVU423
+ 1550              		.loc 1 372 5 view .LVU424
+ 1551 000e 03F50233 		add	r3, r3, #133120
+ 1552 0012 DA69     		ldr	r2, [r3, #28]
+ 1553 0014 42F00402 		orr	r2, r2, #4
+ 1554 0018 DA61     		str	r2, [r3, #28]
+ 1555              		.loc 1 372 5 view .LVU425
+ 1556 001a DB69     		ldr	r3, [r3, #28]
+ 1557 001c 03F00403 		and	r3, r3, #4
+ 1558 0020 0193     		str	r3, [sp, #4]
+ 1559              		.loc 1 372 5 view .LVU426
+ 1560 0022 019B     		ldr	r3, [sp, #4]
+ 1561              	.LBE19:
+ 1562              		.loc 1 372 5 view .LVU427
  373:Core/Src/balance_car/balance_control.c ****     HAL_NVIC_SetPriority(TIM4_IRQn, 2U, 0U);
- 1595              		.loc 1 373 5 view .LVU441
- 1596 0024 0022     		movs	r2, #0
- 1597 0026 0221     		movs	r1, #2
- 1598 0028 1E20     		movs	r0, #30
- 1599              	.LVL141:
- 1600              		.loc 1 373 5 is_stmt 0 view .LVU442
- 1601 002a FFF7FEFF 		bl	HAL_NVIC_SetPriority
- 1602              	.LVL142:
+ 1563              		.loc 1 373 5 view .LVU428
+ 1564 0024 0022     		movs	r2, #0
+ 1565 0026 0221     		movs	r1, #2
+ 1566 0028 1E20     		movs	r0, #30
+ 1567              	.LVL135:
+ 1568              		.loc 1 373 5 is_stmt 0 view .LVU429
+ 1569 002a FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 1570              	.LVL136:
  374:Core/Src/balance_car/balance_control.c ****     HAL_NVIC_EnableIRQ(TIM4_IRQn);
- 1603              		.loc 1 374 5 is_stmt 1 view .LVU443
- 1604 002e 1E20     		movs	r0, #30
- 1605 0030 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
- 1606              	.LVL143:
+ 1571              		.loc 1 374 5 is_stmt 1 view .LVU430
+ 1572 002e 1E20     		movs	r0, #30
+ 1573 0030 FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 1574              	.LVL137:
  375:Core/Src/balance_car/balance_control.c **** }
- 1607              		.loc 1 375 1 is_stmt 0 view .LVU444
- 1608 0034 03B0     		add	sp, sp, #12
- 1609              	.LCFI21:
- 1610              		.cfi_def_cfa_offset 4
- 1611              		@ sp needed
- 1612 0036 5DF804FB 		ldr	pc, [sp], #4
- 1613              	.L102:
- 1614 003a 00BF     		.align	2
- 1615              	.L101:
- 1616 003c 00080040 		.word	1073743872
- 1617              		.cfi_endproc
- 1618              	.LFE79:
- 1620              		.section	.text.TIM4_IRQHandler,"ax",%progbits
- 1621              		.align	1
- 1622              		.global	TIM4_IRQHandler
- 1623              		.syntax unified
- 1624              		.thumb
- 1625              		.thumb_func
- 1627              	TIM4_IRQHandler:
- 1628              	.LFB80:
+ 1575              		.loc 1 375 1 is_stmt 0 view .LVU431
+ 1576 0034 03B0     		add	sp, sp, #12
+ 1577              	.LCFI21:
+ 1578              		.cfi_def_cfa_offset 4
+ 1579              		@ sp needed
+ 1580 0036 5DF804FB 		ldr	pc, [sp], #4
+ 1581              	.L102:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 40
+
+
+ 1582 003a 00BF     		.align	2
+ 1583              	.L101:
+ 1584 003c 00080040 		.word	1073743872
+ 1585              		.cfi_endproc
+ 1586              	.LFE79:
+ 1588              		.section	.text.TIM4_IRQHandler,"ax",%progbits
+ 1589              		.align	1
+ 1590              		.global	TIM4_IRQHandler
+ 1591              		.syntax unified
+ 1592              		.thumb
+ 1593              		.thumb_func
+ 1595              	TIM4_IRQHandler:
+ 1596              	.LFB80:
  376:Core/Src/balance_car/balance_control.c **** 
  377:Core/Src/balance_car/balance_control.c **** void TIM4_IRQHandler(void)
  378:Core/Src/balance_car/balance_control.c **** {
- 1629              		.loc 1 378 1 is_stmt 1 view -0
- 1630              		.cfi_startproc
- 1631              		@ args = 0, pretend = 0, frame = 0
- 1632              		@ frame_needed = 0, uses_anonymous_args = 0
- 1633 0000 08B5     		push	{r3, lr}
- 1634              	.LCFI22:
-ARM GAS  D:\TMP\cckbiAF2.s 			page 41
-
-
- 1635              		.cfi_def_cfa_offset 8
- 1636              		.cfi_offset 3, -8
- 1637              		.cfi_offset 14, -4
+ 1597              		.loc 1 378 1 is_stmt 1 view -0
+ 1598              		.cfi_startproc
+ 1599              		@ args = 0, pretend = 0, frame = 0
+ 1600              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1601 0000 08B5     		push	{r3, lr}
+ 1602              	.LCFI22:
+ 1603              		.cfi_def_cfa_offset 8
+ 1604              		.cfi_offset 3, -8
+ 1605              		.cfi_offset 14, -4
  379:Core/Src/balance_car/balance_control.c ****     if (__HAL_TIM_GET_FLAG(&s_htim4, TIM_FLAG_UPDATE) != RESET &&
- 1638              		.loc 1 379 5 view .LVU446
- 1639              		.loc 1 379 9 is_stmt 0 view .LVU447
- 1640 0002 084B     		ldr	r3, .L107
- 1641 0004 1B68     		ldr	r3, [r3]
- 1642 0006 1A69     		ldr	r2, [r3, #16]
- 1643              		.loc 1 379 8 view .LVU448
- 1644 0008 12F0010F 		tst	r2, #1
- 1645 000c 03D0     		beq	.L103
+ 1606              		.loc 1 379 5 view .LVU433
+ 1607              		.loc 1 379 9 is_stmt 0 view .LVU434
+ 1608 0002 084B     		ldr	r3, .L107
+ 1609 0004 1B68     		ldr	r3, [r3]
+ 1610 0006 1A69     		ldr	r2, [r3, #16]
+ 1611              		.loc 1 379 8 view .LVU435
+ 1612 0008 12F0010F 		tst	r2, #1
+ 1613 000c 03D0     		beq	.L103
  380:Core/Src/balance_car/balance_control.c ****         __HAL_TIM_GET_IT_SOURCE(&s_htim4, TIM_IT_UPDATE) != RESET) {
- 1646              		.loc 1 380 9 view .LVU449
- 1647 000e DA68     		ldr	r2, [r3, #12]
+ 1614              		.loc 1 380 9 view .LVU436
+ 1615 000e DA68     		ldr	r2, [r3, #12]
  379:Core/Src/balance_car/balance_control.c ****     if (__HAL_TIM_GET_FLAG(&s_htim4, TIM_FLAG_UPDATE) != RESET &&
- 1648              		.loc 1 379 64 discriminator 1 view .LVU450
- 1649 0010 12F0010F 		tst	r2, #1
- 1650 0014 00D1     		bne	.L106
- 1651              	.L103:
+ 1616              		.loc 1 379 64 discriminator 1 view .LVU437
+ 1617 0010 12F0010F 		tst	r2, #1
+ 1618 0014 00D1     		bne	.L106
+ 1619              	.L103:
  381:Core/Src/balance_car/balance_control.c ****         __HAL_TIM_CLEAR_IT(&s_htim4, TIM_IT_UPDATE);
  382:Core/Src/balance_car/balance_control.c ****         BalanceCar_TimerTick1ms();
  383:Core/Src/balance_car/balance_control.c ****     }
  384:Core/Src/balance_car/balance_control.c **** }
- 1652              		.loc 1 384 1 view .LVU451
- 1653 0016 08BD     		pop	{r3, pc}
- 1654              	.L106:
+ 1620              		.loc 1 384 1 view .LVU438
+ 1621 0016 08BD     		pop	{r3, pc}
+ 1622              	.L106:
  381:Core/Src/balance_car/balance_control.c ****         __HAL_TIM_CLEAR_IT(&s_htim4, TIM_IT_UPDATE);
- 1655              		.loc 1 381 9 is_stmt 1 view .LVU452
- 1656 0018 6FF00102 		mvn	r2, #1
- 1657 001c 1A61     		str	r2, [r3, #16]
+ 1623              		.loc 1 381 9 is_stmt 1 view .LVU439
+ 1624 0018 6FF00102 		mvn	r2, #1
+ 1625 001c 1A61     		str	r2, [r3, #16]
  382:Core/Src/balance_car/balance_control.c ****     }
- 1658              		.loc 1 382 9 view .LVU453
- 1659 001e FFF7FEFF 		bl	BalanceCar_TimerTick1ms
- 1660              	.LVL144:
- 1661              		.loc 1 384 1 is_stmt 0 view .LVU454
- 1662 0022 F8E7     		b	.L103
- 1663              	.L108:
- 1664              		.align	2
- 1665              	.L107:
- 1666 0024 00000000 		.word	s_htim4
- 1667              		.cfi_endproc
- 1668              	.LFE80:
- 1670              		.section	.bss.count_speed.0,"aw",%nobits
- 1673              	count_speed.0:
+ 1626              		.loc 1 382 9 view .LVU440
+ 1627 001e FFF7FEFF 		bl	BalanceCar_TimerTick1ms
+ 1628              	.LVL138:
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 41
+
+
+ 1629              		.loc 1 384 1 is_stmt 0 view .LVU441
+ 1630 0022 F8E7     		b	.L103
+ 1631              	.L108:
+ 1632              		.align	2
+ 1633              	.L107:
+ 1634 0024 00000000 		.word	s_htim4
+ 1635              		.cfi_endproc
+ 1636              	.LFE80:
+ 1638              		.section	.bss.count_speed.0,"aw",%nobits
+ 1641              	count_speed.0:
+ 1642 0000 00       		.space	1
+ 1643              		.section	.bss.count_angle.1,"aw",%nobits
+ 1646              	count_angle.1:
+ 1647 0000 00       		.space	1
+ 1648              		.section	.bss.s_dif_pwm,"aw",%nobits
+ 1649              		.align	2
+ 1652              	s_dif_pwm:
+ 1653 0000 00000000 		.space	4
+ 1654              		.section	.bss.s_angle,"aw",%nobits
+ 1655              		.align	2
+ 1658              	s_angle:
+ 1659 0000 00000000 		.space	4
+ 1660              		.section	.bss.s_last_run_enable,"aw",%nobits
+ 1663              	s_last_run_enable:
+ 1664 0000 00       		.space	1
+ 1665              		.section	.bss.s_speed_tick_pending,"aw",%nobits
+ 1668              	s_speed_tick_pending:
+ 1669 0000 00       		.space	1
+ 1670              		.section	.bss.s_angle_tick_pending,"aw",%nobits
+ 1673              	s_angle_tick_pending:
  1674 0000 00       		.space	1
- 1675              		.section	.bss.count_angle.1,"aw",%nobits
- 1678              	count_angle.1:
- 1679 0000 00       		.space	1
- 1680              		.section	.bss.s_dif_pwm,"aw",%nobits
- 1681              		.align	2
- 1684              	s_dif_pwm:
- 1685 0000 00000000 		.space	4
- 1686              		.section	.bss.s_angle,"aw",%nobits
- 1687              		.align	2
- 1690              	s_angle:
- 1691 0000 00000000 		.space	4
-ARM GAS  D:\TMP\cckbiAF2.s 			page 42
+ 1675              		.section	.bss.s_htim4,"aw",%nobits
+ 1676              		.align	2
+ 1679              	s_htim4:
+ 1680 0000 00000000 		.space	72
+ 1680      00000000 
+ 1680      00000000 
+ 1680      00000000 
+ 1680      00000000 
+ 1681              		.global	g_turn_pid
+ 1682              		.section	.data.g_turn_pid,"aw"
+ 1683              		.align	2
+ 1686              	g_turn_pid:
+ 1687 0000 00000000 		.space	16
+ 1687      00000000 
+ 1687      00000000 
+ 1687      00000000 
+ 1688 0010 00004040 		.word	1077936128
+ 1689 0014 00000000 		.word	0
+ 1690 0018 00000000 		.word	0
+ 1691 001c 00000000 		.space	12
+ 1691      00000000 
+ 1691      00000000 
+ 1692 0028 0000A041 		.word	1101004800
+ 1693 002c 0000A0C1 		.word	-1046478848
+ 1694 0030 0000A040 		.word	1084227584
+ 1695 0034 0000A0C0 		.word	-1063256064
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 42
 
 
- 1692              		.section	.bss.s_last_run_enable,"aw",%nobits
- 1695              	s_last_run_enable:
- 1696 0000 00       		.space	1
- 1697              		.section	.bss.s_speed_tick_pending,"aw",%nobits
- 1700              	s_speed_tick_pending:
- 1701 0000 00       		.space	1
- 1702              		.section	.bss.s_angle_tick_pending,"aw",%nobits
- 1705              	s_angle_tick_pending:
- 1706 0000 00       		.space	1
- 1707              		.section	.bss.s_htim4,"aw",%nobits
- 1708              		.align	2
- 1711              	s_htim4:
- 1712 0000 00000000 		.space	72
- 1712      00000000 
- 1712      00000000 
- 1712      00000000 
- 1712      00000000 
- 1713              		.global	g_turn_pid
- 1714              		.section	.data.g_turn_pid,"aw"
+ 1696 0038 00000000 		.space	4
+ 1697              		.global	g_speed_pid
+ 1698              		.section	.data.g_speed_pid,"aw"
+ 1699              		.align	2
+ 1702              	g_speed_pid:
+ 1703 0000 00000000 		.space	16
+ 1703      00000000 
+ 1703      00000000 
+ 1703      00000000 
+ 1704 0010 9A99193F 		.word	1058642330
+ 1705 0014 295C8F3D 		.word	1032805417
+ 1706 0018 00000000 		.word	0
+ 1707 001c 00000000 		.space	12
+ 1707      00000000 
+ 1707      00000000 
+ 1708 0028 00001643 		.word	1125515264
+ 1709 002c 000016C3 		.word	-1021968384
+ 1710 0030 0000A040 		.word	1084227584
+ 1711 0034 0000A0C0 		.word	-1063256064
+ 1712 0038 00000000 		.space	4
+ 1713              		.global	g_angle_pid
+ 1714              		.section	.data.g_angle_pid,"aw"
  1715              		.align	2
- 1718              	g_turn_pid:
+ 1718              	g_angle_pid:
  1719 0000 00000000 		.space	16
  1719      00000000 
  1719      00000000 
  1719      00000000 
- 1720 0010 00000000 		.word	0
- 1721 0014 00000000 		.word	0
- 1722 0018 00000000 		.word	0
+ 1720 0010 00004041 		.word	1094713344
+ 1721 0014 0000803E 		.word	1048576000
+ 1722 0018 00000041 		.word	1090519040
  1723 001c 00000000 		.space	12
  1723      00000000 
  1723      00000000 
- 1724 0028 0000A041 		.word	1101004800
- 1725 002c 0000A0C1 		.word	-1046478848
- 1726 0030 00004040 		.word	1077936128
- 1727 0034 000040C0 		.word	-1069547520
- 1728 0038 00000000 		.space	4
- 1729              		.global	g_speed_pid
- 1730              		.section	.data.g_speed_pid,"aw"
+ 1724 0028 00001644 		.word	1142292480
+ 1725 002c 000016C4 		.word	-1005191168
+ 1726 0030 0000C842 		.word	1120403456
+ 1727 0034 0000C8C2 		.word	-1027080192
+ 1728 0038 00004040 		.word	1077936128
+ 1729              		.global	g_balance_state
+ 1730              		.section	.bss.g_balance_state,"aw",%nobits
  1731              		.align	2
- 1734              	g_speed_pid:
- 1735 0000 00000000 		.space	16
+ 1734              	g_balance_state:
+ 1735 0000 00000000 		.space	72
  1735      00000000 
  1735      00000000 
  1735      00000000 
- 1736 0010 CDCC4C3F 		.word	1061997773
- 1737 0014 0AD7A33C 		.word	1017370378
- 1738 0018 00000000 		.word	0
- 1739 001c 00000000 		.space	12
- 1739      00000000 
- 1739      00000000 
- 1740 0028 00001643 		.word	1125515264
- 1741 002c 000016C3 		.word	-1021968384
- 1742 0030 0000A040 		.word	1084227584
- 1743 0034 0000A0C0 		.word	-1063256064
- 1744 0038 00000000 		.space	4
- 1745              		.global	g_angle_pid
- 1746              		.section	.data.g_angle_pid,"aw"
-ARM GAS  D:\TMP\cckbiAF2.s 			page 43
+ 1735      00000000 
+ 1736              		.global	g_balance_debug
+ 1737              		.section	.data.g_balance_debug,"aw"
+ 1738              		.align	2
+ 1741              	g_balance_debug:
+ 1742 0000 00       		.byte	0
+ 1743 0001 00       		.byte	0
+ 1744 0002 00       		.byte	0
+ 1745 0003 00       		.space	1
+ 1746 0004 00000000 		.word	0
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 43
 
 
- 1747              		.align	2
- 1750              	g_angle_pid:
- 1751 0000 00000000 		.space	16
- 1751      00000000 
- 1751      00000000 
- 1751      00000000 
- 1752 0010 00009841 		.word	1100480512
- 1753 0014 00000000 		.word	0
- 1754 0018 00006041 		.word	1096810496
- 1755 001c 00000000 		.space	12
- 1755      00000000 
- 1755      00000000 
- 1756 0028 00001644 		.word	1142292480
- 1757 002c 000016C4 		.word	-1005191168
- 1758 0030 0000C842 		.word	1120403456
- 1759 0034 0000C8C2 		.word	-1027080192
- 1760 0038 00004040 		.word	1077936128
- 1761              		.global	g_balance_state
- 1762              		.section	.bss.g_balance_state,"aw",%nobits
- 1763              		.align	2
- 1766              	g_balance_state:
- 1767 0000 00000000 		.space	72
- 1767      00000000 
- 1767      00000000 
- 1767      00000000 
- 1767      00000000 
- 1768              		.global	g_balance_debug
- 1769              		.section	.data.g_balance_debug,"aw"
- 1770              		.align	2
- 1773              	g_balance_debug:
- 1774 0000 00       		.byte	0
- 1775 0001 00       		.byte	0
- 1776 0002 00       		.byte	0
- 1777 0003 00       		.space	1
- 1778 0004 00000000 		.word	0
- 1779 0008 00000000 		.word	0
- 1780 000c 0000A041 		.word	1101004800
- 1781 0010 000070C2 		.word	-1032847360
- 1782 0014 00007042 		.word	1114636288
- 1783 0018 00009040 		.word	1083179008
- 1784 001c 00002042 		.word	1109393408
- 1785              		.text
- 1786              	.Letext0:
- 1787              		.file 3 "Core/Inc/balance_car/pid.h"
- 1788              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
- 1789              		.file 5 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
- 1790              		.file 6 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
- 1791              		.file 7 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h"
- 1792              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 1793              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
- 1794              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
- 1795              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h"
- 1796              		.file 12 "Core/Inc/balance_car/balance_control.h"
- 1797              		.file 13 "Core/Inc/balance_car/mpu6050_hal.h"
- 1798              		.file 14 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h"
- 1799              		.file 15 "Core/Inc/balance_car/encoder_hal.h"
- 1800              		.file 16 "Core/Inc/balance_car/motor_tb6612.h"
-ARM GAS  D:\TMP\cckbiAF2.s 			page 44
-
-
- 1801              		.file 17 "F:/Msys2/mingw64/arm-none-eabi/include/math.h"
- 1802              		.file 18 "Core/Inc/balance_car/remote_control.h"
- 1803              		.file 19 "Core/Inc/balance_car/app_sensors.h"
- 1804              		.file 20 "Core/Inc/balance_car/raspi_link.h"
-ARM GAS  D:\TMP\cckbiAF2.s 			page 45
+ 1747 0008 00000000 		.word	0
+ 1748 000c 0000A041 		.word	1101004800
+ 1749 0010 000070C2 		.word	-1032847360
+ 1750 0014 00007042 		.word	1114636288
+ 1751 0018 00009040 		.word	1083179008
+ 1752 001c 00002042 		.word	1109393408
+ 1753              		.text
+ 1754              	.Letext0:
+ 1755              		.file 3 "Core/Inc/balance_car/pid.h"
+ 1756              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 1757              		.file 5 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 1758              		.file 6 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 1759              		.file 7 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h"
+ 1760              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1761              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 1762              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 1763              		.file 11 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h"
+ 1764              		.file 12 "Core/Inc/balance_car/balance_control.h"
+ 1765              		.file 13 "Core/Inc/balance_car/mpu6050_hal.h"
+ 1766              		.file 14 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h"
+ 1767              		.file 15 "Core/Inc/balance_car/encoder_hal.h"
+ 1768              		.file 16 "Core/Inc/balance_car/motor_tb6612.h"
+ 1769              		.file 17 "F:/Msys2/mingw64/arm-none-eabi/include/math.h"
+ 1770              		.file 18 "Core/Inc/balance_car/remote_control.h"
+ 1771              		.file 19 "Core/Inc/balance_car/app_sensors.h"
+ 1772              		.file 20 "Core/Inc/balance_car/raspi_link.h"
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 44
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 balance_control.c
-   D:\TMP\cckbiAF2.s:19     .text.BalanceCar_SetFault:00000000 $t
-   D:\TMP\cckbiAF2.s:24     .text.BalanceCar_SetFault:00000000 BalanceCar_SetFault
-   D:\TMP\cckbiAF2.s:44     .text.BalanceCar_SetFault:0000000c $d
-   D:\TMP\cckbiAF2.s:1766   .bss.g_balance_state:00000000 g_balance_state
-   D:\TMP\cckbiAF2.s:49     .text.BalanceCar_ClearRuntimeFaults:00000000 $t
-   D:\TMP\cckbiAF2.s:54     .text.BalanceCar_ClearRuntimeFaults:00000000 BalanceCar_ClearRuntimeFaults
-   D:\TMP\cckbiAF2.s:77     .text.BalanceCar_ClearRuntimeFaults:00000010 $d
-   D:\TMP\cckbiAF2.s:85     .text.BalanceCar_ClampPwm:00000000 $t
-   D:\TMP\cckbiAF2.s:90     .text.BalanceCar_ClampPwm:00000000 BalanceCar_ClampPwm
-   D:\TMP\cckbiAF2.s:139    .text.BalanceCar_ClampPwm:0000002c $d
-   D:\TMP\cckbiAF2.s:145    .text.BalanceCar_RunLedInit:00000000 $t
-   D:\TMP\cckbiAF2.s:150    .text.BalanceCar_RunLedInit:00000000 BalanceCar_RunLedInit
-   D:\TMP\cckbiAF2.s:207    .text.BalanceCar_RunLedInit:00000034 $d
-   D:\TMP\cckbiAF2.s:212    .text.BalanceCar_ButtonInit:00000000 $t
-   D:\TMP\cckbiAF2.s:217    .text.BalanceCar_ButtonInit:00000000 BalanceCar_ButtonInit
-   D:\TMP\cckbiAF2.s:269    .text.BalanceCar_ButtonInit:0000002c $d
-   D:\TMP\cckbiAF2.s:275    .text.BalanceCar_RunLedApply:00000000 $t
-   D:\TMP\cckbiAF2.s:280    .text.BalanceCar_RunLedApply:00000000 BalanceCar_RunLedApply
-   D:\TMP\cckbiAF2.s:310    .text.BalanceCar_RunLedApply:00000018 $d
-   D:\TMP\cckbiAF2.s:1773   .data.g_balance_debug:00000000 g_balance_debug
-   D:\TMP\cckbiAF2.s:316    .text.BalanceCar_ButtonTick1ms:00000000 $t
-   D:\TMP\cckbiAF2.s:321    .text.BalanceCar_ButtonTick1ms:00000000 BalanceCar_ButtonTick1ms
-   D:\TMP\cckbiAF2.s:341    .text.BalanceCar_ResetPidAndOutputs:00000000 $t
-   D:\TMP\cckbiAF2.s:346    .text.BalanceCar_ResetPidAndOutputs:00000000 BalanceCar_ResetPidAndOutputs
-   D:\TMP\cckbiAF2.s:393    .text.BalanceCar_ResetPidAndOutputs:00000030 $d
-   D:\TMP\cckbiAF2.s:1750   .data.g_angle_pid:00000000 g_angle_pid
-   D:\TMP\cckbiAF2.s:1734   .data.g_speed_pid:00000000 g_speed_pid
-   D:\TMP\cckbiAF2.s:1718   .data.g_turn_pid:00000000 g_turn_pid
-   D:\TMP\cckbiAF2.s:1684   .bss.s_dif_pwm:00000000 s_dif_pwm
-   D:\TMP\cckbiAF2.s:402    .text.BalanceCar_Stop:00000000 $t
-   D:\TMP\cckbiAF2.s:407    .text.BalanceCar_Stop:00000000 BalanceCar_Stop
-   D:\TMP\cckbiAF2.s:443    .text.BalanceCar_Stop:00000020 $d
-   D:\TMP\cckbiAF2.s:453    .text.BalanceCar_RunAngleLoop:00000000 $t
-   D:\TMP\cckbiAF2.s:458    .text.BalanceCar_RunAngleLoop:00000000 BalanceCar_RunAngleLoop
-   D:\TMP\cckbiAF2.s:814    .text.BalanceCar_RunAngleLoop:000001a0 $d
-   D:\TMP\cckbiAF2.s:1690   .bss.s_angle:00000000 s_angle
-   D:\TMP\cckbiAF2.s:828    .text.BalanceCar_RunSpeedLoop:00000000 $t
-   D:\TMP\cckbiAF2.s:833    .text.BalanceCar_RunSpeedLoop:00000000 BalanceCar_RunSpeedLoop
-   D:\TMP\cckbiAF2.s:1018   .text.BalanceCar_RunSpeedLoop:000000b8 $d
-   D:\TMP\cckbiAF2.s:1032   .text.BalanceCar_Init:00000000 $t
-   D:\TMP\cckbiAF2.s:1038   .text.BalanceCar_Init:00000000 BalanceCar_Init
-   D:\TMP\cckbiAF2.s:1197   .text.BalanceCar_Init:00000094 $d
-   D:\TMP\cckbiAF2.s:1711   .bss.s_htim4:00000000 s_htim4
-   D:\TMP\cckbiAF2.s:1204   .text.BalanceCar_Background:00000000 $t
-   D:\TMP\cckbiAF2.s:1210   .text.BalanceCar_Background:00000000 BalanceCar_Background
-   D:\TMP\cckbiAF2.s:1410   .text.BalanceCar_Background:0000009c $d
-   D:\TMP\cckbiAF2.s:1695   .bss.s_last_run_enable:00000000 s_last_run_enable
-   D:\TMP\cckbiAF2.s:1705   .bss.s_angle_tick_pending:00000000 s_angle_tick_pending
-   D:\TMP\cckbiAF2.s:1700   .bss.s_speed_tick_pending:00000000 s_speed_tick_pending
-   D:\TMP\cckbiAF2.s:1420   .text.BalanceCar_TimerTick1ms:00000000 $t
-   D:\TMP\cckbiAF2.s:1426   .text.BalanceCar_TimerTick1ms:00000000 BalanceCar_TimerTick1ms
-   D:\TMP\cckbiAF2.s:1540   .text.BalanceCar_TimerTick1ms:0000007c $d
-   D:\TMP\cckbiAF2.s:1678   .bss.count_angle.1:00000000 count_angle.1
-   D:\TMP\cckbiAF2.s:1673   .bss.count_speed.0:00000000 count_speed.0
-   D:\TMP\cckbiAF2.s:1549   .text.HAL_TIM_Base_MspInit:00000000 $t
-ARM GAS  D:\TMP\cckbiAF2.s 			page 46
+   D:\TMP\ccGgd0aP.s:19     .text.BalanceCar_SetFault:00000000 $t
+   D:\TMP\ccGgd0aP.s:24     .text.BalanceCar_SetFault:00000000 BalanceCar_SetFault
+   D:\TMP\ccGgd0aP.s:44     .text.BalanceCar_SetFault:0000000c $d
+   D:\TMP\ccGgd0aP.s:1734   .bss.g_balance_state:00000000 g_balance_state
+   D:\TMP\ccGgd0aP.s:49     .text.BalanceCar_ClearRuntimeFaults:00000000 $t
+   D:\TMP\ccGgd0aP.s:54     .text.BalanceCar_ClearRuntimeFaults:00000000 BalanceCar_ClearRuntimeFaults
+   D:\TMP\ccGgd0aP.s:77     .text.BalanceCar_ClearRuntimeFaults:00000010 $d
+   D:\TMP\ccGgd0aP.s:85     .text.BalanceCar_ClampPwm:00000000 $t
+   D:\TMP\ccGgd0aP.s:90     .text.BalanceCar_ClampPwm:00000000 BalanceCar_ClampPwm
+   D:\TMP\ccGgd0aP.s:139    .text.BalanceCar_ClampPwm:0000002c $d
+   D:\TMP\ccGgd0aP.s:145    .text.BalanceCar_RunLedInit:00000000 $t
+   D:\TMP\ccGgd0aP.s:150    .text.BalanceCar_RunLedInit:00000000 BalanceCar_RunLedInit
+   D:\TMP\ccGgd0aP.s:207    .text.BalanceCar_RunLedInit:00000034 $d
+   D:\TMP\ccGgd0aP.s:212    .text.BalanceCar_ButtonInit:00000000 $t
+   D:\TMP\ccGgd0aP.s:217    .text.BalanceCar_ButtonInit:00000000 BalanceCar_ButtonInit
+   D:\TMP\ccGgd0aP.s:269    .text.BalanceCar_ButtonInit:0000002c $d
+   D:\TMP\ccGgd0aP.s:275    .text.BalanceCar_RunLedApply:00000000 $t
+   D:\TMP\ccGgd0aP.s:280    .text.BalanceCar_RunLedApply:00000000 BalanceCar_RunLedApply
+   D:\TMP\ccGgd0aP.s:310    .text.BalanceCar_RunLedApply:00000018 $d
+   D:\TMP\ccGgd0aP.s:1741   .data.g_balance_debug:00000000 g_balance_debug
+   D:\TMP\ccGgd0aP.s:316    .text.BalanceCar_ButtonTick1ms:00000000 $t
+   D:\TMP\ccGgd0aP.s:321    .text.BalanceCar_ButtonTick1ms:00000000 BalanceCar_ButtonTick1ms
+   D:\TMP\ccGgd0aP.s:341    .text.BalanceCar_ResetPidAndOutputs:00000000 $t
+   D:\TMP\ccGgd0aP.s:346    .text.BalanceCar_ResetPidAndOutputs:00000000 BalanceCar_ResetPidAndOutputs
+   D:\TMP\ccGgd0aP.s:393    .text.BalanceCar_ResetPidAndOutputs:00000030 $d
+   D:\TMP\ccGgd0aP.s:1718   .data.g_angle_pid:00000000 g_angle_pid
+   D:\TMP\ccGgd0aP.s:1702   .data.g_speed_pid:00000000 g_speed_pid
+   D:\TMP\ccGgd0aP.s:1686   .data.g_turn_pid:00000000 g_turn_pid
+   D:\TMP\ccGgd0aP.s:1652   .bss.s_dif_pwm:00000000 s_dif_pwm
+   D:\TMP\ccGgd0aP.s:402    .text.BalanceCar_Stop:00000000 $t
+   D:\TMP\ccGgd0aP.s:407    .text.BalanceCar_Stop:00000000 BalanceCar_Stop
+   D:\TMP\ccGgd0aP.s:443    .text.BalanceCar_Stop:00000020 $d
+   D:\TMP\ccGgd0aP.s:453    .text.BalanceCar_RunAngleLoop:00000000 $t
+   D:\TMP\ccGgd0aP.s:458    .text.BalanceCar_RunAngleLoop:00000000 BalanceCar_RunAngleLoop
+   D:\TMP\ccGgd0aP.s:787    .text.BalanceCar_RunAngleLoop:00000184 $d
+   D:\TMP\ccGgd0aP.s:1658   .bss.s_angle:00000000 s_angle
+   D:\TMP\ccGgd0aP.s:801    .text.BalanceCar_RunSpeedLoop:00000000 $t
+   D:\TMP\ccGgd0aP.s:806    .text.BalanceCar_RunSpeedLoop:00000000 BalanceCar_RunSpeedLoop
+   D:\TMP\ccGgd0aP.s:986    .text.BalanceCar_RunSpeedLoop:000000b4 $d
+   D:\TMP\ccGgd0aP.s:1000   .text.BalanceCar_Init:00000000 $t
+   D:\TMP\ccGgd0aP.s:1006   .text.BalanceCar_Init:00000000 BalanceCar_Init
+   D:\TMP\ccGgd0aP.s:1165   .text.BalanceCar_Init:00000094 $d
+   D:\TMP\ccGgd0aP.s:1679   .bss.s_htim4:00000000 s_htim4
+   D:\TMP\ccGgd0aP.s:1172   .text.BalanceCar_Background:00000000 $t
+   D:\TMP\ccGgd0aP.s:1178   .text.BalanceCar_Background:00000000 BalanceCar_Background
+   D:\TMP\ccGgd0aP.s:1378   .text.BalanceCar_Background:0000009c $d
+   D:\TMP\ccGgd0aP.s:1663   .bss.s_last_run_enable:00000000 s_last_run_enable
+   D:\TMP\ccGgd0aP.s:1673   .bss.s_angle_tick_pending:00000000 s_angle_tick_pending
+   D:\TMP\ccGgd0aP.s:1668   .bss.s_speed_tick_pending:00000000 s_speed_tick_pending
+   D:\TMP\ccGgd0aP.s:1388   .text.BalanceCar_TimerTick1ms:00000000 $t
+   D:\TMP\ccGgd0aP.s:1394   .text.BalanceCar_TimerTick1ms:00000000 BalanceCar_TimerTick1ms
+   D:\TMP\ccGgd0aP.s:1508   .text.BalanceCar_TimerTick1ms:0000007c $d
+   D:\TMP\ccGgd0aP.s:1646   .bss.count_angle.1:00000000 count_angle.1
+   D:\TMP\ccGgd0aP.s:1641   .bss.count_speed.0:00000000 count_speed.0
+   D:\TMP\ccGgd0aP.s:1517   .text.HAL_TIM_Base_MspInit:00000000 $t
+ARM GAS  D:\TMP\ccGgd0aP.s 			page 45
 
 
-   D:\TMP\cckbiAF2.s:1555   .text.HAL_TIM_Base_MspInit:00000000 HAL_TIM_Base_MspInit
-   D:\TMP\cckbiAF2.s:1616   .text.HAL_TIM_Base_MspInit:0000003c $d
-   D:\TMP\cckbiAF2.s:1621   .text.TIM4_IRQHandler:00000000 $t
-   D:\TMP\cckbiAF2.s:1627   .text.TIM4_IRQHandler:00000000 TIM4_IRQHandler
-   D:\TMP\cckbiAF2.s:1666   .text.TIM4_IRQHandler:00000024 $d
-   D:\TMP\cckbiAF2.s:1674   .bss.count_speed.0:00000000 $d
-   D:\TMP\cckbiAF2.s:1679   .bss.count_angle.1:00000000 $d
-   D:\TMP\cckbiAF2.s:1681   .bss.s_dif_pwm:00000000 $d
-   D:\TMP\cckbiAF2.s:1687   .bss.s_angle:00000000 $d
-   D:\TMP\cckbiAF2.s:1696   .bss.s_last_run_enable:00000000 $d
-   D:\TMP\cckbiAF2.s:1701   .bss.s_speed_tick_pending:00000000 $d
-   D:\TMP\cckbiAF2.s:1706   .bss.s_angle_tick_pending:00000000 $d
-   D:\TMP\cckbiAF2.s:1708   .bss.s_htim4:00000000 $d
-   D:\TMP\cckbiAF2.s:1715   .data.g_turn_pid:00000000 $d
-   D:\TMP\cckbiAF2.s:1731   .data.g_speed_pid:00000000 $d
-   D:\TMP\cckbiAF2.s:1747   .data.g_angle_pid:00000000 $d
-   D:\TMP\cckbiAF2.s:1763   .bss.g_balance_state:00000000 $d
-   D:\TMP\cckbiAF2.s:1770   .data.g_balance_debug:00000000 $d
+   D:\TMP\ccGgd0aP.s:1523   .text.HAL_TIM_Base_MspInit:00000000 HAL_TIM_Base_MspInit
+   D:\TMP\ccGgd0aP.s:1584   .text.HAL_TIM_Base_MspInit:0000003c $d
+   D:\TMP\ccGgd0aP.s:1589   .text.TIM4_IRQHandler:00000000 $t
+   D:\TMP\ccGgd0aP.s:1595   .text.TIM4_IRQHandler:00000000 TIM4_IRQHandler
+   D:\TMP\ccGgd0aP.s:1634   .text.TIM4_IRQHandler:00000024 $d
+   D:\TMP\ccGgd0aP.s:1642   .bss.count_speed.0:00000000 $d
+   D:\TMP\ccGgd0aP.s:1647   .bss.count_angle.1:00000000 $d
+   D:\TMP\ccGgd0aP.s:1649   .bss.s_dif_pwm:00000000 $d
+   D:\TMP\ccGgd0aP.s:1655   .bss.s_angle:00000000 $d
+   D:\TMP\ccGgd0aP.s:1664   .bss.s_last_run_enable:00000000 $d
+   D:\TMP\ccGgd0aP.s:1669   .bss.s_speed_tick_pending:00000000 $d
+   D:\TMP\ccGgd0aP.s:1674   .bss.s_angle_tick_pending:00000000 $d
+   D:\TMP\ccGgd0aP.s:1676   .bss.s_htim4:00000000 $d
+   D:\TMP\ccGgd0aP.s:1683   .data.g_turn_pid:00000000 $d
+   D:\TMP\ccGgd0aP.s:1699   .data.g_speed_pid:00000000 $d
+   D:\TMP\ccGgd0aP.s:1715   .data.g_angle_pid:00000000 $d
+   D:\TMP\ccGgd0aP.s:1731   .bss.g_balance_state:00000000 $d
+   D:\TMP\ccGgd0aP.s:1738   .data.g_balance_debug:00000000 $d
 
 UNDEFINED SYMBOLS
 __aeabi_fcmpgt
@@ -2677,8 +2639,8 @@ PID_Init
 TB6612_Stop
 __aeabi_i2f
 __aeabi_fsub
-__aeabi_fmul
 __aeabi_fdiv
+__aeabi_fmul
 __aeabi_fadd
 Mpu6050_ReadRaw
 atan2f

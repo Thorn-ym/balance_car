@@ -34,9 +34,9 @@ volatile BalanceCarDebug_t g_balance_debug = {
 volatile BalanceCarState_t g_balance_state = {0}; /* Ozone: 运行状态观察区，不建议手动修改 */
 
 PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
-    .Kp = 9.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
-    .Ki = 0.0f,             /* 积分: 初调可先设0，最后再少量加 */
-    .Kd = 14.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
+    .Kp = 12.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
+    .Ki = 0.25f,             /* 积分: 初调可先设0，最后再少量加 */
+    .Kd = 8.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
     .OutMax = 100.0f,
     .OutMin = -100.0f,
     .OutOffset = 3.0f,      /* 电机死区补偿；初调可先设0 */
@@ -45,8 +45,8 @@ PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
 };
 
 PID_t g_speed_pid = {       /* Ozone: 速度环，角度环稳定后再调 */
-    .Kp = 0.10f,
-    .Ki = 0.02f, 
+    .Kp = 0.60f,
+    .Ki = 0.07f, 
     .Kd = 0,
     .OutMax = 5.0f,
     .OutMin = -5.0f,
@@ -55,11 +55,11 @@ PID_t g_speed_pid = {       /* Ozone: 速度环，角度环稳定后再调 */
 };
 
 PID_t g_turn_pid = {        /* Ozone: 转向环，速度环稳定后最后调 */
-    .Kp = 0,
+    .Kp = 3,
     .Ki = 0,
     .Kd = 0.0f,
-    .OutMax = 3.0f,
-    .OutMin = -3.0f,
+    .OutMax = 5.0f,
+    .OutMin = -5.0f,
     .ErrorIntMax = 20.0f,
     .ErrorIntMin = -20.0f,
 };
@@ -171,8 +171,8 @@ static void BalanceCar_RunAngleLoop(void)
     g_balance_state.gz = raw.gz;
 
     float gy_calibrated = (float)raw.gy - g_balance_debug.gyro_y_offset;
-    float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
-    float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
+    // float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
+    // float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
     float angle_acc = -atan2f((float)raw.ax, (float)raw.az) / PI_F * 180.0f;
     angle_acc += g_balance_debug.angle_offset;
 
@@ -183,7 +183,7 @@ static void BalanceCar_RunAngleLoop(void)
     g_balance_state.angle_acc = angle_acc;
     g_balance_state.angle_gyro = angle_gyro;
     g_balance_state.angle = s_angle;
-    g_balance_state.gyro_z_rate = gyro_z_rate;
+    // g_balance_state.gyro_z_rate = gyro_z_rate;
 
     if (s_angle > g_balance_debug.fall_angle_limit || s_angle < -g_balance_debug.fall_angle_limit) {
         BalanceCar_SetFault(BALANCE_FAULT_FALL);
@@ -242,7 +242,7 @@ static void BalanceCar_RunSpeedLoop(void)
     float turn_rate_target = -g_balance_debug.turn_target * g_balance_debug.turn_gyro_scale;
     g_balance_state.turn_rate_target = turn_rate_target;
     g_turn_pid.Target = turn_rate_target;
-    g_turn_pid.Actual = g_balance_state.gyro_z_rate;
+    // g_turn_pid.Actual = g_balance_state.gyro_z_rate;
     PID_Update(&g_turn_pid);
     s_dif_pwm = g_turn_pid.Out * 5.0f;
 }
