@@ -53,7 +53,7 @@ import java.util.UUID;
 public class MainActivity extends Activity {
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final long CONTROL_PERIOD_MS = 50L;
-    private static final float MAX_SPEED = 3.0f;
+    private static final float MAX_SPEED = 1.5f;
     private static final float MAX_TURN = 2.0f;
     private static final float DEAD_ZONE = 0.08f;
     private static final int COLOR_BG = Color.rgb(17, 19, 23);
@@ -107,6 +107,7 @@ public class MainActivity extends Activity {
     private Spinner deviceSpinner;
     private TextView statusText;
     private TextView commandText;
+    private TextView debugRxText;
     private LinearLayout bodyContainer;
     private Button screenSwitchButton;
     private Button connectButton;
@@ -141,11 +142,13 @@ public class MainActivity extends Activity {
     private float currentTurn;
     private float lastSentSpeed = Float.NaN;
     private float lastSentTurn = Float.NaN;
+    private int debugLineCount;
+    private String lastDebugLine = "未收到DBG";
 
     private final Runnable pidSendTask = new Runnable() {
         @Override
         public void run() {
-            sendSelectedPid();
+            sendAllPid();
         }
     };
 
@@ -156,6 +159,10 @@ public class MainActivity extends Activity {
             handler.postDelayed(this, CONTROL_PERIOD_MS);
         }
     };
+
+    private final Runnable speedPidSendTask = () -> sendPidForLoop(LOOP_SPEED, true);
+    private final Runnable anglePidSendTask = () -> sendPidForLoop(LOOP_ANGLE, false);
+    private final Runnable turnPidSendTask = () -> sendPidForLoop(LOOP_TURN, false);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -410,7 +417,7 @@ public class MainActivity extends Activity {
 
         LinearLayout actionRow = row();
         actionRow.setGravity(Gravity.CENTER);
-        actionRow.addView(button("发送当前PID", COLOR_PURPLE, v -> sendSelectedPid()), tallActionButtonParams());
+        actionRow.addView(button("发送全部PID", COLOR_PURPLE, v -> sendAllPid()), tallActionButtonParams());
         actionRow.addView(button("清PID历史", COLOR_PANEL_ALT, v -> sendCommand("PIDRST", true)), tallActionButtonParams());
         actionRow.addView(button("上限", COLOR_PANEL_ALT, v -> showPidLimitDialog()), tallActionButtonParams());
         pidContent.addView(actionRow, new LinearLayout.LayoutParams(
@@ -423,6 +430,34 @@ public class MainActivity extends Activity {
         pidContent.addView(commandText, new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             dp(44)));
+
+        debugRxText = smallValueText(debugRxStatusText());
+        debugRxText.setTextSize(12);
+        debugRxText.setTextColor(COLOR_AMBER);
+        pidContent.addView(debugRxText, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(42)));
+
+        LinearLayout runRow = row();
+        runRow.setGravity(Gravity.CENTER);
+        Button debugStartButton = button("启动", Color.rgb(13, 25, 19), v -> {
+            running = true;
+            sendCommand("RUN 1", true);
+        });
+        debugStartButton.setTextColor(COLOR_GREEN);
+        Button debugStopButton = button("停止", Color.rgb(62, 20, 16), v -> {
+            currentSpeed = 0.0f;
+            currentTurn = 0.0f;
+            running = false;
+            sendCommand("RUN 0", true);
+        });
+        debugStopButton.setTextColor(Color.rgb(255, 110, 91));
+        runRow.addView(debugStartButton, tallActionButtonParams());
+        runRow.addView(debugStopButton, tallActionButtonParams());
+        pidContent.addView(runRow, new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(62)));
+
         pidScroll.addView(pidContent, new ScrollView.LayoutParams(
             ScrollView.LayoutParams.MATCH_PARENT,
             ScrollView.LayoutParams.WRAP_CONTENT));
@@ -522,7 +557,7 @@ public class MainActivity extends Activity {
             savePidValues();
             updatePidValueText(pidIndex);
             if (released) {
-                sendSelectedPid();
+                sendAllPid();
             } else {
                 schedulePidSend();
             }
@@ -714,12 +749,26 @@ public class MainActivity extends Activity {
 
     private void sendSelectedPid() {
         handler.removeCallbacks(pidSendTask);
+        sendPidForLoop(selectedLoop, true);
+    }
+
+    private void sendAllPid() {
+        handler.removeCallbacks(pidSendTask);
+        handler.removeCallbacks(speedPidSendTask);
+        handler.removeCallbacks(anglePidSendTask);
+        handler.removeCallbacks(turnPidSendTask);
+        handler.post(speedPidSendTask);
+        handler.postDelayed(anglePidSendTask, 60L);
+        handler.postDelayed(turnPidSendTask, 120L);
+    }
+
+    private void sendPidForLoop(int loop, boolean showToastWhenDisconnected) {
         sendCommand(String.format(Locale.US,
             "PID %s %.3f %.3f %.3f",
-            LOOP_COMMANDS[selectedLoop],
-            pidValues[selectedLoop][PID_KP],
-            pidValues[selectedLoop][PID_KI],
-            pidValues[selectedLoop][PID_KD]), true);
+            LOOP_COMMANDS[loop],
+            pidValues[loop][PID_KP],
+            pidValues[loop][PID_KI],
+            pidValues[loop][PID_KD]), showToastWhenDisconnected);
     }
 
     private void setSpeedTarget(float speed) {
@@ -1087,6 +1136,9 @@ public class MainActivity extends Activity {
     private void handleTelemetry(String line) {
         String cleanLine = line.trim();
         if (cleanLine.startsWith("DBG")) {
+            debugLineCount++;
+            lastDebugLine = cleanLine;
+            updateDebugRxText();
             handleDebugTelemetry(cleanLine.length() > 3 ? cleanLine.substring(3).trim() : "");
             return;
         }
@@ -1109,15 +1161,28 @@ public class MainActivity extends Activity {
         if (parts.length < 3) {
             return;
         }
-        int loop = loopFromCommand(parts[0].toUpperCase(Locale.US));
-        if (loop < 0) {
-            return;
+        for (int i = 0; i + 2 < parts.length; i += 3) {
+            int loop = loopFromCommand(parts[i].toUpperCase(Locale.US));
+            if (loop < 0) {
+                i -= 2;
+                continue;
+            }
+            try {
+                float target = Float.parseFloat(parts[i + 1]);
+                float actual = Float.parseFloat(parts[i + 2]);
+                pushWaveSample(loop, target, actual);
+            } catch (NumberFormatException ignored) {
+            }
         }
-        try {
-            float target = Float.parseFloat(parts[1]);
-            float actual = Float.parseFloat(parts[2]);
-            pushWaveSample(loop, target, actual);
-        } catch (NumberFormatException ignored) {
+    }
+
+    private String debugRxStatusText() {
+        return "DBG接收 " + debugLineCount + "  " + lastDebugLine;
+    }
+
+    private void updateDebugRxText() {
+        if (debugRxText != null) {
+            debugRxText.setText(debugRxStatusText());
         }
     }
 
@@ -1342,6 +1407,8 @@ public class MainActivity extends Activity {
             float scale = waveScale(loop);
             drawWave(canvas, plot, waveTargets[loop], scale, COLOR_AMBER, 3.0f);
             drawWave(canvas, plot, waveActuals[loop], scale, COLOR_BLUE, 3.0f);
+            drawSampleDots(canvas, plot, waveTargets[loop], scale, COLOR_AMBER);
+            drawSampleDots(canvas, plot, waveActuals[loop], scale, COLOR_BLUE);
             drawLatestMarkers(canvas, plot, scale);
 
             paint.setStyle(Paint.Style.FILL);
@@ -1417,6 +1484,12 @@ public class MainActivity extends Activity {
 
         private void drawWave(Canvas canvas, RectF plot, float[] values, float scale, int color, float strokeWidth) {
             Path path = new Path();
+            float min = values[0];
+            float max = values[0];
+            for (int i = 1; i < WAVE_POINTS; i++) {
+                min = Math.min(min, values[i]);
+                max = Math.max(max, values[i]);
+            }
             for (int i = 0; i < WAVE_POINTS; i++) {
                 float x = plot.left + plot.width() * i / (WAVE_POINTS - 1.0f);
                 float normalized = values[i] / scale;
@@ -1426,6 +1499,9 @@ public class MainActivity extends Activity {
                     normalized = -1.0f;
                 }
                 float y = plot.centerY() - normalized * plot.height() * 0.46f;
+                if (waveSampleCounts[loop] > 0 && Math.abs(max - min) < 0.001f) {
+                    y += (i % 2 == 0 ? -1.0f : 1.0f) * dp(2);
+                }
                 if (i == 0) {
                     path.moveTo(x, y);
                 } else {
@@ -1436,6 +1512,19 @@ public class MainActivity extends Activity {
             paint.setStrokeWidth(strokeWidth);
             paint.setColor(color);
             canvas.drawPath(path, paint);
+        }
+
+        private void drawSampleDots(Canvas canvas, RectF plot, float[] values, float scale, int color) {
+            if (waveSampleCounts[loop] <= 0) {
+                return;
+            }
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(color);
+            int first = Math.max(0, WAVE_POINTS - waveSampleCounts[loop]);
+            for (int i = first; i < WAVE_POINTS; i += 12) {
+                float x = plot.left + plot.width() * i / (WAVE_POINTS - 1.0f);
+                canvas.drawCircle(x, valueToY(plot, values[i], scale), dp(2), paint);
+            }
         }
 
         private void drawLatestMarkers(Canvas canvas, RectF plot, float scale) {

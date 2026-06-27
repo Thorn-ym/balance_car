@@ -1,4 +1,4 @@
-#Fri Jun 26 14:36:57 CST 2026
+#Sat Jun 27 16:15:18 CST 2026
 base.0=F\:\\STM32CubeMX\\project\\balance_buletooth2_PCB\\balance_car\\merged_app\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
 base.1=F\:\\STM32CubeMX\\project\\balance_buletooth2_PCB\\balance_car\\merged_app\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
 path.0=0/classes.dex

@@ -117,10 +117,10 @@ HAL_StatusTypeDef RemoteControl_Init(void)
     return status;
 }
 
-static void RemoteControl_SendLine(const char *line, int len)
+static uint8_t RemoteControl_SendLine(const char *line, int len)
 {
     if (len <= 0 || s_tx_busy != 0U) {
-        return;
+        return 0U;
     }
     if (len >= (int)sizeof(s_tx_line)) {
         len = (int)sizeof(s_tx_line) - 1;
@@ -129,7 +129,9 @@ static void RemoteControl_SendLine(const char *line, int len)
     s_tx_busy = 1U;
     if (HAL_UART_Transmit_IT(&s_huart_remote, (uint8_t *)s_tx_line, (uint16_t)len) != HAL_OK) {
         s_tx_busy = 0U;
+        return 0U;
     }
+    return 1U;
 }
 
 static void RemoteControl_SendTelemetry(void)
@@ -170,32 +172,24 @@ static void RemoteControl_SendTelemetry(void)
 
 static void RemoteControl_SendDebugTelemetry(void)
 {
-    char line[64];
+    char line[96];
     int len;
 
-    len = snprintf(line, sizeof(line), "DBG SPD %.3f %.3f\n", g_speed_pid.Target, g_speed_pid.Actual);
-    if (len > 0) {
-        if (len >= (int)sizeof(line)) {
-            len = (int)sizeof(line) - 1;
-        }
-        RemoteControl_SendLine(line, len);
+    len = snprintf(line, sizeof(line),
+                   "DBG SPD %.3f %.3f ANG %.3f %.3f TURN %.3f %.3f\n",
+                   g_speed_pid.Target,
+                   g_speed_pid.Actual,
+                   g_angle_pid.Target,
+                   g_angle_pid.Actual,
+                   g_turn_pid.Target,
+                   g_turn_pid.Actual);
+    if (len <= 0) {
+        return;
     }
-
-    len = snprintf(line, sizeof(line), "DBG ANG %.3f %.3f\n", g_angle_pid.Target, g_angle_pid.Actual);
-    if (len > 0) {
-        if (len >= (int)sizeof(line)) {
-            len = (int)sizeof(line) - 1;
-        }
-        RemoteControl_SendLine(line, len);
+    if (len >= (int)sizeof(line)) {
+        len = (int)sizeof(line) - 1;
     }
-
-    len = snprintf(line, sizeof(line), "DBG TURN %.3f %.3f\n", g_turn_pid.Target, g_turn_pid.Actual);
-    if (len > 0) {
-        if (len >= (int)sizeof(line)) {
-            len = (int)sizeof(line) - 1;
-        }
-        RemoteControl_SendLine(line, len);
-    }
+    (void)RemoteControl_SendLine(line, len);
 }
 
 static void RemoteControl_MarkValid(const char *line)
