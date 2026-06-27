@@ -27,16 +27,16 @@ volatile BalanceCarDebug_t g_balance_debug = {
     .gyro_y_offset = 20,    /* Ozone: 静止时观察g_balance_state.gy，把零漂填到这里 */
     .gyro_z_offset = -60.0f,     /* Ozone: 静止时观察g_balance_state.gz，把Z轴零漂填到这里 */
     .turn_gyro_scale = 60.0f,  /* Ozone: turn_target=1时目标Z轴角速度约60deg/s，可按手感调 */
-    .angle_offset = 3.0f,      /* Ozone: 竖直时调这个，让g_balance_state.angle接近0 */
+    .angle_offset = 4.5f,      /* Ozone: 竖直时调这个，让g_balance_state.angle接近0 */
     .fall_angle_limit = 40.0f, /* Ozone: 倒车保护阈值，超过后自动停机 */
 };
 
 volatile BalanceCarState_t g_balance_state = {0}; /* Ozone: 运行状态观察区，不建议手动修改 */
 
 PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
-    .Kp = 14,             /* 比例: 第一次架空可先降到1.0测试方向 */
-    .Ki = 0,             /* 积分: 初调可先设0，最后再少量加 */
-    .Kd = 12,             /* 微分: 抑制摆动，Kp方向正确后再加 */
+    .Kp = 9.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
+    .Ki = 0.0f,             /* 积分: 初调可先设0，最后再少量加 */
+    .Kd = 14.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
     .OutMax = 100.0f,
     .OutMin = -100.0f,
     .OutOffset = 3.0f,      /* 电机死区补偿；初调可先设0 */
@@ -45,8 +45,8 @@ PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
 };
 
 PID_t g_speed_pid = {       /* Ozone: 速度环，角度环稳定后再调 */
-    .Kp = 0,
-    .Ki = 0, 
+    .Kp = 0.10f,
+    .Ki = 0.02f, 
     .Kd = 0,
     .OutMax = 5.0f,
     .OutMin = -5.0f,
