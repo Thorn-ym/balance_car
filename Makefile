@@ -39,6 +39,7 @@ C_SOURCES =  \
 Core/Src/main.c \
 Core/Src/balance_car/balance_control.c \
 Core/Src/balance_car/app_sensors.c \
+Core/Src/balance_car/app_tasks.c \
 Core/Src/balance_car/dht11.c \
 Core/Src/balance_car/encoder_hal.c \
 Core/Src/balance_car/hx711.c \
@@ -51,6 +52,16 @@ Core/Src/balance_car/remote_control.c \
 Core/Src/balance_car/uart_dispatch.c \
 Core/Src/stm32f1xx_it.c \
 Core/Src/stm32f1xx_hal_msp.c \
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
+Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+Middlewares/Third_Party/FreeRTOS/Source/list.c \
+Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c \
@@ -137,6 +148,9 @@ C_INCLUDES =  \
 -ICore/Inc/balance_car \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
+-IMiddlewares/Third_Party/FreeRTOS/Source/include \
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3 \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
 -IDrivers/CMSIS/Include
 

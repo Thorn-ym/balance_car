@@ -21,6 +21,7 @@ typedef struct {
     uint32_t valid_cmd_count;     /* Ozone观察: 有效命令计数 */
     uint32_t invalid_cmd_count;   /* Ozone观察: 无效命令计数 */
     uint32_t timeout_count;       /* Ozone观察: 遥控超时次数 */
+    uint32_t partial_timeout_count; /* Ozone观察: 半条命令超过行超时时间后被丢弃次数 */
     uint32_t last_rx_ms;          /* Ozone观察: 最近一次有效命令的HAL毫秒时间 */
     uint32_t fault_flags;         /* Ozone观察: 遥控模块故障位，见RemoteControlFault_t */
     float speed_cmd;              /* Ozone观察: 最近一次遥控速度目标，已限幅 */

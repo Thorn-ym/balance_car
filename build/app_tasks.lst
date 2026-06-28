@@ -1,0 +1,2911 @@
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"app_tasks.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Core/Src/balance_car/app_tasks.c"
+  18              		.section	.text.AppTasks_ApplyQueuedCommands,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	AppTasks_ApplyQueuedCommands:
+  25              	.LFB70:
+   1:Core/Src/balance_car/app_tasks.c **** #include "balance_car/app_tasks.h"
+   2:Core/Src/balance_car/app_tasks.c **** 
+   3:Core/Src/balance_car/app_tasks.c **** #include "balance_car/app_sensors.h"
+   4:Core/Src/balance_car/app_tasks.c **** #include "balance_car/balance_control.h"
+   5:Core/Src/balance_car/app_tasks.c **** #include "balance_car/raspi_link.h"
+   6:Core/Src/balance_car/app_tasks.c **** #include "balance_car/remote_control.h"
+   7:Core/Src/balance_car/app_tasks.c **** #include "cmsis_os.h"
+   8:Core/Src/balance_car/app_tasks.c **** #include "task.h"
+   9:Core/Src/balance_car/app_tasks.c **** 
+  10:Core/Src/balance_car/app_tasks.c **** #define TASK_BALANCE_STACK_WORDS      384U
+  11:Core/Src/balance_car/app_tasks.c **** #define TASK_RASPI_STACK_WORDS        512U
+  12:Core/Src/balance_car/app_tasks.c **** #define TASK_BLUETOOTH_STACK_WORDS    512U
+  13:Core/Src/balance_car/app_tasks.c **** #define TASK_SENSOR_STACK_WORDS       256U
+  14:Core/Src/balance_car/app_tasks.c **** #define QUEUE_CONTROL_DEPTH           8U
+  15:Core/Src/balance_car/app_tasks.c **** #define QUEUE_PID_DEPTH               8U
+  16:Core/Src/balance_car/app_tasks.c **** #define QUEUE_REMOTE_RX_DEPTH         8U
+  17:Core/Src/balance_car/app_tasks.c **** #define QUEUE_RASPI_RX_DEPTH          1U
+  18:Core/Src/balance_car/app_tasks.c **** #define SENSOR_IDLE_PERIOD_MS         500U
+  19:Core/Src/balance_car/app_tasks.c **** #define SENSOR_SERVICE_PERIOD_MS      20U
+  20:Core/Src/balance_car/app_tasks.c **** 
+  21:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_BalanceControl;
+  22:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_BalanceStateMutex;
+  23:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_SensorStateMutex;
+  24:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_BluetoothTxMutex;
+  25:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_RaspberryTxMutex;
+  26:Core/Src/balance_car/app_tasks.c **** SemaphoreHandle_t Sem_BluetoothRxReady;
+  27:Core/Src/balance_car/app_tasks.c **** QueueHandle_t Queue_ControlCommand;
+  28:Core/Src/balance_car/app_tasks.c **** QueueHandle_t Queue_PidUpdate;
+  29:Core/Src/balance_car/app_tasks.c **** QueueHandle_t Queue_BluetoothRxLine;
+  30:Core/Src/balance_car/app_tasks.c **** QueueHandle_t Queue_RaspberryRxLine;
+  31:Core/Src/balance_car/app_tasks.c **** volatile AppTaskMonitor_t g_app_task_monitor;
+  32:Core/Src/balance_car/app_tasks.c **** 
+  33:Core/Src/balance_car/app_tasks.c **** static BalanceCarState_t s_balance_snapshot;
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 2
+
+
+  34:Core/Src/balance_car/app_tasks.c **** static AppSensorState_t s_sensor_snapshot;
+  35:Core/Src/balance_car/app_tasks.c **** static AppPidSnapshot_t s_pid_snapshot;
+  36:Core/Src/balance_car/app_tasks.c **** 
+  37:Core/Src/balance_car/app_tasks.c **** static void AppTasks_ApplyQueuedCommands(void)
+  38:Core/Src/balance_car/app_tasks.c **** {
+  26              		.loc 1 38 1 view -0
+  27              		.cfi_startproc
+  28              		@ args = 0, pretend = 0, frame = 16
+  29              		@ frame_needed = 0, uses_anonymous_args = 0
+  39:Core/Src/balance_car/app_tasks.c ****     AppControlCommand_t command;
+  30              		.loc 1 39 5 view .LVU1
+  40:Core/Src/balance_car/app_tasks.c **** 
+  41:Core/Src/balance_car/app_tasks.c ****     while (Queue_ControlCommand != NULL &&
+  31              		.loc 1 41 5 view .LVU2
+  32              		.loc 1 41 41 view .LVU3
+  33              		.loc 1 41 33 is_stmt 0 view .LVU4
+  34 0000 104B     		ldr	r3, .L11
+  35 0002 1868     		ldr	r0, [r3]
+  36              		.loc 1 41 41 view .LVU5
+  37 0004 E0B1     		cbz	r0, .L10
+  38:Core/Src/balance_car/app_tasks.c ****     AppControlCommand_t command;
+  38              		.loc 1 38 1 view .LVU6
+  39 0006 00B5     		push	{lr}
+  40              	.LCFI0:
+  41              		.cfi_def_cfa_offset 4
+  42              		.cfi_offset 14, -4
+  43 0008 87B0     		sub	sp, sp, #28
+  44              	.LCFI1:
+  45              		.cfi_def_cfa_offset 32
+  46              	.L7:
+  42:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_ControlCommand, &command, 0U) == pdPASS) {
+  47              		.loc 1 42 12 view .LVU7
+  48 000a 0022     		movs	r2, #0
+  49 000c 02A9     		add	r1, sp, #8
+  50 000e FFF7FEFF 		bl	xQueueReceive
+  51              	.LVL0:
+  41:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_ControlCommand, &command, 0U) == pdPASS) {
+  52              		.loc 1 41 41 discriminator 1 view .LVU8
+  53 0012 0128     		cmp	r0, #1
+  54 0014 11D1     		bne	.L1
+  43:Core/Src/balance_car/app_tasks.c ****         BalanceCar_ApplyControlCommand(command.run_valid,
+  55              		.loc 1 43 9 is_stmt 1 view .LVU9
+  56 0016 059B     		ldr	r3, [sp, #20]	@ float
+  57 0018 0193     		str	r3, [sp, #4]	@ float
+  58 001a 049B     		ldr	r3, [sp, #16]	@ float
+  59 001c 0093     		str	r3, [sp]	@ float
+  60 001e 9DF80C30 		ldrb	r3, [sp, #12]	@ zero_extendqisi2
+  61 0022 9DF80B20 		ldrb	r2, [sp, #11]	@ zero_extendqisi2
+  62 0026 9DF80A10 		ldrb	r1, [sp, #10]	@ zero_extendqisi2
+  63 002a 9DF80900 		ldrb	r0, [sp, #9]	@ zero_extendqisi2
+  64 002e FFF7FEFF 		bl	BalanceCar_ApplyControlCommand
+  65              	.LVL1:
+  41:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_ControlCommand, &command, 0U) == pdPASS) {
+  66              		.loc 1 41 41 view .LVU10
+  41:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_ControlCommand, &command, 0U) == pdPASS) {
+  67              		.loc 1 41 33 is_stmt 0 view .LVU11
+  68 0032 044B     		ldr	r3, .L11
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 3
+
+
+  69 0034 1868     		ldr	r0, [r3]
+  41:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_ControlCommand, &command, 0U) == pdPASS) {
+  70              		.loc 1 41 41 view .LVU12
+  71 0036 0028     		cmp	r0, #0
+  72 0038 E7D1     		bne	.L7
+  73              	.L1:
+  44:Core/Src/balance_car/app_tasks.c ****                                        command.run_enable,
+  45:Core/Src/balance_car/app_tasks.c ****                                        command.reset_pid,
+  46:Core/Src/balance_car/app_tasks.c ****                                        command.clear_fault,
+  47:Core/Src/balance_car/app_tasks.c ****                                        command.speed_target,
+  48:Core/Src/balance_car/app_tasks.c ****                                        command.turn_target);
+  49:Core/Src/balance_car/app_tasks.c ****     }
+  50:Core/Src/balance_car/app_tasks.c **** }
+  74              		.loc 1 50 1 view .LVU13
+  75 003a 07B0     		add	sp, sp, #28
+  76              	.LCFI2:
+  77              		.cfi_def_cfa_offset 4
+  78              		@ sp needed
+  79 003c 5DF804FB 		ldr	pc, [sp], #4
+  80              	.L10:
+  81              	.LCFI3:
+  82              		.cfi_def_cfa_offset 0
+  83              		.cfi_restore 14
+  84 0040 7047     		bx	lr
+  85              	.L12:
+  86 0042 00BF     		.align	2
+  87              	.L11:
+  88 0044 00000000 		.word	Queue_ControlCommand
+  89              		.cfi_endproc
+  90              	.LFE70:
+  92              		.section	.text.AppTasks_ApplyQueuedPidUpdates,"ax",%progbits
+  93              		.align	1
+  94              		.syntax unified
+  95              		.thumb
+  96              		.thumb_func
+  98              	AppTasks_ApplyQueuedPidUpdates:
+  99              	.LFB71:
+  51:Core/Src/balance_car/app_tasks.c **** 
+  52:Core/Src/balance_car/app_tasks.c **** static void AppTasks_ApplyQueuedPidUpdates(void)
+  53:Core/Src/balance_car/app_tasks.c **** {
+ 100              		.loc 1 53 1 is_stmt 1 view -0
+ 101              		.cfi_startproc
+ 102              		@ args = 0, pretend = 0, frame = 16
+ 103              		@ frame_needed = 0, uses_anonymous_args = 0
+  54:Core/Src/balance_car/app_tasks.c ****     AppPidUpdate_t update;
+ 104              		.loc 1 54 5 view .LVU15
+  55:Core/Src/balance_car/app_tasks.c ****     PID_t *pid = NULL;
+ 105              		.loc 1 55 5 view .LVU16
+ 106              	.LVL2:
+  56:Core/Src/balance_car/app_tasks.c **** 
+  57:Core/Src/balance_car/app_tasks.c ****     while (Queue_PidUpdate != NULL &&
+ 107              		.loc 1 57 5 view .LVU17
+ 108              		.loc 1 57 36 view .LVU18
+ 109              		.loc 1 57 28 is_stmt 0 view .LVU19
+ 110 0000 124B     		ldr	r3, .L27
+ 111 0002 1868     		ldr	r0, [r3]
+ 112              		.loc 1 57 36 view .LVU20
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 4
+
+
+ 113 0004 08B3     		cbz	r0, .L26
+  53:Core/Src/balance_car/app_tasks.c ****     AppPidUpdate_t update;
+ 114              		.loc 1 53 1 view .LVU21
+ 115 0006 00B5     		push	{lr}
+ 116              	.LCFI4:
+ 117              		.cfi_def_cfa_offset 4
+ 118              		.cfi_offset 14, -4
+ 119 0008 85B0     		sub	sp, sp, #20
+ 120              	.LCFI5:
+ 121              		.cfi_def_cfa_offset 24
+ 122 000a 0BE0     		b	.L23
+ 123              	.L19:
+  58:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_PidUpdate, &update, 0U) == pdPASS) {
+  59:Core/Src/balance_car/app_tasks.c ****         if (update.target == APP_PID_TARGET_SPEED) {
+ 124              		.loc 1 59 19 view .LVU22
+ 125 000c 104B     		ldr	r3, .L27+4
+ 126 000e 00E0     		b	.L15
+ 127              	.L20:
+ 128 0010 104B     		ldr	r3, .L27+8
+ 129              	.L15:
+  60:Core/Src/balance_car/app_tasks.c ****             pid = &g_speed_pid;
+  61:Core/Src/balance_car/app_tasks.c ****         } else if (update.target == APP_PID_TARGET_ANGLE) {
+  62:Core/Src/balance_car/app_tasks.c ****             pid = &g_angle_pid;
+  63:Core/Src/balance_car/app_tasks.c ****         } else if (update.target == APP_PID_TARGET_TURN) {
+  64:Core/Src/balance_car/app_tasks.c ****             pid = &g_turn_pid;
+  65:Core/Src/balance_car/app_tasks.c ****         } else {
+  66:Core/Src/balance_car/app_tasks.c ****             pid = NULL;
+  67:Core/Src/balance_car/app_tasks.c ****         }
+  68:Core/Src/balance_car/app_tasks.c **** 
+  69:Core/Src/balance_car/app_tasks.c ****         if (pid != NULL) {
+  70:Core/Src/balance_car/app_tasks.c ****             pid->Kp = update.kp;
+ 130              		.loc 1 70 13 is_stmt 1 view .LVU23
+ 131              		.loc 1 70 29 is_stmt 0 view .LVU24
+ 132 0012 019A     		ldr	r2, [sp, #4]	@ float
+ 133              		.loc 1 70 21 view .LVU25
+ 134 0014 1A61     		str	r2, [r3, #16]	@ float
+  71:Core/Src/balance_car/app_tasks.c ****             pid->Ki = update.ki;
+ 135              		.loc 1 71 13 is_stmt 1 view .LVU26
+ 136              		.loc 1 71 29 is_stmt 0 view .LVU27
+ 137 0016 029A     		ldr	r2, [sp, #8]	@ float
+ 138              		.loc 1 71 21 view .LVU28
+ 139 0018 5A61     		str	r2, [r3, #20]	@ float
+  72:Core/Src/balance_car/app_tasks.c ****             pid->Kd = update.kd;
+ 140              		.loc 1 72 13 is_stmt 1 view .LVU29
+ 141              		.loc 1 72 29 is_stmt 0 view .LVU30
+ 142 001a 039A     		ldr	r2, [sp, #12]	@ float
+ 143              		.loc 1 72 21 view .LVU31
+ 144 001c 9A61     		str	r2, [r3, #24]	@ float
+ 145              	.L16:
+  57:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_PidUpdate, &update, 0U) == pdPASS) {
+ 146              		.loc 1 57 36 is_stmt 1 view .LVU32
+  57:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_PidUpdate, &update, 0U) == pdPASS) {
+ 147              		.loc 1 57 28 is_stmt 0 view .LVU33
+ 148 001e 0B4B     		ldr	r3, .L27
+ 149 0020 1868     		ldr	r0, [r3]
+  57:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_PidUpdate, &update, 0U) == pdPASS) {
+ 150              		.loc 1 57 36 view .LVU34
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 5
+
+
+ 151 0022 78B1     		cbz	r0, .L13
+ 152              	.L23:
+  58:Core/Src/balance_car/app_tasks.c ****         if (update.target == APP_PID_TARGET_SPEED) {
+ 153              		.loc 1 58 12 view .LVU35
+ 154 0024 0022     		movs	r2, #0
+ 155 0026 6946     		mov	r1, sp
+ 156 0028 FFF7FEFF 		bl	xQueueReceive
+ 157              	.LVL3:
+  57:Core/Src/balance_car/app_tasks.c ****            xQueueReceive(Queue_PidUpdate, &update, 0U) == pdPASS) {
+ 158              		.loc 1 57 36 discriminator 1 view .LVU36
+ 159 002c 0128     		cmp	r0, #1
+ 160 002e 09D1     		bne	.L13
+  59:Core/Src/balance_car/app_tasks.c ****             pid = &g_speed_pid;
+ 161              		.loc 1 59 9 is_stmt 1 view .LVU37
+  59:Core/Src/balance_car/app_tasks.c ****             pid = &g_speed_pid;
+ 162              		.loc 1 59 19 is_stmt 0 view .LVU38
+ 163 0030 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 164 0034 022B     		cmp	r3, #2
+ 165 0036 E9D0     		beq	.L19
+ 166 0038 032B     		cmp	r3, #3
+ 167 003a E9D0     		beq	.L20
+ 168 003c 012B     		cmp	r3, #1
+ 169 003e EED1     		bne	.L16
+ 170 0040 054B     		ldr	r3, .L27+12
+ 171 0042 E6E7     		b	.L15
+ 172              	.L13:
+  73:Core/Src/balance_car/app_tasks.c ****         }
+  74:Core/Src/balance_car/app_tasks.c ****     }
+  75:Core/Src/balance_car/app_tasks.c **** }
+ 173              		.loc 1 75 1 view .LVU39
+ 174 0044 05B0     		add	sp, sp, #20
+ 175              	.LCFI6:
+ 176              		.cfi_def_cfa_offset 4
+ 177              		@ sp needed
+ 178 0046 5DF804FB 		ldr	pc, [sp], #4
+ 179              	.L26:
+ 180              	.LCFI7:
+ 181              		.cfi_def_cfa_offset 0
+ 182              		.cfi_restore 14
+ 183 004a 7047     		bx	lr
+ 184              	.L28:
+ 185              		.align	2
+ 186              	.L27:
+ 187 004c 00000000 		.word	Queue_PidUpdate
+ 188 0050 00000000 		.word	g_angle_pid
+ 189 0054 00000000 		.word	g_turn_pid
+ 190 0058 00000000 		.word	g_speed_pid
+ 191              		.cfi_endproc
+ 192              	.LFE71:
+ 194              		.section	.text.Task_BalanceControl,"ax",%progbits
+ 195              		.align	1
+ 196              		.global	Task_BalanceControl
+ 197              		.syntax unified
+ 198              		.thumb
+ 199              		.thumb_func
+ 201              	Task_BalanceControl:
+ 202              	.LFB80:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 6
+
+
+  76:Core/Src/balance_car/app_tasks.c **** 
+  77:Core/Src/balance_car/app_tasks.c **** HAL_StatusTypeDef AppTasks_Init(void)
+  78:Core/Src/balance_car/app_tasks.c **** {
+  79:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceControl = xSemaphoreCreateBinary();
+  80:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceStateMutex = xSemaphoreCreateMutex();
+  81:Core/Src/balance_car/app_tasks.c ****     Sem_SensorStateMutex = xSemaphoreCreateMutex();
+  82:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothTxMutex = xSemaphoreCreateMutex();
+  83:Core/Src/balance_car/app_tasks.c ****     Sem_RaspberryTxMutex = xSemaphoreCreateMutex();
+  84:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothRxReady = xSemaphoreCreateBinary();
+  85:Core/Src/balance_car/app_tasks.c ****     Queue_ControlCommand = xQueueCreate(QUEUE_CONTROL_DEPTH, sizeof(AppControlCommand_t));
+  86:Core/Src/balance_car/app_tasks.c ****     Queue_PidUpdate = xQueueCreate(QUEUE_PID_DEPTH, sizeof(AppPidUpdate_t));
+  87:Core/Src/balance_car/app_tasks.c ****     Queue_BluetoothRxLine = xQueueCreate(QUEUE_REMOTE_RX_DEPTH, sizeof(AppRemoteLine_t));
+  88:Core/Src/balance_car/app_tasks.c ****     Queue_RaspberryRxLine = xQueueCreate(QUEUE_RASPI_RX_DEPTH, sizeof(AppRaspiLine_t));
+  89:Core/Src/balance_car/app_tasks.c **** 
+  90:Core/Src/balance_car/app_tasks.c ****     if (Sem_BalanceControl == NULL ||
+  91:Core/Src/balance_car/app_tasks.c ****         Sem_BalanceStateMutex == NULL ||
+  92:Core/Src/balance_car/app_tasks.c ****         Sem_SensorStateMutex == NULL ||
+  93:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothTxMutex == NULL ||
+  94:Core/Src/balance_car/app_tasks.c ****         Sem_RaspberryTxMutex == NULL ||
+  95:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothRxReady == NULL ||
+  96:Core/Src/balance_car/app_tasks.c ****         Queue_ControlCommand == NULL ||
+  97:Core/Src/balance_car/app_tasks.c ****         Queue_PidUpdate == NULL ||
+  98:Core/Src/balance_car/app_tasks.c ****         Queue_BluetoothRxLine == NULL ||
+  99:Core/Src/balance_car/app_tasks.c ****         Queue_RaspberryRxLine == NULL) {
+ 100:Core/Src/balance_car/app_tasks.c ****         return HAL_ERROR;
+ 101:Core/Src/balance_car/app_tasks.c ****     }
+ 102:Core/Src/balance_car/app_tasks.c **** 
+ 103:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_BalanceControl, Task_BalanceControl, osPriorityRealtime, 0, TASK_BALANCE_STACK
+ 104:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_UartRaspberry, Task_UartRaspberry, osPriorityHigh, 0, TASK_RASPI_STACK_WORDS);
+ 105:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_BluetoothApp, Task_BluetoothApp, osPriorityNormal, 0, TASK_BLUETOOTH_STACK_WOR
+ 106:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_SensorCollect, Task_SensorCollect, osPriorityLow, 0, TASK_SENSOR_STACK_WORDS);
+ 107:Core/Src/balance_car/app_tasks.c **** 
+ 108:Core/Src/balance_car/app_tasks.c ****     if (osThreadCreate(osThread(Task_BalanceControl), NULL) == NULL ||
+ 109:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_UartRaspberry), NULL) == NULL ||
+ 110:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_BluetoothApp), NULL) == NULL ||
+ 111:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_SensorCollect), NULL) == NULL) {
+ 112:Core/Src/balance_car/app_tasks.c ****         return HAL_ERROR;
+ 113:Core/Src/balance_car/app_tasks.c ****     }
+ 114:Core/Src/balance_car/app_tasks.c **** 
+ 115:Core/Src/balance_car/app_tasks.c ****     return HAL_OK;
+ 116:Core/Src/balance_car/app_tasks.c **** }
+ 117:Core/Src/balance_car/app_tasks.c **** 
+ 118:Core/Src/balance_car/app_tasks.c **** void AppTasks_NotifyBalanceFromISR(void)
+ 119:Core/Src/balance_car/app_tasks.c **** {
+ 120:Core/Src/balance_car/app_tasks.c ****     BaseType_t higher_priority_task_woken = pdFALSE;
+ 121:Core/Src/balance_car/app_tasks.c **** 
+ 122:Core/Src/balance_car/app_tasks.c ****     if (Sem_BalanceControl == NULL) {
+ 123:Core/Src/balance_car/app_tasks.c ****         return;
+ 124:Core/Src/balance_car/app_tasks.c ****     }
+ 125:Core/Src/balance_car/app_tasks.c ****     (void)xSemaphoreGiveFromISR(Sem_BalanceControl, &higher_priority_task_woken);
+ 126:Core/Src/balance_car/app_tasks.c ****     portYIELD_FROM_ISR(higher_priority_task_woken);
+ 127:Core/Src/balance_car/app_tasks.c **** }
+ 128:Core/Src/balance_car/app_tasks.c **** 
+ 129:Core/Src/balance_car/app_tasks.c **** void AppTasks_NotifyBluetoothRxFromISR(BaseType_t *higher_priority_task_woken)
+ 130:Core/Src/balance_car/app_tasks.c **** {
+ 131:Core/Src/balance_car/app_tasks.c ****     if (Sem_BluetoothRxReady == NULL || higher_priority_task_woken == NULL) {
+ 132:Core/Src/balance_car/app_tasks.c ****         return;
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 7
+
+
+ 133:Core/Src/balance_car/app_tasks.c ****     }
+ 134:Core/Src/balance_car/app_tasks.c ****     (void)xSemaphoreGiveFromISR(Sem_BluetoothRxReady, higher_priority_task_woken);
+ 135:Core/Src/balance_car/app_tasks.c **** }
+ 136:Core/Src/balance_car/app_tasks.c **** 
+ 137:Core/Src/balance_car/app_tasks.c **** void AppTasks_SubmitControlCommandFromTask(const AppControlCommand_t *command)
+ 138:Core/Src/balance_car/app_tasks.c **** {
+ 139:Core/Src/balance_car/app_tasks.c ****     AppControlCommand_t dropped;
+ 140:Core/Src/balance_car/app_tasks.c **** 
+ 141:Core/Src/balance_car/app_tasks.c ****     if (command == NULL || Queue_ControlCommand == NULL) {
+ 142:Core/Src/balance_car/app_tasks.c ****         return;
+ 143:Core/Src/balance_car/app_tasks.c ****     }
+ 144:Core/Src/balance_car/app_tasks.c ****     if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
+ 145:Core/Src/balance_car/app_tasks.c ****         BalanceCar_ApplyControlCommand(command->run_valid,
+ 146:Core/Src/balance_car/app_tasks.c ****                                        command->run_enable,
+ 147:Core/Src/balance_car/app_tasks.c ****                                        command->reset_pid,
+ 148:Core/Src/balance_car/app_tasks.c ****                                        command->clear_fault,
+ 149:Core/Src/balance_car/app_tasks.c ****                                        command->speed_target,
+ 150:Core/Src/balance_car/app_tasks.c ****                                        command->turn_target);
+ 151:Core/Src/balance_car/app_tasks.c ****         return;
+ 152:Core/Src/balance_car/app_tasks.c ****     }
+ 153:Core/Src/balance_car/app_tasks.c ****     if (xQueueSendToBack(Queue_ControlCommand, command, 0U) != pdPASS) {
+ 154:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_ControlCommand, &dropped, 0U);
+ 155:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_ControlCommand, command, 0U);
+ 156:Core/Src/balance_car/app_tasks.c ****     }
+ 157:Core/Src/balance_car/app_tasks.c **** }
+ 158:Core/Src/balance_car/app_tasks.c **** 
+ 159:Core/Src/balance_car/app_tasks.c **** void AppTasks_SubmitPidUpdateFromTask(const AppPidUpdate_t *update)
+ 160:Core/Src/balance_car/app_tasks.c **** {
+ 161:Core/Src/balance_car/app_tasks.c ****     AppPidUpdate_t dropped;
+ 162:Core/Src/balance_car/app_tasks.c **** 
+ 163:Core/Src/balance_car/app_tasks.c ****     if (update == NULL || Queue_PidUpdate == NULL) {
+ 164:Core/Src/balance_car/app_tasks.c ****         return;
+ 165:Core/Src/balance_car/app_tasks.c ****     }
+ 166:Core/Src/balance_car/app_tasks.c ****     if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
+ 167:Core/Src/balance_car/app_tasks.c ****         if (update->target == APP_PID_TARGET_SPEED) {
+ 168:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kp = update->kp;
+ 169:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Ki = update->ki;
+ 170:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kd = update->kd;
+ 171:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_ANGLE) {
+ 172:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kp = update->kp;
+ 173:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Ki = update->ki;
+ 174:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kd = update->kd;
+ 175:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_TURN) {
+ 176:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kp = update->kp;
+ 177:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Ki = update->ki;
+ 178:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kd = update->kd;
+ 179:Core/Src/balance_car/app_tasks.c ****         }
+ 180:Core/Src/balance_car/app_tasks.c ****         return;
+ 181:Core/Src/balance_car/app_tasks.c ****     }
+ 182:Core/Src/balance_car/app_tasks.c ****     if (xQueueSendToBack(Queue_PidUpdate, update, 0U) != pdPASS) {
+ 183:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_PidUpdate, &dropped, 0U);
+ 184:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_PidUpdate, update, 0U);
+ 185:Core/Src/balance_car/app_tasks.c ****     }
+ 186:Core/Src/balance_car/app_tasks.c **** }
+ 187:Core/Src/balance_car/app_tasks.c **** 
+ 188:Core/Src/balance_car/app_tasks.c **** void AppTasks_CopyBalanceState(BalanceCarState_t *state)
+ 189:Core/Src/balance_car/app_tasks.c **** {
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 8
+
+
+ 190:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 191:Core/Src/balance_car/app_tasks.c ****         return;
+ 192:Core/Src/balance_car/app_tasks.c ****     }
+ 193:Core/Src/balance_car/app_tasks.c ****     if (Sem_BalanceStateMutex != NULL &&
+ 194:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 195:Core/Src/balance_car/app_tasks.c ****         taskENTER_CRITICAL();
+ 196:Core/Src/balance_car/app_tasks.c ****         s_balance_snapshot = g_balance_state;
+ 197:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 198:Core/Src/balance_car/app_tasks.c ****         *state = s_balance_snapshot;
+ 199:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 200:Core/Src/balance_car/app_tasks.c ****     } else {
+ 201:Core/Src/balance_car/app_tasks.c ****         *state = s_balance_snapshot;
+ 202:Core/Src/balance_car/app_tasks.c ****     }
+ 203:Core/Src/balance_car/app_tasks.c **** }
+ 204:Core/Src/balance_car/app_tasks.c **** 
+ 205:Core/Src/balance_car/app_tasks.c **** void AppTasks_CopySensorState(AppSensorState_t *state)
+ 206:Core/Src/balance_car/app_tasks.c **** {
+ 207:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 208:Core/Src/balance_car/app_tasks.c ****         return;
+ 209:Core/Src/balance_car/app_tasks.c ****     }
+ 210:Core/Src/balance_car/app_tasks.c ****     if (Sem_SensorStateMutex != NULL &&
+ 211:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 212:Core/Src/balance_car/app_tasks.c ****         s_sensor_snapshot = g_sensor_state;
+ 213:Core/Src/balance_car/app_tasks.c ****         *state = s_sensor_snapshot;
+ 214:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 215:Core/Src/balance_car/app_tasks.c ****     } else {
+ 216:Core/Src/balance_car/app_tasks.c ****         *state = s_sensor_snapshot;
+ 217:Core/Src/balance_car/app_tasks.c ****     }
+ 218:Core/Src/balance_car/app_tasks.c **** }
+ 219:Core/Src/balance_car/app_tasks.c **** 
+ 220:Core/Src/balance_car/app_tasks.c **** void AppTasks_CopyPidSnapshot(AppPidSnapshot_t *snapshot)
+ 221:Core/Src/balance_car/app_tasks.c **** {
+ 222:Core/Src/balance_car/app_tasks.c ****     if (snapshot == NULL) {
+ 223:Core/Src/balance_car/app_tasks.c ****         return;
+ 224:Core/Src/balance_car/app_tasks.c ****     }
+ 225:Core/Src/balance_car/app_tasks.c ****     if (Sem_BalanceStateMutex != NULL &&
+ 226:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 227:Core/Src/balance_car/app_tasks.c ****         taskENTER_CRITICAL();
+ 228:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.speed = g_speed_pid;
+ 229:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.angle = g_angle_pid;
+ 230:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.turn = g_turn_pid;
+ 231:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 232:Core/Src/balance_car/app_tasks.c ****         *snapshot = s_pid_snapshot;
+ 233:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 234:Core/Src/balance_car/app_tasks.c ****     } else {
+ 235:Core/Src/balance_car/app_tasks.c ****         *snapshot = s_pid_snapshot;
+ 236:Core/Src/balance_car/app_tasks.c ****     }
+ 237:Core/Src/balance_car/app_tasks.c **** }
+ 238:Core/Src/balance_car/app_tasks.c **** 
+ 239:Core/Src/balance_car/app_tasks.c **** void Task_BalanceControl(void const *argument)
+ 240:Core/Src/balance_car/app_tasks.c **** {
+ 203              		.loc 1 240 1 is_stmt 1 view -0
+ 204              		.cfi_startproc
+ 205              		@ Volatile: function does not return.
+ 206              		@ args = 0, pretend = 0, frame = 0
+ 207              		@ frame_needed = 0, uses_anonymous_args = 0
+ 208              	.LVL4:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 9
+
+
+ 209              		.loc 1 240 1 is_stmt 0 view .LVU41
+ 210 0000 00B5     		push	{lr}
+ 211              	.LCFI8:
+ 212              		.cfi_def_cfa_offset 4
+ 213              		.cfi_offset 14, -4
+ 214 0002 83B0     		sub	sp, sp, #12
+ 215              	.LCFI9:
+ 216              		.cfi_def_cfa_offset 16
+ 217 0004 1FE0     		b	.L30
+ 218              	.LVL5:
+ 219              	.L35:
+ 241:Core/Src/balance_car/app_tasks.c ****     (void)argument;
+ 242:Core/Src/balance_car/app_tasks.c **** 
+ 243:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 244:Core/Src/balance_car/app_tasks.c ****         if (xSemaphoreTake(Sem_BalanceControl, pdMS_TO_TICKS(30U)) == pdPASS) {
+ 245:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_wake_count++;
+ 246:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_last_ms = HAL_GetTick();
+ 247:Core/Src/balance_car/app_tasks.c ****             if (Sem_BalanceStateMutex != NULL &&
+ 248:Core/Src/balance_car/app_tasks.c ****                 xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(1U)) == pdPASS) {
+ 249:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedCommands();
+ 220              		.loc 1 249 17 is_stmt 1 view .LVU42
+ 221 0006 FFF7FEFF 		bl	AppTasks_ApplyQueuedCommands
+ 222              	.LVL6:
+ 250:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedPidUpdates();
+ 223              		.loc 1 250 17 view .LVU43
+ 224 000a FFF7FEFF 		bl	AppTasks_ApplyQueuedPidUpdates
+ 225              	.LVL7:
+ 251:Core/Src/balance_car/app_tasks.c ****                 BalanceCar_ControlStep10ms();
+ 226              		.loc 1 251 17 view .LVU44
+ 227 000e FFF7FEFF 		bl	BalanceCar_ControlStep10ms
+ 228              	.LVL8:
+ 252:Core/Src/balance_car/app_tasks.c ****                 (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 229              		.loc 1 252 17 view .LVU45
+ 230              		.loc 1 252 23 is_stmt 0 view .LVU46
+ 231 0012 0023     		movs	r3, #0
+ 232 0014 1A46     		mov	r2, r3
+ 233 0016 1946     		mov	r1, r3
+ 234 0018 1948     		ldr	r0, .L36
+ 235 001a 0068     		ldr	r0, [r0]
+ 236 001c FFF7FEFF 		bl	xQueueGenericSend
+ 237              	.LVL9:
+ 238              		.loc 1 252 17 view .LVU47
+ 239 0020 11E0     		b	.L30
+ 240              	.L31:
+ 253:Core/Src/balance_car/app_tasks.c ****             } else {
+ 254:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedCommands();
+ 255:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedPidUpdates();
+ 256:Core/Src/balance_car/app_tasks.c ****                 BalanceCar_ControlStep10ms();
+ 257:Core/Src/balance_car/app_tasks.c ****             }
+ 258:Core/Src/balance_car/app_tasks.c ****         } else {
+ 259:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_timeout_count++;
+ 241              		.loc 1 259 13 is_stmt 1 view .LVU48
+ 242              		.loc 1 259 31 is_stmt 0 view .LVU49
+ 243 0022 184C     		ldr	r4, .L36+4
+ 244 0024 6368     		ldr	r3, [r4, #4]
+ 245              		.loc 1 259 53 view .LVU50
+ 246 0026 0133     		adds	r3, r3, #1
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 10
+
+
+ 247 0028 6360     		str	r3, [r4, #4]
+ 260:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_last_ms = HAL_GetTick();
+ 248              		.loc 1 260 13 is_stmt 1 view .LVU51
+ 249              		.loc 1 260 50 is_stmt 0 view .LVU52
+ 250 002a FFF7FEFF 		bl	HAL_GetTick
+ 251              	.LVL10:
+ 252              		.loc 1 260 48 discriminator 1 view .LVU53
+ 253 002e A060     		str	r0, [r4, #8]
+ 261:Core/Src/balance_car/app_tasks.c ****             BalanceCar_ApplyControlCommand(1U, 0U, 0U, 0U, 0.0f, 0.0f);
+ 254              		.loc 1 261 13 is_stmt 1 view .LVU54
+ 255 0030 0023     		movs	r3, #0
+ 256 0032 0193     		str	r3, [sp, #4]	@ float
+ 257 0034 0093     		str	r3, [sp]	@ float
+ 258 0036 0023     		movs	r3, #0
+ 259 0038 1A46     		mov	r2, r3
+ 260 003a 1946     		mov	r1, r3
+ 261 003c 0120     		movs	r0, #1
+ 262 003e FFF7FEFF 		bl	BalanceCar_ApplyControlCommand
+ 263              	.LVL11:
+ 262:Core/Src/balance_car/app_tasks.c ****             BalanceCar_ServiceRequests();
+ 264              		.loc 1 262 13 view .LVU55
+ 265 0042 FFF7FEFF 		bl	BalanceCar_ServiceRequests
+ 266              	.LVL12:
+ 267              	.L30:
+ 241:Core/Src/balance_car/app_tasks.c **** 
+ 268              		.loc 1 241 5 view .LVU56
+ 243:Core/Src/balance_car/app_tasks.c ****         if (xSemaphoreTake(Sem_BalanceControl, pdMS_TO_TICKS(30U)) == pdPASS) {
+ 269              		.loc 1 243 5 view .LVU57
+ 244:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_wake_count++;
+ 270              		.loc 1 244 9 view .LVU58
+ 244:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_wake_count++;
+ 271              		.loc 1 244 13 is_stmt 0 view .LVU59
+ 272 0046 1E21     		movs	r1, #30
+ 273 0048 0F4B     		ldr	r3, .L36+8
+ 274 004a 1868     		ldr	r0, [r3]
+ 275 004c FFF7FEFF 		bl	xQueueSemaphoreTake
+ 276              	.LVL13:
+ 244:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_wake_count++;
+ 277              		.loc 1 244 12 discriminator 1 view .LVU60
+ 278 0050 0128     		cmp	r0, #1
+ 279 0052 E6D1     		bne	.L31
+ 245:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_last_ms = HAL_GetTick();
+ 280              		.loc 1 245 13 is_stmt 1 view .LVU61
+ 245:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_last_ms = HAL_GetTick();
+ 281              		.loc 1 245 31 is_stmt 0 view .LVU62
+ 282 0054 0B4C     		ldr	r4, .L36+4
+ 283 0056 2368     		ldr	r3, [r4]
+ 245:Core/Src/balance_car/app_tasks.c ****             g_app_task_monitor.balance_last_ms = HAL_GetTick();
+ 284              		.loc 1 245 50 view .LVU63
+ 285 0058 0133     		adds	r3, r3, #1
+ 286 005a 2360     		str	r3, [r4]
+ 246:Core/Src/balance_car/app_tasks.c ****             if (Sem_BalanceStateMutex != NULL &&
+ 287              		.loc 1 246 13 is_stmt 1 view .LVU64
+ 246:Core/Src/balance_car/app_tasks.c ****             if (Sem_BalanceStateMutex != NULL &&
+ 288              		.loc 1 246 50 is_stmt 0 view .LVU65
+ 289 005c FFF7FEFF 		bl	HAL_GetTick
+ 290              	.LVL14:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 11
+
+
+ 246:Core/Src/balance_car/app_tasks.c ****             if (Sem_BalanceStateMutex != NULL &&
+ 291              		.loc 1 246 48 discriminator 1 view .LVU66
+ 292 0060 A060     		str	r0, [r4, #8]
+ 247:Core/Src/balance_car/app_tasks.c ****                 xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(1U)) == pdPASS) {
+ 293              		.loc 1 247 13 is_stmt 1 view .LVU67
+ 247:Core/Src/balance_car/app_tasks.c ****                 xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(1U)) == pdPASS) {
+ 294              		.loc 1 247 39 is_stmt 0 view .LVU68
+ 295 0062 074B     		ldr	r3, .L36
+ 296 0064 1868     		ldr	r0, [r3]
+ 247:Core/Src/balance_car/app_tasks.c ****                 xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(1U)) == pdPASS) {
+ 297              		.loc 1 247 16 view .LVU69
+ 298 0066 20B1     		cbz	r0, .L32
+ 248:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedCommands();
+ 299              		.loc 1 248 17 view .LVU70
+ 300 0068 0121     		movs	r1, #1
+ 301 006a FFF7FEFF 		bl	xQueueSemaphoreTake
+ 302              	.LVL15:
+ 247:Core/Src/balance_car/app_tasks.c ****                 xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(1U)) == pdPASS) {
+ 303              		.loc 1 247 47 discriminator 1 view .LVU71
+ 304 006e 0128     		cmp	r0, #1
+ 305 0070 C9D0     		beq	.L35
+ 306              	.L32:
+ 254:Core/Src/balance_car/app_tasks.c ****                 AppTasks_ApplyQueuedPidUpdates();
+ 307              		.loc 1 254 17 is_stmt 1 view .LVU72
+ 308 0072 FFF7FEFF 		bl	AppTasks_ApplyQueuedCommands
+ 309              	.LVL16:
+ 255:Core/Src/balance_car/app_tasks.c ****                 BalanceCar_ControlStep10ms();
+ 310              		.loc 1 255 17 view .LVU73
+ 311 0076 FFF7FEFF 		bl	AppTasks_ApplyQueuedPidUpdates
+ 312              	.LVL17:
+ 256:Core/Src/balance_car/app_tasks.c ****             }
+ 313              		.loc 1 256 17 view .LVU74
+ 314 007a FFF7FEFF 		bl	BalanceCar_ControlStep10ms
+ 315              	.LVL18:
+ 316 007e E2E7     		b	.L30
+ 317              	.L37:
+ 318              		.align	2
+ 319              	.L36:
+ 320 0080 00000000 		.word	Sem_BalanceStateMutex
+ 321 0084 00000000 		.word	g_app_task_monitor
+ 322 0088 00000000 		.word	Sem_BalanceControl
+ 323              		.cfi_endproc
+ 324              	.LFE80:
+ 326              		.section	.text.Task_UartRaspberry,"ax",%progbits
+ 327              		.align	1
+ 328              		.global	Task_UartRaspberry
+ 329              		.syntax unified
+ 330              		.thumb
+ 331              		.thumb_func
+ 333              	Task_UartRaspberry:
+ 334              	.LVL19:
+ 335              	.LFB81:
+ 263:Core/Src/balance_car/app_tasks.c ****         }
+ 264:Core/Src/balance_car/app_tasks.c ****     }
+ 265:Core/Src/balance_car/app_tasks.c **** }
+ 266:Core/Src/balance_car/app_tasks.c **** 
+ 267:Core/Src/balance_car/app_tasks.c **** void Task_UartRaspberry(void const *argument)
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 12
+
+
+ 268:Core/Src/balance_car/app_tasks.c **** {
+ 336              		.loc 1 268 1 view -0
+ 337              		.cfi_startproc
+ 338              		@ Volatile: function does not return.
+ 339              		@ args = 0, pretend = 0, frame = 8
+ 340              		@ frame_needed = 0, uses_anonymous_args = 0
+ 341              		.loc 1 268 1 is_stmt 0 view .LVU76
+ 342 0000 00B5     		push	{lr}
+ 343              	.LCFI10:
+ 344              		.cfi_def_cfa_offset 4
+ 345              		.cfi_offset 14, -4
+ 346 0002 83B0     		sub	sp, sp, #12
+ 347              	.LCFI11:
+ 348              		.cfi_def_cfa_offset 16
+ 269:Core/Src/balance_car/app_tasks.c ****     TickType_t last_wake;
+ 349              		.loc 1 269 5 is_stmt 1 view .LVU77
+ 270:Core/Src/balance_car/app_tasks.c **** 
+ 271:Core/Src/balance_car/app_tasks.c ****     (void)argument;
+ 350              		.loc 1 271 5 view .LVU78
+ 272:Core/Src/balance_car/app_tasks.c ****     last_wake = xTaskGetTickCount();
+ 351              		.loc 1 272 5 view .LVU79
+ 352              		.loc 1 272 17 is_stmt 0 view .LVU80
+ 353 0004 FFF7FEFF 		bl	xTaskGetTickCount
+ 354              	.LVL20:
+ 355              		.loc 1 272 15 discriminator 1 view .LVU81
+ 356 0008 0190     		str	r0, [sp, #4]
+ 357              	.L39:
+ 273:Core/Src/balance_car/app_tasks.c **** 
+ 274:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 358              		.loc 1 274 5 is_stmt 1 view .LVU82
+ 275:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.raspi_loop_count++;
+ 359              		.loc 1 275 9 view .LVU83
+ 360              		.loc 1 275 27 is_stmt 0 view .LVU84
+ 361 000a 074C     		ldr	r4, .L41
+ 362 000c E368     		ldr	r3, [r4, #12]
+ 363              		.loc 1 275 44 view .LVU85
+ 364 000e 0133     		adds	r3, r3, #1
+ 365 0010 E360     		str	r3, [r4, #12]
+ 276:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.raspi_last_ms = HAL_GetTick();
+ 366              		.loc 1 276 9 is_stmt 1 view .LVU86
+ 367              		.loc 1 276 44 is_stmt 0 view .LVU87
+ 368 0012 FFF7FEFF 		bl	HAL_GetTick
+ 369              	.LVL21:
+ 370              		.loc 1 276 42 discriminator 1 view .LVU88
+ 371 0016 2061     		str	r0, [r4, #16]
+ 277:Core/Src/balance_car/app_tasks.c ****         RaspiLink_Background();
+ 372              		.loc 1 277 9 is_stmt 1 view .LVU89
+ 373 0018 FFF7FEFF 		bl	RaspiLink_Background
+ 374              	.LVL22:
+ 278:Core/Src/balance_car/app_tasks.c ****         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(20U));
+ 375              		.loc 1 278 9 discriminator 1 view .LVU90
+ 376 001c 1421     		movs	r1, #20
+ 377 001e 01A8     		add	r0, sp, #4
+ 378 0020 FFF7FEFF 		bl	vTaskDelayUntil
+ 379              	.LVL23:
+ 274:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.raspi_loop_count++;
+ 380              		.loc 1 274 5 view .LVU91
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 13
+
+
+ 381 0024 F1E7     		b	.L39
+ 382              	.L42:
+ 383 0026 00BF     		.align	2
+ 384              	.L41:
+ 385 0028 00000000 		.word	g_app_task_monitor
+ 386              		.cfi_endproc
+ 387              	.LFE81:
+ 389              		.section	.text.Task_BluetoothApp,"ax",%progbits
+ 390              		.align	1
+ 391              		.global	Task_BluetoothApp
+ 392              		.syntax unified
+ 393              		.thumb
+ 394              		.thumb_func
+ 396              	Task_BluetoothApp:
+ 397              	.LFB82:
+ 279:Core/Src/balance_car/app_tasks.c ****     }
+ 280:Core/Src/balance_car/app_tasks.c **** }
+ 281:Core/Src/balance_car/app_tasks.c **** 
+ 282:Core/Src/balance_car/app_tasks.c **** void Task_BluetoothApp(void const *argument)
+ 283:Core/Src/balance_car/app_tasks.c **** {
+ 398              		.loc 1 283 1 view -0
+ 399              		.cfi_startproc
+ 400              		@ Volatile: function does not return.
+ 401              		@ args = 0, pretend = 0, frame = 0
+ 402              		@ frame_needed = 0, uses_anonymous_args = 0
+ 403              	.LVL24:
+ 404              		.loc 1 283 1 is_stmt 0 view .LVU93
+ 405 0000 08B5     		push	{r3, lr}
+ 406              	.LCFI12:
+ 407              		.cfi_def_cfa_offset 8
+ 408              		.cfi_offset 3, -8
+ 409              		.cfi_offset 14, -4
+ 410              	.LVL25:
+ 411              	.L44:
+ 284:Core/Src/balance_car/app_tasks.c ****     (void)argument;
+ 412              		.loc 1 284 5 is_stmt 1 view .LVU94
+ 285:Core/Src/balance_car/app_tasks.c **** 
+ 286:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 413              		.loc 1 286 5 view .LVU95
+ 287:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.bluetooth_loop_count++;
+ 414              		.loc 1 287 9 view .LVU96
+ 415              		.loc 1 287 27 is_stmt 0 view .LVU97
+ 416 0002 074C     		ldr	r4, .L46
+ 417 0004 6369     		ldr	r3, [r4, #20]
+ 418              		.loc 1 287 48 view .LVU98
+ 419 0006 0133     		adds	r3, r3, #1
+ 420 0008 6361     		str	r3, [r4, #20]
+ 288:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.bluetooth_last_ms = HAL_GetTick();
+ 421              		.loc 1 288 9 is_stmt 1 view .LVU99
+ 422              		.loc 1 288 48 is_stmt 0 view .LVU100
+ 423 000a FFF7FEFF 		bl	HAL_GetTick
+ 424              	.LVL26:
+ 425              		.loc 1 288 46 discriminator 1 view .LVU101
+ 426 000e A061     		str	r0, [r4, #24]
+ 289:Core/Src/balance_car/app_tasks.c ****         RemoteControl_Background();
+ 427              		.loc 1 289 9 is_stmt 1 view .LVU102
+ 428 0010 FFF7FEFF 		bl	RemoteControl_Background
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 14
+
+
+ 429              	.LVL27:
+ 290:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreTake(Sem_BluetoothRxReady, pdMS_TO_TICKS(50U));
+ 430              		.loc 1 290 9 discriminator 1 view .LVU103
+ 431              		.loc 1 290 15 is_stmt 0 discriminator 1 view .LVU104
+ 432 0014 3221     		movs	r1, #50
+ 433 0016 034B     		ldr	r3, .L46+4
+ 434 0018 1868     		ldr	r0, [r3]
+ 435 001a FFF7FEFF 		bl	xQueueSemaphoreTake
+ 436              	.LVL28:
+ 286:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.bluetooth_loop_count++;
+ 437              		.loc 1 286 5 is_stmt 1 view .LVU105
+ 438 001e F0E7     		b	.L44
+ 439              	.L47:
+ 440              		.align	2
+ 441              	.L46:
+ 442 0020 00000000 		.word	g_app_task_monitor
+ 443 0024 00000000 		.word	Sem_BluetoothRxReady
+ 444              		.cfi_endproc
+ 445              	.LFE82:
+ 447              		.section	.text.Task_SensorCollect,"ax",%progbits
+ 448              		.align	1
+ 449              		.global	Task_SensorCollect
+ 450              		.syntax unified
+ 451              		.thumb
+ 452              		.thumb_func
+ 454              	Task_SensorCollect:
+ 455              	.LVL29:
+ 456              	.LFB83:
+ 291:Core/Src/balance_car/app_tasks.c ****     }
+ 292:Core/Src/balance_car/app_tasks.c **** }
+ 293:Core/Src/balance_car/app_tasks.c **** 
+ 294:Core/Src/balance_car/app_tasks.c **** void Task_SensorCollect(void const *argument)
+ 295:Core/Src/balance_car/app_tasks.c **** {
+ 457              		.loc 1 295 1 view -0
+ 458              		.cfi_startproc
+ 459              		@ args = 0, pretend = 0, frame = 8
+ 460              		@ frame_needed = 0, uses_anonymous_args = 0
+ 461              		.loc 1 295 1 is_stmt 0 view .LVU107
+ 462 0000 10B5     		push	{r4, lr}
+ 463              	.LCFI13:
+ 464              		.cfi_def_cfa_offset 8
+ 465              		.cfi_offset 4, -8
+ 466              		.cfi_offset 14, -4
+ 467 0002 82B0     		sub	sp, sp, #8
+ 468              	.LCFI14:
+ 469              		.cfi_def_cfa_offset 16
+ 296:Core/Src/balance_car/app_tasks.c ****     TickType_t last_wake;
+ 470              		.loc 1 296 5 is_stmt 1 view .LVU108
+ 297:Core/Src/balance_car/app_tasks.c ****     TickType_t delay_ticks;
+ 471              		.loc 1 297 5 view .LVU109
+ 298:Core/Src/balance_car/app_tasks.c **** 
+ 299:Core/Src/balance_car/app_tasks.c ****     (void)argument;
+ 472              		.loc 1 299 5 view .LVU110
+ 300:Core/Src/balance_car/app_tasks.c ****     last_wake = xTaskGetTickCount();
+ 473              		.loc 1 300 5 view .LVU111
+ 474              		.loc 1 300 17 is_stmt 0 view .LVU112
+ 475 0004 FFF7FEFF 		bl	xTaskGetTickCount
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 15
+
+
+ 476              	.LVL30:
+ 477              		.loc 1 300 15 discriminator 1 view .LVU113
+ 478 0008 0190     		str	r0, [sp, #4]
+ 479 000a 09E0     		b	.L52
+ 480              	.L49:
+ 301:Core/Src/balance_car/app_tasks.c **** 
+ 302:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 303:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_loop_count++;
+ 304:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_last_ms = HAL_GetTick();
+ 305:Core/Src/balance_car/app_tasks.c ****         if (Sem_SensorStateMutex != NULL &&
+ 306:Core/Src/balance_car/app_tasks.c ****             xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(5U)) == pdPASS) {
+ 307:Core/Src/balance_car/app_tasks.c ****             AppSensors_Background();
+ 308:Core/Src/balance_car/app_tasks.c ****             (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 309:Core/Src/balance_car/app_tasks.c ****         } else {
+ 310:Core/Src/balance_car/app_tasks.c ****             AppSensors_Background();
+ 481              		.loc 1 310 13 is_stmt 1 view .LVU114
+ 482 000c FFF7FEFF 		bl	AppSensors_Background
+ 483              	.LVL31:
+ 484              	.L50:
+ 311:Core/Src/balance_car/app_tasks.c ****         }
+ 312:Core/Src/balance_car/app_tasks.c ****         delay_ticks = AppSensors_NeedsServiceSoon() != 0U ?
+ 485              		.loc 1 312 9 view .LVU115
+ 486              		.loc 1 312 23 is_stmt 0 view .LVU116
+ 487 0010 FFF7FEFF 		bl	AppSensors_NeedsServiceSoon
+ 488              	.LVL32:
+ 313:Core/Src/balance_car/app_tasks.c ****                       pdMS_TO_TICKS(SENSOR_SERVICE_PERIOD_MS) :
+ 489              		.loc 1 313 63 view .LVU117
+ 490 0014 F0B9     		cbnz	r0, .L55
+ 491              		.loc 1 313 63 discriminator 2 view .LVU118
+ 492 0016 4FF4FA71 		mov	r1, #500
+ 493              	.L51:
+ 494              	.LVL33:
+ 314:Core/Src/balance_car/app_tasks.c ****                       pdMS_TO_TICKS(SENSOR_IDLE_PERIOD_MS);
+ 315:Core/Src/balance_car/app_tasks.c ****         vTaskDelayUntil(&last_wake, delay_ticks);
+ 495              		.loc 1 315 9 is_stmt 1 view .LVU119
+ 496 001a 01A8     		add	r0, sp, #4
+ 497 001c FFF7FEFF 		bl	vTaskDelayUntil
+ 498              	.LVL34:
+ 302:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_loop_count++;
+ 499              		.loc 1 302 5 view .LVU120
+ 500              	.L52:
+ 302:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_loop_count++;
+ 501              		.loc 1 302 5 view .LVU121
+ 303:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_last_ms = HAL_GetTick();
+ 502              		.loc 1 303 9 view .LVU122
+ 303:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_last_ms = HAL_GetTick();
+ 503              		.loc 1 303 27 is_stmt 0 view .LVU123
+ 504 0020 0D4C     		ldr	r4, .L56
+ 505 0022 E369     		ldr	r3, [r4, #28]
+ 303:Core/Src/balance_car/app_tasks.c ****         g_app_task_monitor.sensor_last_ms = HAL_GetTick();
+ 506              		.loc 1 303 45 view .LVU124
+ 507 0024 0133     		adds	r3, r3, #1
+ 508 0026 E361     		str	r3, [r4, #28]
+ 304:Core/Src/balance_car/app_tasks.c ****         if (Sem_SensorStateMutex != NULL &&
+ 509              		.loc 1 304 9 is_stmt 1 view .LVU125
+ 304:Core/Src/balance_car/app_tasks.c ****         if (Sem_SensorStateMutex != NULL &&
+ 510              		.loc 1 304 45 is_stmt 0 view .LVU126
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 16
+
+
+ 511 0028 FFF7FEFF 		bl	HAL_GetTick
+ 512              	.LVL35:
+ 304:Core/Src/balance_car/app_tasks.c ****         if (Sem_SensorStateMutex != NULL &&
+ 513              		.loc 1 304 43 discriminator 1 view .LVU127
+ 514 002c 2062     		str	r0, [r4, #32]
+ 305:Core/Src/balance_car/app_tasks.c ****             xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(5U)) == pdPASS) {
+ 515              		.loc 1 305 9 is_stmt 1 view .LVU128
+ 305:Core/Src/balance_car/app_tasks.c ****             xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(5U)) == pdPASS) {
+ 516              		.loc 1 305 34 is_stmt 0 view .LVU129
+ 517 002e 0B4B     		ldr	r3, .L56+4
+ 518 0030 1868     		ldr	r0, [r3]
+ 305:Core/Src/balance_car/app_tasks.c ****             xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(5U)) == pdPASS) {
+ 519              		.loc 1 305 12 view .LVU130
+ 520 0032 0028     		cmp	r0, #0
+ 521 0034 EAD0     		beq	.L49
+ 306:Core/Src/balance_car/app_tasks.c ****             AppSensors_Background();
+ 522              		.loc 1 306 13 view .LVU131
+ 523 0036 0521     		movs	r1, #5
+ 524 0038 FFF7FEFF 		bl	xQueueSemaphoreTake
+ 525              	.LVL36:
+ 305:Core/Src/balance_car/app_tasks.c ****             xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(5U)) == pdPASS) {
+ 526              		.loc 1 305 42 discriminator 1 view .LVU132
+ 527 003c 0128     		cmp	r0, #1
+ 528 003e E5D1     		bne	.L49
+ 307:Core/Src/balance_car/app_tasks.c ****             (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 529              		.loc 1 307 13 is_stmt 1 view .LVU133
+ 530 0040 FFF7FEFF 		bl	AppSensors_Background
+ 531              	.LVL37:
+ 308:Core/Src/balance_car/app_tasks.c ****         } else {
+ 532              		.loc 1 308 13 view .LVU134
+ 308:Core/Src/balance_car/app_tasks.c ****         } else {
+ 533              		.loc 1 308 19 is_stmt 0 view .LVU135
+ 534 0044 0023     		movs	r3, #0
+ 535 0046 1A46     		mov	r2, r3
+ 536 0048 1946     		mov	r1, r3
+ 537 004a 0448     		ldr	r0, .L56+4
+ 538 004c 0068     		ldr	r0, [r0]
+ 539 004e FFF7FEFF 		bl	xQueueGenericSend
+ 540              	.LVL38:
+ 308:Core/Src/balance_car/app_tasks.c ****         } else {
+ 541              		.loc 1 308 13 view .LVU136
+ 542 0052 DDE7     		b	.L50
+ 543              	.L55:
+ 313:Core/Src/balance_car/app_tasks.c ****                       pdMS_TO_TICKS(SENSOR_IDLE_PERIOD_MS);
+ 544              		.loc 1 313 63 discriminator 1 view .LVU137
+ 545 0054 1421     		movs	r1, #20
+ 546 0056 E0E7     		b	.L51
+ 547              	.L57:
+ 548              		.align	2
+ 549              	.L56:
+ 550 0058 00000000 		.word	g_app_task_monitor
+ 551 005c 00000000 		.word	Sem_SensorStateMutex
+ 552              		.cfi_endproc
+ 553              	.LFE83:
+ 555              		.section	.text.AppTasks_Init,"ax",%progbits
+ 556              		.align	1
+ 557              		.global	AppTasks_Init
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 17
+
+
+ 558              		.syntax unified
+ 559              		.thumb
+ 560              		.thumb_func
+ 562              	AppTasks_Init:
+ 563              	.LFB72:
+  78:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceControl = xSemaphoreCreateBinary();
+ 564              		.loc 1 78 1 is_stmt 1 view -0
+ 565              		.cfi_startproc
+ 566              		@ args = 0, pretend = 0, frame = 80
+ 567              		@ frame_needed = 0, uses_anonymous_args = 0
+ 568 0000 10B5     		push	{r4, lr}
+ 569              	.LCFI15:
+ 570              		.cfi_def_cfa_offset 8
+ 571              		.cfi_offset 4, -8
+ 572              		.cfi_offset 14, -4
+ 573 0002 94B0     		sub	sp, sp, #80
+ 574              	.LCFI16:
+ 575              		.cfi_def_cfa_offset 88
+  79:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceStateMutex = xSemaphoreCreateMutex();
+ 576              		.loc 1 79 5 view .LVU139
+  79:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceStateMutex = xSemaphoreCreateMutex();
+ 577              		.loc 1 79 26 is_stmt 0 view .LVU140
+ 578 0004 0322     		movs	r2, #3
+ 579 0006 0021     		movs	r1, #0
+ 580 0008 0120     		movs	r0, #1
+ 581 000a FFF7FEFF 		bl	xQueueGenericCreate
+ 582              	.LVL39:
+  79:Core/Src/balance_car/app_tasks.c ****     Sem_BalanceStateMutex = xSemaphoreCreateMutex();
+ 583              		.loc 1 79 24 discriminator 1 view .LVU141
+ 584 000e 5B4C     		ldr	r4, .L73
+ 585 0010 2060     		str	r0, [r4]
+  80:Core/Src/balance_car/app_tasks.c ****     Sem_SensorStateMutex = xSemaphoreCreateMutex();
+ 586              		.loc 1 80 5 is_stmt 1 view .LVU142
+  80:Core/Src/balance_car/app_tasks.c ****     Sem_SensorStateMutex = xSemaphoreCreateMutex();
+ 587              		.loc 1 80 29 is_stmt 0 view .LVU143
+ 588 0012 0120     		movs	r0, #1
+ 589 0014 FFF7FEFF 		bl	xQueueCreateMutex
+ 590              	.LVL40:
+  80:Core/Src/balance_car/app_tasks.c ****     Sem_SensorStateMutex = xSemaphoreCreateMutex();
+ 591              		.loc 1 80 27 discriminator 1 view .LVU144
+ 592 0018 594B     		ldr	r3, .L73+4
+ 593 001a 1860     		str	r0, [r3]
+  81:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothTxMutex = xSemaphoreCreateMutex();
+ 594              		.loc 1 81 5 is_stmt 1 view .LVU145
+  81:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothTxMutex = xSemaphoreCreateMutex();
+ 595              		.loc 1 81 28 is_stmt 0 view .LVU146
+ 596 001c 0120     		movs	r0, #1
+ 597 001e FFF7FEFF 		bl	xQueueCreateMutex
+ 598              	.LVL41:
+  81:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothTxMutex = xSemaphoreCreateMutex();
+ 599              		.loc 1 81 26 discriminator 1 view .LVU147
+ 600 0022 584B     		ldr	r3, .L73+8
+ 601 0024 1860     		str	r0, [r3]
+  82:Core/Src/balance_car/app_tasks.c ****     Sem_RaspberryTxMutex = xSemaphoreCreateMutex();
+ 602              		.loc 1 82 5 is_stmt 1 view .LVU148
+  82:Core/Src/balance_car/app_tasks.c ****     Sem_RaspberryTxMutex = xSemaphoreCreateMutex();
+ 603              		.loc 1 82 28 is_stmt 0 view .LVU149
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 18
+
+
+ 604 0026 0120     		movs	r0, #1
+ 605 0028 FFF7FEFF 		bl	xQueueCreateMutex
+ 606              	.LVL42:
+  82:Core/Src/balance_car/app_tasks.c ****     Sem_RaspberryTxMutex = xSemaphoreCreateMutex();
+ 607              		.loc 1 82 26 discriminator 1 view .LVU150
+ 608 002c 564B     		ldr	r3, .L73+12
+ 609 002e 1860     		str	r0, [r3]
+  83:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothRxReady = xSemaphoreCreateBinary();
+ 610              		.loc 1 83 5 is_stmt 1 view .LVU151
+  83:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothRxReady = xSemaphoreCreateBinary();
+ 611              		.loc 1 83 28 is_stmt 0 view .LVU152
+ 612 0030 0120     		movs	r0, #1
+ 613 0032 FFF7FEFF 		bl	xQueueCreateMutex
+ 614              	.LVL43:
+  83:Core/Src/balance_car/app_tasks.c ****     Sem_BluetoothRxReady = xSemaphoreCreateBinary();
+ 615              		.loc 1 83 26 discriminator 1 view .LVU153
+ 616 0036 554B     		ldr	r3, .L73+16
+ 617 0038 1860     		str	r0, [r3]
+  84:Core/Src/balance_car/app_tasks.c ****     Queue_ControlCommand = xQueueCreate(QUEUE_CONTROL_DEPTH, sizeof(AppControlCommand_t));
+ 618              		.loc 1 84 5 is_stmt 1 view .LVU154
+  84:Core/Src/balance_car/app_tasks.c ****     Queue_ControlCommand = xQueueCreate(QUEUE_CONTROL_DEPTH, sizeof(AppControlCommand_t));
+ 619              		.loc 1 84 28 is_stmt 0 view .LVU155
+ 620 003a 0322     		movs	r2, #3
+ 621 003c 0021     		movs	r1, #0
+ 622 003e 0120     		movs	r0, #1
+ 623 0040 FFF7FEFF 		bl	xQueueGenericCreate
+ 624              	.LVL44:
+  84:Core/Src/balance_car/app_tasks.c ****     Queue_ControlCommand = xQueueCreate(QUEUE_CONTROL_DEPTH, sizeof(AppControlCommand_t));
+ 625              		.loc 1 84 26 discriminator 1 view .LVU156
+ 626 0044 524B     		ldr	r3, .L73+20
+ 627 0046 1860     		str	r0, [r3]
+  85:Core/Src/balance_car/app_tasks.c ****     Queue_PidUpdate = xQueueCreate(QUEUE_PID_DEPTH, sizeof(AppPidUpdate_t));
+ 628              		.loc 1 85 5 is_stmt 1 view .LVU157
+  85:Core/Src/balance_car/app_tasks.c ****     Queue_PidUpdate = xQueueCreate(QUEUE_PID_DEPTH, sizeof(AppPidUpdate_t));
+ 629              		.loc 1 85 28 is_stmt 0 view .LVU158
+ 630 0048 0022     		movs	r2, #0
+ 631 004a 1021     		movs	r1, #16
+ 632 004c 0820     		movs	r0, #8
+ 633 004e FFF7FEFF 		bl	xQueueGenericCreate
+ 634              	.LVL45:
+  85:Core/Src/balance_car/app_tasks.c ****     Queue_PidUpdate = xQueueCreate(QUEUE_PID_DEPTH, sizeof(AppPidUpdate_t));
+ 635              		.loc 1 85 26 discriminator 1 view .LVU159
+ 636 0052 504B     		ldr	r3, .L73+24
+ 637 0054 1860     		str	r0, [r3]
+  86:Core/Src/balance_car/app_tasks.c ****     Queue_BluetoothRxLine = xQueueCreate(QUEUE_REMOTE_RX_DEPTH, sizeof(AppRemoteLine_t));
+ 638              		.loc 1 86 5 is_stmt 1 view .LVU160
+  86:Core/Src/balance_car/app_tasks.c ****     Queue_BluetoothRxLine = xQueueCreate(QUEUE_REMOTE_RX_DEPTH, sizeof(AppRemoteLine_t));
+ 639              		.loc 1 86 23 is_stmt 0 view .LVU161
+ 640 0056 0022     		movs	r2, #0
+ 641 0058 1021     		movs	r1, #16
+ 642 005a 0820     		movs	r0, #8
+ 643 005c FFF7FEFF 		bl	xQueueGenericCreate
+ 644              	.LVL46:
+  86:Core/Src/balance_car/app_tasks.c ****     Queue_BluetoothRxLine = xQueueCreate(QUEUE_REMOTE_RX_DEPTH, sizeof(AppRemoteLine_t));
+ 645              		.loc 1 86 21 discriminator 1 view .LVU162
+ 646 0060 4D4B     		ldr	r3, .L73+28
+ 647 0062 1860     		str	r0, [r3]
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 19
+
+
+  87:Core/Src/balance_car/app_tasks.c ****     Queue_RaspberryRxLine = xQueueCreate(QUEUE_RASPI_RX_DEPTH, sizeof(AppRaspiLine_t));
+ 648              		.loc 1 87 5 is_stmt 1 view .LVU163
+  87:Core/Src/balance_car/app_tasks.c ****     Queue_RaspberryRxLine = xQueueCreate(QUEUE_RASPI_RX_DEPTH, sizeof(AppRaspiLine_t));
+ 649              		.loc 1 87 29 is_stmt 0 view .LVU164
+ 650 0064 0022     		movs	r2, #0
+ 651 0066 2021     		movs	r1, #32
+ 652 0068 0820     		movs	r0, #8
+ 653 006a FFF7FEFF 		bl	xQueueGenericCreate
+ 654              	.LVL47:
+  87:Core/Src/balance_car/app_tasks.c ****     Queue_RaspberryRxLine = xQueueCreate(QUEUE_RASPI_RX_DEPTH, sizeof(AppRaspiLine_t));
+ 655              		.loc 1 87 27 discriminator 1 view .LVU165
+ 656 006e 4B4B     		ldr	r3, .L73+32
+ 657 0070 1860     		str	r0, [r3]
+  88:Core/Src/balance_car/app_tasks.c **** 
+ 658              		.loc 1 88 5 is_stmt 1 view .LVU166
+  88:Core/Src/balance_car/app_tasks.c **** 
+ 659              		.loc 1 88 29 is_stmt 0 view .LVU167
+ 660 0072 0022     		movs	r2, #0
+ 661 0074 5021     		movs	r1, #80
+ 662 0076 0120     		movs	r0, #1
+ 663 0078 FFF7FEFF 		bl	xQueueGenericCreate
+ 664              	.LVL48:
+  88:Core/Src/balance_car/app_tasks.c **** 
+ 665              		.loc 1 88 27 discriminator 1 view .LVU168
+ 666 007c 484B     		ldr	r3, .L73+36
+ 667 007e 1860     		str	r0, [r3]
+  90:Core/Src/balance_car/app_tasks.c ****         Sem_BalanceStateMutex == NULL ||
+ 668              		.loc 1 90 5 is_stmt 1 view .LVU169
+  90:Core/Src/balance_car/app_tasks.c ****         Sem_BalanceStateMutex == NULL ||
+ 669              		.loc 1 90 28 is_stmt 0 view .LVU170
+ 670 0080 2368     		ldr	r3, [r4]
+  90:Core/Src/balance_car/app_tasks.c ****         Sem_BalanceStateMutex == NULL ||
+ 671              		.loc 1 90 8 view .LVU171
+ 672 0082 002B     		cmp	r3, #0
+ 673 0084 65D0     		beq	.L61
+  91:Core/Src/balance_car/app_tasks.c ****         Sem_SensorStateMutex == NULL ||
+ 674              		.loc 1 91 31 view .LVU172
+ 675 0086 3E4B     		ldr	r3, .L73+4
+ 676 0088 1B68     		ldr	r3, [r3]
+  90:Core/Src/balance_car/app_tasks.c ****         Sem_BalanceStateMutex == NULL ||
+ 677              		.loc 1 90 36 discriminator 1 view .LVU173
+ 678 008a 002B     		cmp	r3, #0
+ 679 008c 64D0     		beq	.L62
+  92:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothTxMutex == NULL ||
+ 680              		.loc 1 92 30 view .LVU174
+ 681 008e 3D4B     		ldr	r3, .L73+8
+ 682 0090 1B68     		ldr	r3, [r3]
+  91:Core/Src/balance_car/app_tasks.c ****         Sem_SensorStateMutex == NULL ||
+ 683              		.loc 1 91 39 view .LVU175
+ 684 0092 002B     		cmp	r3, #0
+ 685 0094 62D0     		beq	.L63
+  93:Core/Src/balance_car/app_tasks.c ****         Sem_RaspberryTxMutex == NULL ||
+ 686              		.loc 1 93 30 view .LVU176
+ 687 0096 3C4B     		ldr	r3, .L73+12
+ 688 0098 1B68     		ldr	r3, [r3]
+  92:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothTxMutex == NULL ||
+ 689              		.loc 1 92 38 view .LVU177
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 20
+
+
+ 690 009a 002B     		cmp	r3, #0
+ 691 009c 60D0     		beq	.L64
+  94:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothRxReady == NULL ||
+ 692              		.loc 1 94 30 view .LVU178
+ 693 009e 3B4B     		ldr	r3, .L73+16
+ 694 00a0 1B68     		ldr	r3, [r3]
+  93:Core/Src/balance_car/app_tasks.c ****         Sem_RaspberryTxMutex == NULL ||
+ 695              		.loc 1 93 38 view .LVU179
+ 696 00a2 002B     		cmp	r3, #0
+ 697 00a4 5ED0     		beq	.L65
+  95:Core/Src/balance_car/app_tasks.c ****         Queue_ControlCommand == NULL ||
+ 698              		.loc 1 95 30 view .LVU180
+ 699 00a6 3A4B     		ldr	r3, .L73+20
+ 700 00a8 1B68     		ldr	r3, [r3]
+  94:Core/Src/balance_car/app_tasks.c ****         Sem_BluetoothRxReady == NULL ||
+ 701              		.loc 1 94 38 view .LVU181
+ 702 00aa 002B     		cmp	r3, #0
+ 703 00ac 5CD0     		beq	.L66
+  96:Core/Src/balance_car/app_tasks.c ****         Queue_PidUpdate == NULL ||
+ 704              		.loc 1 96 30 view .LVU182
+ 705 00ae 394B     		ldr	r3, .L73+24
+ 706 00b0 1B68     		ldr	r3, [r3]
+  95:Core/Src/balance_car/app_tasks.c ****         Queue_ControlCommand == NULL ||
+ 707              		.loc 1 95 38 view .LVU183
+ 708 00b2 002B     		cmp	r3, #0
+ 709 00b4 5AD0     		beq	.L67
+  97:Core/Src/balance_car/app_tasks.c ****         Queue_BluetoothRxLine == NULL ||
+ 710              		.loc 1 97 25 view .LVU184
+ 711 00b6 384B     		ldr	r3, .L73+28
+ 712 00b8 1B68     		ldr	r3, [r3]
+  96:Core/Src/balance_car/app_tasks.c ****         Queue_PidUpdate == NULL ||
+ 713              		.loc 1 96 38 view .LVU185
+ 714 00ba 002B     		cmp	r3, #0
+ 715 00bc 58D0     		beq	.L68
+  98:Core/Src/balance_car/app_tasks.c ****         Queue_RaspberryRxLine == NULL) {
+ 716              		.loc 1 98 31 view .LVU186
+ 717 00be 374B     		ldr	r3, .L73+32
+ 718 00c0 1B68     		ldr	r3, [r3]
+  97:Core/Src/balance_car/app_tasks.c ****         Queue_BluetoothRxLine == NULL ||
+ 719              		.loc 1 97 33 view .LVU187
+ 720 00c2 002B     		cmp	r3, #0
+ 721 00c4 56D0     		beq	.L69
+  98:Core/Src/balance_car/app_tasks.c ****         Queue_RaspberryRxLine == NULL) {
+ 722              		.loc 1 98 39 view .LVU188
+ 723 00c6 0028     		cmp	r0, #0
+ 724 00c8 56D0     		beq	.L70
+ 103:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_UartRaspberry, Task_UartRaspberry, osPriorityHigh, 0, TASK_RASPI_STACK_WORDS);
+ 725              		.loc 1 103 5 is_stmt 1 view .LVU189
+ 726 00ca 364C     		ldr	r4, .L73+40
+ 727 00cc 0DF13C0C 		add	ip, sp, #60
+ 728 00d0 A646     		mov	lr, r4
+ 729 00d2 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 730 00d6 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 731 00da DEF80030 		ldr	r3, [lr]
+ 732 00de CCF80030 		str	r3, [ip]
+ 104:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_BluetoothApp, Task_BluetoothApp, osPriorityNormal, 0, TASK_BLUETOOTH_STACK_WOR
+ 733              		.loc 1 104 5 view .LVU190
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 21
+
+
+ 734 00e2 0DF1280C 		add	ip, sp, #40
+ 735 00e6 04F1140E 		add	lr, r4, #20
+ 736 00ea BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 737 00ee ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 738 00f2 DEF80030 		ldr	r3, [lr]
+ 739 00f6 CCF80030 		str	r3, [ip]
+ 105:Core/Src/balance_car/app_tasks.c ****     osThreadDef(Task_SensorCollect, Task_SensorCollect, osPriorityLow, 0, TASK_SENSOR_STACK_WORDS);
+ 740              		.loc 1 105 5 view .LVU191
+ 741 00fa 0DF1140C 		add	ip, sp, #20
+ 742 00fe 04F1280E 		add	lr, r4, #40
+ 743 0102 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 744 0106 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 745 010a DEF80030 		ldr	r3, [lr]
+ 746 010e CCF80030 		str	r3, [ip]
+ 106:Core/Src/balance_car/app_tasks.c **** 
+ 747              		.loc 1 106 5 view .LVU192
+ 748 0112 EC46     		mov	ip, sp
+ 749 0114 3C34     		adds	r4, r4, #60
+ 750 0116 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 751 0118 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 752 011c 2368     		ldr	r3, [r4]
+ 753 011e CCF80030 		str	r3, [ip]
+ 108:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_UartRaspberry), NULL) == NULL ||
+ 754              		.loc 1 108 5 view .LVU193
+ 108:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_UartRaspberry), NULL) == NULL ||
+ 755              		.loc 1 108 9 is_stmt 0 view .LVU194
+ 756 0122 0021     		movs	r1, #0
+ 757 0124 0FA8     		add	r0, sp, #60
+ 758 0126 FFF7FEFF 		bl	osThreadCreate
+ 759              	.LVL49:
+ 108:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_UartRaspberry), NULL) == NULL ||
+ 760              		.loc 1 108 8 discriminator 1 view .LVU195
+ 761 012a 80B1     		cbz	r0, .L60
+ 109:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_BluetoothApp), NULL) == NULL ||
+ 762              		.loc 1 109 9 view .LVU196
+ 763 012c 0021     		movs	r1, #0
+ 764 012e 0AA8     		add	r0, sp, #40
+ 765 0130 FFF7FEFF 		bl	osThreadCreate
+ 766              	.LVL50:
+ 108:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_UartRaspberry), NULL) == NULL ||
+ 767              		.loc 1 108 69 discriminator 1 view .LVU197
+ 768 0134 58B1     		cbz	r0, .L60
+ 110:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_SensorCollect), NULL) == NULL) {
+ 769              		.loc 1 110 9 view .LVU198
+ 770 0136 0021     		movs	r1, #0
+ 771 0138 05A8     		add	r0, sp, #20
+ 772 013a FFF7FEFF 		bl	osThreadCreate
+ 773              	.LVL51:
+ 109:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_BluetoothApp), NULL) == NULL ||
+ 774              		.loc 1 109 68 view .LVU199
+ 775 013e 30B1     		cbz	r0, .L60
+ 111:Core/Src/balance_car/app_tasks.c ****         return HAL_ERROR;
+ 776              		.loc 1 111 9 view .LVU200
+ 777 0140 0021     		movs	r1, #0
+ 778 0142 6846     		mov	r0, sp
+ 779 0144 FFF7FEFF 		bl	osThreadCreate
+ 780              	.LVL52:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 22
+
+
+ 110:Core/Src/balance_car/app_tasks.c ****         osThreadCreate(osThread(Task_SensorCollect), NULL) == NULL) {
+ 781              		.loc 1 110 67 view .LVU201
+ 782 0148 08B1     		cbz	r0, .L60
+ 115:Core/Src/balance_car/app_tasks.c **** }
+ 783              		.loc 1 115 12 view .LVU202
+ 784 014a 0020     		movs	r0, #0
+ 785 014c 02E0     		b	.L59
+ 786              	.L60:
+ 112:Core/Src/balance_car/app_tasks.c ****     }
+ 787              		.loc 1 112 9 is_stmt 1 view .LVU203
+ 112:Core/Src/balance_car/app_tasks.c ****     }
+ 788              		.loc 1 112 16 is_stmt 0 view .LVU204
+ 789 014e 0120     		movs	r0, #1
+ 790 0150 00E0     		b	.L59
+ 791              	.L61:
+ 100:Core/Src/balance_car/app_tasks.c ****     }
+ 792              		.loc 1 100 16 view .LVU205
+ 793 0152 0120     		movs	r0, #1
+ 794              	.L59:
+ 116:Core/Src/balance_car/app_tasks.c **** 
+ 795              		.loc 1 116 1 view .LVU206
+ 796 0154 14B0     		add	sp, sp, #80
+ 797              	.LCFI17:
+ 798              		.cfi_remember_state
+ 799              		.cfi_def_cfa_offset 8
+ 800              		@ sp needed
+ 801 0156 10BD     		pop	{r4, pc}
+ 802              	.L62:
+ 803              	.LCFI18:
+ 804              		.cfi_restore_state
+ 100:Core/Src/balance_car/app_tasks.c ****     }
+ 805              		.loc 1 100 16 view .LVU207
+ 806 0158 0120     		movs	r0, #1
+ 807 015a FBE7     		b	.L59
+ 808              	.L63:
+ 809 015c 0120     		movs	r0, #1
+ 810 015e F9E7     		b	.L59
+ 811              	.L64:
+ 812 0160 0120     		movs	r0, #1
+ 813 0162 F7E7     		b	.L59
+ 814              	.L65:
+ 815 0164 0120     		movs	r0, #1
+ 816 0166 F5E7     		b	.L59
+ 817              	.L66:
+ 818 0168 0120     		movs	r0, #1
+ 819 016a F3E7     		b	.L59
+ 820              	.L67:
+ 821 016c 0120     		movs	r0, #1
+ 822 016e F1E7     		b	.L59
+ 823              	.L68:
+ 824 0170 0120     		movs	r0, #1
+ 825 0172 EFE7     		b	.L59
+ 826              	.L69:
+ 827 0174 0120     		movs	r0, #1
+ 828 0176 EDE7     		b	.L59
+ 829              	.L70:
+ 830 0178 0120     		movs	r0, #1
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 23
+
+
+ 831 017a EBE7     		b	.L59
+ 832              	.L74:
+ 833              		.align	2
+ 834              	.L73:
+ 835 017c 00000000 		.word	Sem_BalanceControl
+ 836 0180 00000000 		.word	Sem_BalanceStateMutex
+ 837 0184 00000000 		.word	Sem_SensorStateMutex
+ 838 0188 00000000 		.word	Sem_BluetoothTxMutex
+ 839 018c 00000000 		.word	Sem_RaspberryTxMutex
+ 840 0190 00000000 		.word	Sem_BluetoothRxReady
+ 841 0194 00000000 		.word	Queue_ControlCommand
+ 842 0198 00000000 		.word	Queue_PidUpdate
+ 843 019c 00000000 		.word	Queue_BluetoothRxLine
+ 844 01a0 00000000 		.word	Queue_RaspberryRxLine
+ 845 01a4 00000000 		.word	.LANCHOR0
+ 846              		.cfi_endproc
+ 847              	.LFE72:
+ 849              		.section	.text.AppTasks_NotifyBalanceFromISR,"ax",%progbits
+ 850              		.align	1
+ 851              		.global	AppTasks_NotifyBalanceFromISR
+ 852              		.syntax unified
+ 853              		.thumb
+ 854              		.thumb_func
+ 856              	AppTasks_NotifyBalanceFromISR:
+ 857              	.LFB73:
+ 119:Core/Src/balance_car/app_tasks.c ****     BaseType_t higher_priority_task_woken = pdFALSE;
+ 858              		.loc 1 119 1 is_stmt 1 view -0
+ 859              		.cfi_startproc
+ 860              		@ args = 0, pretend = 0, frame = 8
+ 861              		@ frame_needed = 0, uses_anonymous_args = 0
+ 862 0000 00B5     		push	{lr}
+ 863              	.LCFI19:
+ 864              		.cfi_def_cfa_offset 4
+ 865              		.cfi_offset 14, -4
+ 866 0002 83B0     		sub	sp, sp, #12
+ 867              	.LCFI20:
+ 868              		.cfi_def_cfa_offset 16
+ 120:Core/Src/balance_car/app_tasks.c **** 
+ 869              		.loc 1 120 5 view .LVU209
+ 120:Core/Src/balance_car/app_tasks.c **** 
+ 870              		.loc 1 120 16 is_stmt 0 view .LVU210
+ 871 0004 0023     		movs	r3, #0
+ 872 0006 0193     		str	r3, [sp, #4]
+ 122:Core/Src/balance_car/app_tasks.c ****         return;
+ 873              		.loc 1 122 5 is_stmt 1 view .LVU211
+ 122:Core/Src/balance_car/app_tasks.c ****         return;
+ 874              		.loc 1 122 28 is_stmt 0 view .LVU212
+ 875 0008 0A4B     		ldr	r3, .L80
+ 876 000a 1868     		ldr	r0, [r3]
+ 122:Core/Src/balance_car/app_tasks.c ****         return;
+ 877              		.loc 1 122 8 view .LVU213
+ 878 000c 70B1     		cbz	r0, .L75
+ 125:Core/Src/balance_car/app_tasks.c ****     portYIELD_FROM_ISR(higher_priority_task_woken);
+ 879              		.loc 1 125 5 is_stmt 1 view .LVU214
+ 125:Core/Src/balance_car/app_tasks.c ****     portYIELD_FROM_ISR(higher_priority_task_woken);
+ 880              		.loc 1 125 11 is_stmt 0 view .LVU215
+ 881 000e 01A9     		add	r1, sp, #4
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 24
+
+
+ 882 0010 FFF7FEFF 		bl	xQueueGiveFromISR
+ 883              	.LVL53:
+ 126:Core/Src/balance_car/app_tasks.c **** }
+ 884              		.loc 1 126 5 is_stmt 1 view .LVU216
+ 885 0014 019B     		ldr	r3, [sp, #4]
+ 886 0016 4BB1     		cbz	r3, .L75
+ 126:Core/Src/balance_car/app_tasks.c **** }
+ 887              		.loc 1 126 5 discriminator 1 view .LVU217
+ 888 0018 4FF0E023 		mov	r3, #-536813568
+ 889 001c 4FF08052 		mov	r2, #268435456
+ 890 0020 C3F8042D 		str	r2, [r3, #3332]
+ 126:Core/Src/balance_car/app_tasks.c **** }
+ 891              		.loc 1 126 5 discriminator 1 view .LVU218
+ 892              		.syntax unified
+ 893              	@ 126 "Core/Src/balance_car/app_tasks.c" 1
+ 894 0024 BFF34F8F 		dsb
+ 895              	@ 0 "" 2
+ 126:Core/Src/balance_car/app_tasks.c **** }
+ 896              		.loc 1 126 5 discriminator 1 view .LVU219
+ 897              	@ 126 "Core/Src/balance_car/app_tasks.c" 1
+ 898 0028 BFF36F8F 		isb
+ 899              	@ 0 "" 2
+ 126:Core/Src/balance_car/app_tasks.c **** }
+ 900              		.loc 1 126 51 discriminator 3 view .LVU220
+ 901              		.thumb
+ 902              		.syntax unified
+ 903              	.L75:
+ 127:Core/Src/balance_car/app_tasks.c **** 
+ 904              		.loc 1 127 1 is_stmt 0 view .LVU221
+ 905 002c 03B0     		add	sp, sp, #12
+ 906              	.LCFI21:
+ 907              		.cfi_def_cfa_offset 4
+ 908              		@ sp needed
+ 909 002e 5DF804FB 		ldr	pc, [sp], #4
+ 910              	.L81:
+ 911 0032 00BF     		.align	2
+ 912              	.L80:
+ 913 0034 00000000 		.word	Sem_BalanceControl
+ 914              		.cfi_endproc
+ 915              	.LFE73:
+ 917              		.section	.text.AppTasks_NotifyBluetoothRxFromISR,"ax",%progbits
+ 918              		.align	1
+ 919              		.global	AppTasks_NotifyBluetoothRxFromISR
+ 920              		.syntax unified
+ 921              		.thumb
+ 922              		.thumb_func
+ 924              	AppTasks_NotifyBluetoothRxFromISR:
+ 925              	.LVL54:
+ 926              	.LFB74:
+ 130:Core/Src/balance_car/app_tasks.c ****     if (Sem_BluetoothRxReady == NULL || higher_priority_task_woken == NULL) {
+ 927              		.loc 1 130 1 is_stmt 1 view -0
+ 928              		.cfi_startproc
+ 929              		@ args = 0, pretend = 0, frame = 0
+ 930              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130:Core/Src/balance_car/app_tasks.c ****     if (Sem_BluetoothRxReady == NULL || higher_priority_task_woken == NULL) {
+ 931              		.loc 1 130 1 is_stmt 0 view .LVU223
+ 932 0000 08B5     		push	{r3, lr}
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 25
+
+
+ 933              	.LCFI22:
+ 934              		.cfi_def_cfa_offset 8
+ 935              		.cfi_offset 3, -8
+ 936              		.cfi_offset 14, -4
+ 937 0002 0146     		mov	r1, r0
+ 131:Core/Src/balance_car/app_tasks.c ****         return;
+ 938              		.loc 1 131 5 is_stmt 1 view .LVU224
+ 131:Core/Src/balance_car/app_tasks.c ****         return;
+ 939              		.loc 1 131 30 is_stmt 0 view .LVU225
+ 940 0004 034B     		ldr	r3, .L85
+ 941 0006 1868     		ldr	r0, [r3]
+ 942              	.LVL55:
+ 131:Core/Src/balance_car/app_tasks.c ****         return;
+ 943              		.loc 1 131 8 view .LVU226
+ 944 0008 10B1     		cbz	r0, .L82
+ 131:Core/Src/balance_car/app_tasks.c ****         return;
+ 945              		.loc 1 131 38 discriminator 1 view .LVU227
+ 946 000a 09B1     		cbz	r1, .L82
+ 134:Core/Src/balance_car/app_tasks.c **** }
+ 947              		.loc 1 134 5 is_stmt 1 view .LVU228
+ 134:Core/Src/balance_car/app_tasks.c **** }
+ 948              		.loc 1 134 11 is_stmt 0 view .LVU229
+ 949 000c FFF7FEFF 		bl	xQueueGiveFromISR
+ 950              	.LVL56:
+ 951              	.L82:
+ 135:Core/Src/balance_car/app_tasks.c **** 
+ 952              		.loc 1 135 1 view .LVU230
+ 953 0010 08BD     		pop	{r3, pc}
+ 954              	.L86:
+ 955 0012 00BF     		.align	2
+ 956              	.L85:
+ 957 0014 00000000 		.word	Sem_BluetoothRxReady
+ 958              		.cfi_endproc
+ 959              	.LFE74:
+ 961              		.section	.text.AppTasks_SubmitControlCommandFromTask,"ax",%progbits
+ 962              		.align	1
+ 963              		.global	AppTasks_SubmitControlCommandFromTask
+ 964              		.syntax unified
+ 965              		.thumb
+ 966              		.thumb_func
+ 968              	AppTasks_SubmitControlCommandFromTask:
+ 969              	.LVL57:
+ 970              	.LFB75:
+ 138:Core/Src/balance_car/app_tasks.c ****     AppControlCommand_t dropped;
+ 971              		.loc 1 138 1 is_stmt 1 view -0
+ 972              		.cfi_startproc
+ 973              		@ args = 0, pretend = 0, frame = 16
+ 974              		@ frame_needed = 0, uses_anonymous_args = 0
+ 139:Core/Src/balance_car/app_tasks.c **** 
+ 975              		.loc 1 139 5 view .LVU232
+ 141:Core/Src/balance_car/app_tasks.c ****         return;
+ 976              		.loc 1 141 5 view .LVU233
+ 141:Core/Src/balance_car/app_tasks.c ****         return;
+ 977              		.loc 1 141 8 is_stmt 0 view .LVU234
+ 978 0000 60B3     		cbz	r0, .L93
+ 138:Core/Src/balance_car/app_tasks.c ****     AppControlCommand_t dropped;
+ 979              		.loc 1 138 1 view .LVU235
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 26
+
+
+ 980 0002 30B5     		push	{r4, r5, lr}
+ 981              	.LCFI23:
+ 982              		.cfi_def_cfa_offset 12
+ 983              		.cfi_offset 4, -12
+ 984              		.cfi_offset 5, -8
+ 985              		.cfi_offset 14, -4
+ 986 0004 87B0     		sub	sp, sp, #28
+ 987              	.LCFI24:
+ 988              		.cfi_def_cfa_offset 40
+ 989 0006 0446     		mov	r4, r0
+ 141:Core/Src/balance_car/app_tasks.c ****         return;
+ 990              		.loc 1 141 49 discriminator 1 view .LVU236
+ 991 0008 154B     		ldr	r3, .L98
+ 992 000a 1B68     		ldr	r3, [r3]
+ 141:Core/Src/balance_car/app_tasks.c ****         return;
+ 993              		.loc 1 141 25 discriminator 1 view .LVU237
+ 994 000c 63B1     		cbz	r3, .L87
+ 144:Core/Src/balance_car/app_tasks.c ****         BalanceCar_ApplyControlCommand(command->run_valid,
+ 995              		.loc 1 144 5 is_stmt 1 view .LVU238
+ 144:Core/Src/balance_car/app_tasks.c ****         BalanceCar_ApplyControlCommand(command->run_valid,
+ 996              		.loc 1 144 9 is_stmt 0 view .LVU239
+ 997 000e FFF7FEFF 		bl	xTaskGetSchedulerState
+ 998              	.LVL58:
+ 144:Core/Src/balance_car/app_tasks.c ****         BalanceCar_ApplyControlCommand(command->run_valid,
+ 999              		.loc 1 144 8 discriminator 1 view .LVU240
+ 1000 0012 0128     		cmp	r0, #1
+ 1001 0014 0AD0     		beq	.L96
+ 153:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_ControlCommand, &dropped, 0U);
+ 1002              		.loc 1 153 5 is_stmt 1 view .LVU241
+ 153:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_ControlCommand, &dropped, 0U);
+ 1003              		.loc 1 153 9 is_stmt 0 view .LVU242
+ 1004 0016 0023     		movs	r3, #0
+ 1005 0018 1A46     		mov	r2, r3
+ 1006 001a 2146     		mov	r1, r4
+ 1007 001c 1048     		ldr	r0, .L98
+ 1008 001e 0068     		ldr	r0, [r0]
+ 1009 0020 FFF7FEFF 		bl	xQueueGenericSend
+ 1010              	.LVL59:
+ 153:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_ControlCommand, &dropped, 0U);
+ 1011              		.loc 1 153 8 discriminator 1 view .LVU243
+ 1012 0024 0128     		cmp	r0, #1
+ 1013 0026 0CD1     		bne	.L97
+ 1014              	.L87:
+ 157:Core/Src/balance_car/app_tasks.c **** 
+ 1015              		.loc 1 157 1 view .LVU244
+ 1016 0028 07B0     		add	sp, sp, #28
+ 1017              	.LCFI25:
+ 1018              		.cfi_remember_state
+ 1019              		.cfi_def_cfa_offset 12
+ 1020              		@ sp needed
+ 1021 002a 30BD     		pop	{r4, r5, pc}
+ 1022              	.LVL60:
+ 1023              	.L96:
+ 1024              	.LCFI26:
+ 1025              		.cfi_restore_state
+ 145:Core/Src/balance_car/app_tasks.c ****                                        command->run_enable,
+ 1026              		.loc 1 145 9 is_stmt 1 view .LVU245
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 27
+
+
+ 149:Core/Src/balance_car/app_tasks.c ****                                        command->turn_target);
+ 1027              		.loc 1 149 47 is_stmt 0 view .LVU246
+ 1028 002c A368     		ldr	r3, [r4, #8]	@ float
+ 150:Core/Src/balance_car/app_tasks.c ****         return;
+ 1029              		.loc 1 150 47 view .LVU247
+ 1030 002e E268     		ldr	r2, [r4, #12]	@ float
+ 145:Core/Src/balance_car/app_tasks.c ****                                        command->run_enable,
+ 1031              		.loc 1 145 9 view .LVU248
+ 1032 0030 0192     		str	r2, [sp, #4]	@ float
+ 1033 0032 0093     		str	r3, [sp]	@ float
+ 1034 0034 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 1035 0036 E278     		ldrb	r2, [r4, #3]	@ zero_extendqisi2
+ 1036 0038 A178     		ldrb	r1, [r4, #2]	@ zero_extendqisi2
+ 1037 003a 6078     		ldrb	r0, [r4, #1]	@ zero_extendqisi2
+ 1038 003c FFF7FEFF 		bl	BalanceCar_ApplyControlCommand
+ 1039              	.LVL61:
+ 151:Core/Src/balance_car/app_tasks.c ****     }
+ 1040              		.loc 1 151 9 is_stmt 1 view .LVU249
+ 1041 0040 F2E7     		b	.L87
+ 1042              	.L97:
+ 154:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_ControlCommand, command, 0U);
+ 1043              		.loc 1 154 9 view .LVU250
+ 1044 0042 074D     		ldr	r5, .L98
+ 154:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_ControlCommand, command, 0U);
+ 1045              		.loc 1 154 15 is_stmt 0 view .LVU251
+ 1046 0044 0022     		movs	r2, #0
+ 1047 0046 02A9     		add	r1, sp, #8
+ 1048 0048 2868     		ldr	r0, [r5]
+ 1049 004a FFF7FEFF 		bl	xQueueReceive
+ 1050              	.LVL62:
+ 155:Core/Src/balance_car/app_tasks.c ****     }
+ 1051              		.loc 1 155 9 is_stmt 1 view .LVU252
+ 155:Core/Src/balance_car/app_tasks.c ****     }
+ 1052              		.loc 1 155 15 is_stmt 0 view .LVU253
+ 1053 004e 0023     		movs	r3, #0
+ 1054 0050 1A46     		mov	r2, r3
+ 1055 0052 2146     		mov	r1, r4
+ 1056 0054 2868     		ldr	r0, [r5]
+ 1057 0056 FFF7FEFF 		bl	xQueueGenericSend
+ 1058              	.LVL63:
+ 1059 005a E5E7     		b	.L87
+ 1060              	.LVL64:
+ 1061              	.L93:
+ 1062              	.LCFI27:
+ 1063              		.cfi_def_cfa_offset 0
+ 1064              		.cfi_restore 4
+ 1065              		.cfi_restore 5
+ 1066              		.cfi_restore 14
+ 155:Core/Src/balance_car/app_tasks.c ****     }
+ 1067              		.loc 1 155 15 view .LVU254
+ 1068 005c 7047     		bx	lr
+ 1069              	.L99:
+ 1070 005e 00BF     		.align	2
+ 1071              	.L98:
+ 1072 0060 00000000 		.word	Queue_ControlCommand
+ 1073              		.cfi_endproc
+ 1074              	.LFE75:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 28
+
+
+ 1076              		.section	.text.AppTasks_SubmitPidUpdateFromTask,"ax",%progbits
+ 1077              		.align	1
+ 1078              		.global	AppTasks_SubmitPidUpdateFromTask
+ 1079              		.syntax unified
+ 1080              		.thumb
+ 1081              		.thumb_func
+ 1083              	AppTasks_SubmitPidUpdateFromTask:
+ 1084              	.LVL65:
+ 1085              	.LFB76:
+ 160:Core/Src/balance_car/app_tasks.c ****     AppPidUpdate_t dropped;
+ 1086              		.loc 1 160 1 is_stmt 1 view -0
+ 1087              		.cfi_startproc
+ 1088              		@ args = 0, pretend = 0, frame = 16
+ 1089              		@ frame_needed = 0, uses_anonymous_args = 0
+ 161:Core/Src/balance_car/app_tasks.c **** 
+ 1090              		.loc 1 161 5 view .LVU256
+ 163:Core/Src/balance_car/app_tasks.c ****         return;
+ 1091              		.loc 1 163 5 view .LVU257
+ 163:Core/Src/balance_car/app_tasks.c ****         return;
+ 1092              		.loc 1 163 8 is_stmt 0 view .LVU258
+ 1093 0000 0028     		cmp	r0, #0
+ 1094 0002 40D0     		beq	.L109
+ 160:Core/Src/balance_car/app_tasks.c ****     AppPidUpdate_t dropped;
+ 1095              		.loc 1 160 1 view .LVU259
+ 1096 0004 30B5     		push	{r4, r5, lr}
+ 1097              	.LCFI28:
+ 1098              		.cfi_def_cfa_offset 12
+ 1099              		.cfi_offset 4, -12
+ 1100              		.cfi_offset 5, -8
+ 1101              		.cfi_offset 14, -4
+ 1102 0006 85B0     		sub	sp, sp, #20
+ 1103              	.LCFI29:
+ 1104              		.cfi_def_cfa_offset 32
+ 1105 0008 0446     		mov	r4, r0
+ 163:Core/Src/balance_car/app_tasks.c ****         return;
+ 1106              		.loc 1 163 43 discriminator 1 view .LVU260
+ 1107 000a 1F4B     		ldr	r3, .L116
+ 1108 000c 1B68     		ldr	r3, [r3]
+ 163:Core/Src/balance_car/app_tasks.c ****         return;
+ 1109              		.loc 1 163 24 discriminator 1 view .LVU261
+ 1110 000e 63B1     		cbz	r3, .L100
+ 166:Core/Src/balance_car/app_tasks.c ****         if (update->target == APP_PID_TARGET_SPEED) {
+ 1111              		.loc 1 166 5 is_stmt 1 view .LVU262
+ 166:Core/Src/balance_car/app_tasks.c ****         if (update->target == APP_PID_TARGET_SPEED) {
+ 1112              		.loc 1 166 9 is_stmt 0 view .LVU263
+ 1113 0010 FFF7FEFF 		bl	xTaskGetSchedulerState
+ 1114              	.LVL66:
+ 166:Core/Src/balance_car/app_tasks.c ****         if (update->target == APP_PID_TARGET_SPEED) {
+ 1115              		.loc 1 166 8 discriminator 1 view .LVU264
+ 1116 0014 0128     		cmp	r0, #1
+ 1117 0016 0AD0     		beq	.L112
+ 182:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_PidUpdate, &dropped, 0U);
+ 1118              		.loc 1 182 5 is_stmt 1 view .LVU265
+ 182:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_PidUpdate, &dropped, 0U);
+ 1119              		.loc 1 182 9 is_stmt 0 view .LVU266
+ 1120 0018 0023     		movs	r3, #0
+ 1121 001a 1A46     		mov	r2, r3
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 29
+
+
+ 1122 001c 2146     		mov	r1, r4
+ 1123 001e 1A48     		ldr	r0, .L116
+ 1124 0020 0068     		ldr	r0, [r0]
+ 1125 0022 FFF7FEFF 		bl	xQueueGenericSend
+ 1126              	.LVL67:
+ 182:Core/Src/balance_car/app_tasks.c ****         (void)xQueueReceive(Queue_PidUpdate, &dropped, 0U);
+ 1127              		.loc 1 182 8 discriminator 1 view .LVU267
+ 1128 0026 0128     		cmp	r0, #1
+ 1129 0028 20D1     		bne	.L113
+ 1130              	.L100:
+ 186:Core/Src/balance_car/app_tasks.c **** 
+ 1131              		.loc 1 186 1 view .LVU268
+ 1132 002a 05B0     		add	sp, sp, #20
+ 1133              	.LCFI30:
+ 1134              		.cfi_remember_state
+ 1135              		.cfi_def_cfa_offset 12
+ 1136              		@ sp needed
+ 1137 002c 30BD     		pop	{r4, r5, pc}
+ 1138              	.LVL68:
+ 1139              	.L112:
+ 1140              	.LCFI31:
+ 1141              		.cfi_restore_state
+ 167:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kp = update->kp;
+ 1142              		.loc 1 167 9 is_stmt 1 view .LVU269
+ 167:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kp = update->kp;
+ 1143              		.loc 1 167 19 is_stmt 0 view .LVU270
+ 1144 002e 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 167:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kp = update->kp;
+ 1145              		.loc 1 167 12 view .LVU271
+ 1146 0030 012B     		cmp	r3, #1
+ 1147 0032 0BD0     		beq	.L114
+ 171:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kp = update->kp;
+ 1148              		.loc 1 171 16 is_stmt 1 view .LVU272
+ 171:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kp = update->kp;
+ 1149              		.loc 1 171 19 is_stmt 0 view .LVU273
+ 1150 0034 022B     		cmp	r3, #2
+ 1151 0036 11D0     		beq	.L115
+ 175:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kp = update->kp;
+ 1152              		.loc 1 175 16 is_stmt 1 view .LVU274
+ 175:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kp = update->kp;
+ 1153              		.loc 1 175 19 is_stmt 0 view .LVU275
+ 1154 0038 032B     		cmp	r3, #3
+ 1155 003a F6D1     		bne	.L100
+ 176:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Ki = update->ki;
+ 1156              		.loc 1 176 13 is_stmt 1 view .LVU276
+ 176:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Ki = update->ki;
+ 1157              		.loc 1 176 35 is_stmt 0 view .LVU277
+ 1158 003c 6268     		ldr	r2, [r4, #4]	@ float
+ 176:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Ki = update->ki;
+ 1159              		.loc 1 176 27 view .LVU278
+ 1160 003e 134B     		ldr	r3, .L116+4
+ 1161 0040 1A61     		str	r2, [r3, #16]	@ float
+ 177:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kd = update->kd;
+ 1162              		.loc 1 177 13 is_stmt 1 view .LVU279
+ 177:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kd = update->kd;
+ 1163              		.loc 1 177 35 is_stmt 0 view .LVU280
+ 1164 0042 A268     		ldr	r2, [r4, #8]	@ float
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 30
+
+
+ 177:Core/Src/balance_car/app_tasks.c ****             g_turn_pid.Kd = update->kd;
+ 1165              		.loc 1 177 27 view .LVU281
+ 1166 0044 5A61     		str	r2, [r3, #20]	@ float
+ 178:Core/Src/balance_car/app_tasks.c ****         }
+ 1167              		.loc 1 178 13 is_stmt 1 view .LVU282
+ 178:Core/Src/balance_car/app_tasks.c ****         }
+ 1168              		.loc 1 178 35 is_stmt 0 view .LVU283
+ 1169 0046 E268     		ldr	r2, [r4, #12]	@ float
+ 178:Core/Src/balance_car/app_tasks.c ****         }
+ 1170              		.loc 1 178 27 view .LVU284
+ 1171 0048 9A61     		str	r2, [r3, #24]	@ float
+ 180:Core/Src/balance_car/app_tasks.c ****     }
+ 1172              		.loc 1 180 9 is_stmt 1 view .LVU285
+ 1173 004a EEE7     		b	.L100
+ 1174              	.L114:
+ 168:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Ki = update->ki;
+ 1175              		.loc 1 168 13 view .LVU286
+ 168:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Ki = update->ki;
+ 1176              		.loc 1 168 36 is_stmt 0 view .LVU287
+ 1177 004c 6268     		ldr	r2, [r4, #4]	@ float
+ 168:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Ki = update->ki;
+ 1178              		.loc 1 168 28 view .LVU288
+ 1179 004e 104B     		ldr	r3, .L116+8
+ 1180 0050 1A61     		str	r2, [r3, #16]	@ float
+ 169:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kd = update->kd;
+ 1181              		.loc 1 169 13 is_stmt 1 view .LVU289
+ 169:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kd = update->kd;
+ 1182              		.loc 1 169 36 is_stmt 0 view .LVU290
+ 1183 0052 A268     		ldr	r2, [r4, #8]	@ float
+ 169:Core/Src/balance_car/app_tasks.c ****             g_speed_pid.Kd = update->kd;
+ 1184              		.loc 1 169 28 view .LVU291
+ 1185 0054 5A61     		str	r2, [r3, #20]	@ float
+ 170:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_ANGLE) {
+ 1186              		.loc 1 170 13 is_stmt 1 view .LVU292
+ 170:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_ANGLE) {
+ 1187              		.loc 1 170 36 is_stmt 0 view .LVU293
+ 1188 0056 E268     		ldr	r2, [r4, #12]	@ float
+ 170:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_ANGLE) {
+ 1189              		.loc 1 170 28 view .LVU294
+ 1190 0058 9A61     		str	r2, [r3, #24]	@ float
+ 1191 005a E6E7     		b	.L100
+ 1192              	.L115:
+ 172:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Ki = update->ki;
+ 1193              		.loc 1 172 13 is_stmt 1 view .LVU295
+ 172:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Ki = update->ki;
+ 1194              		.loc 1 172 36 is_stmt 0 view .LVU296
+ 1195 005c 6268     		ldr	r2, [r4, #4]	@ float
+ 172:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Ki = update->ki;
+ 1196              		.loc 1 172 28 view .LVU297
+ 1197 005e 0D4B     		ldr	r3, .L116+12
+ 1198 0060 1A61     		str	r2, [r3, #16]	@ float
+ 173:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kd = update->kd;
+ 1199              		.loc 1 173 13 is_stmt 1 view .LVU298
+ 173:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kd = update->kd;
+ 1200              		.loc 1 173 36 is_stmt 0 view .LVU299
+ 1201 0062 A268     		ldr	r2, [r4, #8]	@ float
+ 173:Core/Src/balance_car/app_tasks.c ****             g_angle_pid.Kd = update->kd;
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 31
+
+
+ 1202              		.loc 1 173 28 view .LVU300
+ 1203 0064 5A61     		str	r2, [r3, #20]	@ float
+ 174:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_TURN) {
+ 1204              		.loc 1 174 13 is_stmt 1 view .LVU301
+ 174:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_TURN) {
+ 1205              		.loc 1 174 36 is_stmt 0 view .LVU302
+ 1206 0066 E268     		ldr	r2, [r4, #12]	@ float
+ 174:Core/Src/balance_car/app_tasks.c ****         } else if (update->target == APP_PID_TARGET_TURN) {
+ 1207              		.loc 1 174 28 view .LVU303
+ 1208 0068 9A61     		str	r2, [r3, #24]	@ float
+ 1209 006a DEE7     		b	.L100
+ 1210              	.L113:
+ 183:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_PidUpdate, update, 0U);
+ 1211              		.loc 1 183 9 is_stmt 1 view .LVU304
+ 1212 006c 064D     		ldr	r5, .L116
+ 183:Core/Src/balance_car/app_tasks.c ****         (void)xQueueSendToBack(Queue_PidUpdate, update, 0U);
+ 1213              		.loc 1 183 15 is_stmt 0 view .LVU305
+ 1214 006e 0022     		movs	r2, #0
+ 1215 0070 6946     		mov	r1, sp
+ 1216 0072 2868     		ldr	r0, [r5]
+ 1217 0074 FFF7FEFF 		bl	xQueueReceive
+ 1218              	.LVL69:
+ 184:Core/Src/balance_car/app_tasks.c ****     }
+ 1219              		.loc 1 184 9 is_stmt 1 view .LVU306
+ 184:Core/Src/balance_car/app_tasks.c ****     }
+ 1220              		.loc 1 184 15 is_stmt 0 view .LVU307
+ 1221 0078 0023     		movs	r3, #0
+ 1222 007a 1A46     		mov	r2, r3
+ 1223 007c 2146     		mov	r1, r4
+ 1224 007e 2868     		ldr	r0, [r5]
+ 1225 0080 FFF7FEFF 		bl	xQueueGenericSend
+ 1226              	.LVL70:
+ 1227 0084 D1E7     		b	.L100
+ 1228              	.LVL71:
+ 1229              	.L109:
+ 1230              	.LCFI32:
+ 1231              		.cfi_def_cfa_offset 0
+ 1232              		.cfi_restore 4
+ 1233              		.cfi_restore 5
+ 1234              		.cfi_restore 14
+ 184:Core/Src/balance_car/app_tasks.c ****     }
+ 1235              		.loc 1 184 15 view .LVU308
+ 1236 0086 7047     		bx	lr
+ 1237              	.L117:
+ 1238              		.align	2
+ 1239              	.L116:
+ 1240 0088 00000000 		.word	Queue_PidUpdate
+ 1241 008c 00000000 		.word	g_turn_pid
+ 1242 0090 00000000 		.word	g_speed_pid
+ 1243 0094 00000000 		.word	g_angle_pid
+ 1244              		.cfi_endproc
+ 1245              	.LFE76:
+ 1247              		.section	.text.AppTasks_CopyBalanceState,"ax",%progbits
+ 1248              		.align	1
+ 1249              		.global	AppTasks_CopyBalanceState
+ 1250              		.syntax unified
+ 1251              		.thumb
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 32
+
+
+ 1252              		.thumb_func
+ 1254              	AppTasks_CopyBalanceState:
+ 1255              	.LVL72:
+ 1256              	.LFB77:
+ 189:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 1257              		.loc 1 189 1 is_stmt 1 view -0
+ 1258              		.cfi_startproc
+ 1259              		@ args = 0, pretend = 0, frame = 0
+ 1260              		@ frame_needed = 0, uses_anonymous_args = 0
+ 190:Core/Src/balance_car/app_tasks.c ****         return;
+ 1261              		.loc 1 190 5 view .LVU310
+ 190:Core/Src/balance_car/app_tasks.c ****         return;
+ 1262              		.loc 1 190 8 is_stmt 0 view .LVU311
+ 1263 0000 38B3     		cbz	r0, .L122
+ 189:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 1264              		.loc 1 189 1 view .LVU312
+ 1265 0002 70B5     		push	{r4, r5, r6, lr}
+ 1266              	.LCFI33:
+ 1267              		.cfi_def_cfa_offset 16
+ 1268              		.cfi_offset 4, -16
+ 1269              		.cfi_offset 5, -12
+ 1270              		.cfi_offset 6, -8
+ 1271              		.cfi_offset 14, -4
+ 1272 0004 0446     		mov	r4, r0
+ 193:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1273              		.loc 1 193 5 is_stmt 1 view .LVU313
+ 193:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1274              		.loc 1 193 31 is_stmt 0 view .LVU314
+ 1275 0006 134B     		ldr	r3, .L126
+ 1276 0008 1868     		ldr	r0, [r3]
+ 1277              	.LVL73:
+ 193:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1278              		.loc 1 193 8 view .LVU315
+ 1279 000a 20B1     		cbz	r0, .L120
+ 194:Core/Src/balance_car/app_tasks.c ****         taskENTER_CRITICAL();
+ 1280              		.loc 1 194 9 view .LVU316
+ 1281 000c 0221     		movs	r1, #2
+ 1282 000e FFF7FEFF 		bl	xQueueSemaphoreTake
+ 1283              	.LVL74:
+ 193:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1284              		.loc 1 193 39 discriminator 1 view .LVU317
+ 1285 0012 0128     		cmp	r0, #1
+ 1286 0014 05D0     		beq	.L125
+ 1287              	.L120:
+ 201:Core/Src/balance_car/app_tasks.c ****     }
+ 1288              		.loc 1 201 9 is_stmt 1 view .LVU318
+ 201:Core/Src/balance_car/app_tasks.c ****     }
+ 1289              		.loc 1 201 16 is_stmt 0 view .LVU319
+ 1290 0016 4822     		movs	r2, #72
+ 1291 0018 0F49     		ldr	r1, .L126+4
+ 1292 001a 2046     		mov	r0, r4
+ 1293 001c FFF7FEFF 		bl	memcpy
+ 1294              	.LVL75:
+ 1295              	.L118:
+ 203:Core/Src/balance_car/app_tasks.c **** 
+ 1296              		.loc 1 203 1 view .LVU320
+ 1297 0020 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 33
+
+
+ 1298              	.LVL76:
+ 1299              	.L125:
+ 195:Core/Src/balance_car/app_tasks.c ****         s_balance_snapshot = g_balance_state;
+ 1300              		.loc 1 195 9 is_stmt 1 view .LVU321
+ 1301 0022 FFF7FEFF 		bl	vPortEnterCritical
+ 1302              	.LVL77:
+ 196:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 1303              		.loc 1 196 9 view .LVU322
+ 196:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 1304              		.loc 1 196 28 is_stmt 0 view .LVU323
+ 1305 0026 0C4D     		ldr	r5, .L126+4
+ 1306 0028 4826     		movs	r6, #72
+ 1307 002a 3246     		mov	r2, r6
+ 1308 002c 0B49     		ldr	r1, .L126+8
+ 1309 002e 2846     		mov	r0, r5
+ 1310 0030 FFF7FEFF 		bl	memcpy
+ 1311              	.LVL78:
+ 197:Core/Src/balance_car/app_tasks.c ****         *state = s_balance_snapshot;
+ 1312              		.loc 1 197 9 is_stmt 1 view .LVU324
+ 1313 0034 FFF7FEFF 		bl	vPortExitCritical
+ 1314              	.LVL79:
+ 198:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 1315              		.loc 1 198 9 view .LVU325
+ 198:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 1316              		.loc 1 198 16 is_stmt 0 view .LVU326
+ 1317 0038 3246     		mov	r2, r6
+ 1318 003a 2946     		mov	r1, r5
+ 1319 003c 2046     		mov	r0, r4
+ 1320 003e FFF7FEFF 		bl	memcpy
+ 1321              	.LVL80:
+ 199:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1322              		.loc 1 199 9 is_stmt 1 view .LVU327
+ 199:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1323              		.loc 1 199 15 is_stmt 0 view .LVU328
+ 1324 0042 0023     		movs	r3, #0
+ 1325 0044 1A46     		mov	r2, r3
+ 1326 0046 1946     		mov	r1, r3
+ 1327 0048 0248     		ldr	r0, .L126
+ 1328 004a 0068     		ldr	r0, [r0]
+ 1329 004c FFF7FEFF 		bl	xQueueGenericSend
+ 1330              	.LVL81:
+ 199:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1331              		.loc 1 199 9 view .LVU329
+ 1332 0050 E6E7     		b	.L118
+ 1333              	.LVL82:
+ 1334              	.L122:
+ 1335              	.LCFI34:
+ 1336              		.cfi_def_cfa_offset 0
+ 1337              		.cfi_restore 4
+ 1338              		.cfi_restore 5
+ 1339              		.cfi_restore 6
+ 1340              		.cfi_restore 14
+ 199:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1341              		.loc 1 199 9 view .LVU330
+ 1342 0052 7047     		bx	lr
+ 1343              	.L127:
+ 1344              		.align	2
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 34
+
+
+ 1345              	.L126:
+ 1346 0054 00000000 		.word	Sem_BalanceStateMutex
+ 1347 0058 00000000 		.word	s_balance_snapshot
+ 1348 005c 00000000 		.word	g_balance_state
+ 1349              		.cfi_endproc
+ 1350              	.LFE77:
+ 1352              		.section	.text.AppTasks_CopySensorState,"ax",%progbits
+ 1353              		.align	1
+ 1354              		.global	AppTasks_CopySensorState
+ 1355              		.syntax unified
+ 1356              		.thumb
+ 1357              		.thumb_func
+ 1359              	AppTasks_CopySensorState:
+ 1360              	.LVL83:
+ 1361              	.LFB78:
+ 206:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 1362              		.loc 1 206 1 is_stmt 1 view -0
+ 1363              		.cfi_startproc
+ 1364              		@ args = 0, pretend = 0, frame = 0
+ 1365              		@ frame_needed = 0, uses_anonymous_args = 0
+ 207:Core/Src/balance_car/app_tasks.c ****         return;
+ 1366              		.loc 1 207 5 view .LVU332
+ 207:Core/Src/balance_car/app_tasks.c ****         return;
+ 1367              		.loc 1 207 8 is_stmt 0 view .LVU333
+ 1368 0000 0028     		cmp	r0, #0
+ 1369 0002 37D0     		beq	.L132
+ 206:Core/Src/balance_car/app_tasks.c ****     if (state == NULL) {
+ 1370              		.loc 1 206 1 view .LVU334
+ 1371 0004 70B5     		push	{r4, r5, r6, lr}
+ 1372              	.LCFI35:
+ 1373              		.cfi_def_cfa_offset 16
+ 1374              		.cfi_offset 4, -16
+ 1375              		.cfi_offset 5, -12
+ 1376              		.cfi_offset 6, -8
+ 1377              		.cfi_offset 14, -4
+ 1378 0006 0446     		mov	r4, r0
+ 210:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1379              		.loc 1 210 5 is_stmt 1 view .LVU335
+ 210:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1380              		.loc 1 210 30 is_stmt 0 view .LVU336
+ 1381 0008 1B4B     		ldr	r3, .L136
+ 1382 000a 1868     		ldr	r0, [r3]
+ 1383              	.LVL84:
+ 210:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1384              		.loc 1 210 8 view .LVU337
+ 1385 000c 20B1     		cbz	r0, .L130
+ 211:Core/Src/balance_car/app_tasks.c ****         s_sensor_snapshot = g_sensor_state;
+ 1386              		.loc 1 211 9 view .LVU338
+ 1387 000e 0221     		movs	r1, #2
+ 1388 0010 FFF7FEFF 		bl	xQueueSemaphoreTake
+ 1389              	.LVL85:
+ 210:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_SensorStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1390              		.loc 1 210 38 discriminator 1 view .LVU339
+ 1391 0014 0128     		cmp	r0, #1
+ 1392 0016 0CD0     		beq	.L135
+ 1393              	.L130:
+ 216:Core/Src/balance_car/app_tasks.c ****     }
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 35
+
+
+ 1394              		.loc 1 216 9 is_stmt 1 view .LVU340
+ 216:Core/Src/balance_car/app_tasks.c ****     }
+ 1395              		.loc 1 216 16 is_stmt 0 view .LVU341
+ 1396 0018 A446     		mov	ip, r4
+ 1397 001a 184C     		ldr	r4, .L136+4
+ 1398              	.LVL86:
+ 216:Core/Src/balance_car/app_tasks.c ****     }
+ 1399              		.loc 1 216 16 view .LVU342
+ 1400 001c 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1401 001e ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1402              	.LVL87:
+ 216:Core/Src/balance_car/app_tasks.c ****     }
+ 1403              		.loc 1 216 16 view .LVU343
+ 1404 0022 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1405 0024 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1406              	.LVL88:
+ 216:Core/Src/balance_car/app_tasks.c ****     }
+ 1407              		.loc 1 216 16 view .LVU344
+ 1408 0028 94E80300 		ldm	r4, {r0, r1}
+ 1409 002c 8CE80300 		stm	ip, {r0, r1}
+ 1410              	.LVL89:
+ 1411              	.L128:
+ 218:Core/Src/balance_car/app_tasks.c **** 
+ 1412              		.loc 1 218 1 view .LVU345
+ 1413 0030 70BD     		pop	{r4, r5, r6, pc}
+ 1414              	.LVL90:
+ 1415              	.L135:
+ 212:Core/Src/balance_car/app_tasks.c ****         *state = s_sensor_snapshot;
+ 1416              		.loc 1 212 9 is_stmt 1 view .LVU346
+ 212:Core/Src/balance_car/app_tasks.c ****         *state = s_sensor_snapshot;
+ 1417              		.loc 1 212 27 is_stmt 0 view .LVU347
+ 1418 0032 124D     		ldr	r5, .L136+4
+ 1419 0034 AE46     		mov	lr, r5
+ 1420 0036 124E     		ldr	r6, .L136+8
+ 1421 0038 0FCE     		ldmia	r6!, {r0, r1, r2, r3}
+ 1422 003a AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 1423 003e 0FCE     		ldmia	r6!, {r0, r1, r2, r3}
+ 1424 0040 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 1425 0044 96E80300 		ldm	r6, {r0, r1}
+ 1426 0048 8EE80300 		stm	lr, {r0, r1}
+ 213:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 1427              		.loc 1 213 9 is_stmt 1 view .LVU348
+ 213:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 1428              		.loc 1 213 16 is_stmt 0 view .LVU349
+ 1429 004c A446     		mov	ip, r4
+ 1430 004e 2C46     		mov	r4, r5
+ 1431              	.LVL91:
+ 213:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 1432              		.loc 1 213 16 view .LVU350
+ 1433 0050 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1434 0052 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1435              	.LVL92:
+ 213:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 1436              		.loc 1 213 16 view .LVU351
+ 1437 0056 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1438 0058 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1439              	.LVL93:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 36
+
+
+ 213:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_SensorStateMutex);
+ 1440              		.loc 1 213 16 view .LVU352
+ 1441 005c 9EE80300 		ldm	lr, {r0, r1}
+ 1442 0060 8CE80300 		stm	ip, {r0, r1}
+ 214:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1443              		.loc 1 214 9 is_stmt 1 view .LVU353
+ 214:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1444              		.loc 1 214 15 is_stmt 0 view .LVU354
+ 1445 0064 0023     		movs	r3, #0
+ 1446 0066 1A46     		mov	r2, r3
+ 1447 0068 1946     		mov	r1, r3
+ 1448 006a 0348     		ldr	r0, .L136
+ 1449 006c 0068     		ldr	r0, [r0]
+ 1450 006e FFF7FEFF 		bl	xQueueGenericSend
+ 1451              	.LVL94:
+ 214:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1452              		.loc 1 214 9 view .LVU355
+ 1453 0072 DDE7     		b	.L128
+ 1454              	.LVL95:
+ 1455              	.L132:
+ 1456              	.LCFI36:
+ 1457              		.cfi_def_cfa_offset 0
+ 1458              		.cfi_restore 4
+ 1459              		.cfi_restore 5
+ 1460              		.cfi_restore 6
+ 1461              		.cfi_restore 14
+ 214:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1462              		.loc 1 214 9 view .LVU356
+ 1463 0074 7047     		bx	lr
+ 1464              	.L137:
+ 1465 0076 00BF     		.align	2
+ 1466              	.L136:
+ 1467 0078 00000000 		.word	Sem_SensorStateMutex
+ 1468 007c 00000000 		.word	s_sensor_snapshot
+ 1469 0080 00000000 		.word	g_sensor_state
+ 1470              		.cfi_endproc
+ 1471              	.LFE78:
+ 1473              		.section	.text.AppTasks_CopyPidSnapshot,"ax",%progbits
+ 1474              		.align	1
+ 1475              		.global	AppTasks_CopyPidSnapshot
+ 1476              		.syntax unified
+ 1477              		.thumb
+ 1478              		.thumb_func
+ 1480              	AppTasks_CopyPidSnapshot:
+ 1481              	.LVL96:
+ 1482              	.LFB79:
+ 221:Core/Src/balance_car/app_tasks.c ****     if (snapshot == NULL) {
+ 1483              		.loc 1 221 1 is_stmt 1 view -0
+ 1484              		.cfi_startproc
+ 1485              		@ args = 0, pretend = 0, frame = 0
+ 1486              		@ frame_needed = 0, uses_anonymous_args = 0
+ 222:Core/Src/balance_car/app_tasks.c ****         return;
+ 1487              		.loc 1 222 5 view .LVU358
+ 222:Core/Src/balance_car/app_tasks.c ****         return;
+ 1488              		.loc 1 222 8 is_stmt 0 view .LVU359
+ 1489 0000 0028     		cmp	r0, #0
+ 1490 0002 4AD0     		beq	.L142
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 37
+
+
+ 221:Core/Src/balance_car/app_tasks.c ****     if (snapshot == NULL) {
+ 1491              		.loc 1 221 1 view .LVU360
+ 1492 0004 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 1493              	.LCFI37:
+ 1494              		.cfi_def_cfa_offset 24
+ 1495              		.cfi_offset 3, -24
+ 1496              		.cfi_offset 4, -20
+ 1497              		.cfi_offset 5, -16
+ 1498              		.cfi_offset 6, -12
+ 1499              		.cfi_offset 7, -8
+ 1500              		.cfi_offset 14, -4
+ 1501 0006 0646     		mov	r6, r0
+ 225:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1502              		.loc 1 225 5 is_stmt 1 view .LVU361
+ 225:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1503              		.loc 1 225 31 is_stmt 0 view .LVU362
+ 1504 0008 244B     		ldr	r3, .L146
+ 1505 000a 1868     		ldr	r0, [r3]
+ 1506              	.LVL97:
+ 225:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1507              		.loc 1 225 8 view .LVU363
+ 1508 000c 20B1     		cbz	r0, .L140
+ 226:Core/Src/balance_car/app_tasks.c ****         taskENTER_CRITICAL();
+ 1509              		.loc 1 226 9 view .LVU364
+ 1510 000e 0221     		movs	r1, #2
+ 1511 0010 FFF7FEFF 		bl	xQueueSemaphoreTake
+ 1512              	.LVL98:
+ 225:Core/Src/balance_car/app_tasks.c ****         xSemaphoreTake(Sem_BalanceStateMutex, pdMS_TO_TICKS(2U)) == pdPASS) {
+ 1513              		.loc 1 225 39 discriminator 1 view .LVU365
+ 1514 0014 0128     		cmp	r0, #1
+ 1515 0016 05D0     		beq	.L145
+ 1516              	.L140:
+ 235:Core/Src/balance_car/app_tasks.c ****     }
+ 1517              		.loc 1 235 9 is_stmt 1 view .LVU366
+ 235:Core/Src/balance_car/app_tasks.c ****     }
+ 1518              		.loc 1 235 19 is_stmt 0 view .LVU367
+ 1519 0018 B422     		movs	r2, #180
+ 1520 001a 2149     		ldr	r1, .L146+4
+ 1521 001c 3046     		mov	r0, r6
+ 1522 001e FFF7FEFF 		bl	memcpy
+ 1523              	.LVL99:
+ 1524              	.L138:
+ 237:Core/Src/balance_car/app_tasks.c **** 
+ 1525              		.loc 1 237 1 view .LVU368
+ 1526 0022 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1527              	.LVL100:
+ 1528              	.L145:
+ 227:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.speed = g_speed_pid;
+ 1529              		.loc 1 227 9 is_stmt 1 view .LVU369
+ 1530 0024 FFF7FEFF 		bl	vPortEnterCritical
+ 1531              	.LVL101:
+ 228:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.angle = g_angle_pid;
+ 1532              		.loc 1 228 9 view .LVU370
+ 228:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.angle = g_angle_pid;
+ 1533              		.loc 1 228 30 is_stmt 0 view .LVU371
+ 1534 0028 1D4F     		ldr	r7, .L146+4
+ 1535 002a 3C46     		mov	r4, r7
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 38
+
+
+ 1536 002c 1D4D     		ldr	r5, .L146+8
+ 1537 002e 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1538 0030 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1539 0032 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1540 0034 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1541 0036 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1542 0038 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1543 003a 95E80700 		ldm	r5, {r0, r1, r2}
+ 1544 003e 84E80700 		stm	r4, {r0, r1, r2}
+ 229:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.turn = g_turn_pid;
+ 1545              		.loc 1 229 9 is_stmt 1 view .LVU372
+ 229:Core/Src/balance_car/app_tasks.c ****         s_pid_snapshot.turn = g_turn_pid;
+ 1546              		.loc 1 229 30 is_stmt 0 view .LVU373
+ 1547 0042 07F13C04 		add	r4, r7, #60
+ 1548 0046 184D     		ldr	r5, .L146+12
+ 1549 0048 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1550 004a 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1551 004c 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1552 004e 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1553 0050 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 1554 0052 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 1555 0054 95E80700 		ldm	r5, {r0, r1, r2}
+ 1556 0058 84E80700 		stm	r4, {r0, r1, r2}
+ 230:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 1557              		.loc 1 230 9 is_stmt 1 view .LVU374
+ 230:Core/Src/balance_car/app_tasks.c ****         taskEXIT_CRITICAL();
+ 1558              		.loc 1 230 29 is_stmt 0 view .LVU375
+ 1559 005c 07F1780C 		add	ip, r7, #120
+ 1560 0060 124C     		ldr	r4, .L146+16
+ 1561 0062 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1562 0064 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1563 0068 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1564 006a ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1565 006e 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1566 0070 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1567 0074 94E80700 		ldm	r4, {r0, r1, r2}
+ 1568 0078 8CE80700 		stm	ip, {r0, r1, r2}
+ 231:Core/Src/balance_car/app_tasks.c ****         *snapshot = s_pid_snapshot;
+ 1569              		.loc 1 231 9 is_stmt 1 view .LVU376
+ 1570 007c FFF7FEFF 		bl	vPortExitCritical
+ 1571              	.LVL102:
+ 232:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 1572              		.loc 1 232 9 view .LVU377
+ 232:Core/Src/balance_car/app_tasks.c ****         (void)xSemaphoreGive(Sem_BalanceStateMutex);
+ 1573              		.loc 1 232 19 is_stmt 0 view .LVU378
+ 1574 0080 B422     		movs	r2, #180
+ 1575 0082 3946     		mov	r1, r7
+ 1576 0084 3046     		mov	r0, r6
+ 1577 0086 FFF7FEFF 		bl	memcpy
+ 1578              	.LVL103:
+ 233:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1579              		.loc 1 233 9 is_stmt 1 view .LVU379
+ 233:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1580              		.loc 1 233 15 is_stmt 0 view .LVU380
+ 1581 008a 0023     		movs	r3, #0
+ 1582 008c 1A46     		mov	r2, r3
+ 1583 008e 1946     		mov	r1, r3
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 39
+
+
+ 1584 0090 0248     		ldr	r0, .L146
+ 1585 0092 0068     		ldr	r0, [r0]
+ 1586 0094 FFF7FEFF 		bl	xQueueGenericSend
+ 1587              	.LVL104:
+ 233:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1588              		.loc 1 233 9 view .LVU381
+ 1589 0098 C3E7     		b	.L138
+ 1590              	.LVL105:
+ 1591              	.L142:
+ 1592              	.LCFI38:
+ 1593              		.cfi_def_cfa_offset 0
+ 1594              		.cfi_restore 3
+ 1595              		.cfi_restore 4
+ 1596              		.cfi_restore 5
+ 1597              		.cfi_restore 6
+ 1598              		.cfi_restore 7
+ 1599              		.cfi_restore 14
+ 233:Core/Src/balance_car/app_tasks.c ****     } else {
+ 1600              		.loc 1 233 9 view .LVU382
+ 1601 009a 7047     		bx	lr
+ 1602              	.L147:
+ 1603              		.align	2
+ 1604              	.L146:
+ 1605 009c 00000000 		.word	Sem_BalanceStateMutex
+ 1606 00a0 00000000 		.word	s_pid_snapshot
+ 1607 00a4 00000000 		.word	g_speed_pid
+ 1608 00a8 00000000 		.word	g_angle_pid
+ 1609 00ac 00000000 		.word	g_turn_pid
+ 1610              		.cfi_endproc
+ 1611              	.LFE79:
+ 1613              		.section	.text.vApplicationMallocFailedHook,"ax",%progbits
+ 1614              		.align	1
+ 1615              		.global	vApplicationMallocFailedHook
+ 1616              		.syntax unified
+ 1617              		.thumb
+ 1618              		.thumb_func
+ 1620              	vApplicationMallocFailedHook:
+ 1621              	.LFB84:
+ 316:Core/Src/balance_car/app_tasks.c ****     }
+ 317:Core/Src/balance_car/app_tasks.c **** }
+ 318:Core/Src/balance_car/app_tasks.c **** 
+ 319:Core/Src/balance_car/app_tasks.c **** void vApplicationMallocFailedHook(void)
+ 320:Core/Src/balance_car/app_tasks.c **** {
+ 1622              		.loc 1 320 1 is_stmt 1 view -0
+ 1623              		.cfi_startproc
+ 1624              		@ Volatile: function does not return.
+ 1625              		@ args = 0, pretend = 0, frame = 0
+ 1626              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1627              		@ link register save eliminated.
+ 321:Core/Src/balance_car/app_tasks.c ****     taskDISABLE_INTERRUPTS();
+ 1628              		.loc 1 321 5 view .LVU384
+ 1629              	.LBB6:
+ 1630              	.LBI6:
+ 1631              		.file 2 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h"
+   1:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*
+   2:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * FreeRTOS Kernel V10.3.1
+   3:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 40
+
+
+   4:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+   5:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * Permission is hereby granted, free of charge, to any person obtaining a copy of
+   6:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * this software and associated documentation files (the "Software"), to deal in
+   7:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * the Software without restriction, including without limitation the rights to
+   8:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+   9:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * the Software, and to permit persons to whom the Software is furnished to do so,
+  10:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * subject to the following conditions:
+  11:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  12:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * The above copyright notice and this permission notice shall be included in all
+  13:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * copies or substantial portions of the Software.
+  14:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  15:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  16:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+  17:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  18:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+  19:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  20:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  21:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  22:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * http://www.FreeRTOS.org
+  23:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * http://aws.amazon.com/freertos
+  24:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  25:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * 1 tab == 4 spaces!
+  26:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  */
+  27:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  28:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  29:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifndef PORTMACRO_H
+  30:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define PORTMACRO_H
+  31:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  32:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifdef __cplusplus
+  33:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** extern "C" {
+  34:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+  35:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  36:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------
+  37:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * Port specific definitions.
+  38:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  39:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * The settings in this file configure FreeRTOS correctly for the
+  40:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * given hardware and compiler.
+  41:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *
+  42:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  * These settings should not be altered.
+  43:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  *-----------------------------------------------------------
+  44:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h ****  */
+  45:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  46:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Type definitions. */
+  47:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portCHAR		char
+  48:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portFLOAT		float
+  49:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portDOUBLE		double
+  50:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portLONG		long
+  51:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portSHORT		short
+  52:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portSTACK_TYPE	uint32_t
+  53:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portBASE_TYPE	long
+  54:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  55:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** typedef portSTACK_TYPE StackType_t;
+  56:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** typedef long BaseType_t;
+  57:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** typedef unsigned long UBaseType_t;
+  58:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  59:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #if( configUSE_16_BIT_TICKS == 1 )
+  60:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	typedef uint16_t TickType_t;
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 41
+
+
+  61:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffff
+  62:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #else
+  63:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	typedef uint32_t TickType_t;
+  64:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
+  65:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  66:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* 32-bit tick type on a 32-bit architecture, so reads of the tick count do
+  67:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	not need to be guarded with a critical section. */
+  68:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portTICK_TYPE_IS_ATOMIC 1
+  69:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+  70:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+  71:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  72:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Architecture specifics. */
+  73:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portSTACK_GROWTH			( -1 )
+  74:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portTICK_PERIOD_MS			( ( TickType_t ) 1000 / configTICK_RATE_HZ )
+  75:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portBYTE_ALIGNMENT			8
+  76:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+  77:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  78:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Scheduler utilities. */
+  79:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portYIELD() 															\
+  80:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** {																				\
+  81:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Set a PendSV to request a context switch. */								\
+  82:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;								\
+  83:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 																				\
+  84:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Barriers are normally not required but do ensure the code is completely	\
+  85:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	within the specified behaviour for the architecture. */						\
+  86:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	__asm volatile( "dsb" ::: "memory" );										\
+  87:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	__asm volatile( "isb" );													\
+  88:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** }
+  89:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  90:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portNVIC_INT_CTRL_REG		( * ( ( volatile uint32_t * ) 0xe000ed04 ) )
+  91:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portNVIC_PENDSVSET_BIT		( 1UL << 28UL )
+  92:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portEND_SWITCHING_ISR( xSwitchRequired ) if( xSwitchRequired != pdFALSE ) portYIELD()
+  93:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portYIELD_FROM_ISR( x ) portEND_SWITCHING_ISR( x )
+  94:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+  95:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+  96:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Critical section management. */
+  97:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** extern void vPortEnterCritical( void );
+  98:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** extern void vPortExitCritical( void );
+  99:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portSET_INTERRUPT_MASK_FROM_ISR()		ulPortRaiseBASEPRI()
+ 100:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portCLEAR_INTERRUPT_MASK_FROM_ISR(x)	vPortSetBASEPRI(x)
+ 101:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portDISABLE_INTERRUPTS()				vPortRaiseBASEPRI()
+ 102:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portENABLE_INTERRUPTS()					vPortSetBASEPRI(0)
+ 103:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portENTER_CRITICAL()					vPortEnterCritical()
+ 104:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portEXIT_CRITICAL()						vPortExitCritical()
+ 105:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 106:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 107:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 108:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Task function macros as described on the FreeRTOS.org WEB site.  These are
+ 109:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** not necessary for to use this port.  They are defined so the common demo files
+ 110:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** (which build with all the ports) will build. */
+ 111:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 112:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+ 113:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 114:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 115:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Tickless idle/low power functionality. */
+ 116:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifndef portSUPPRESS_TICKS_AND_SLEEP
+ 117:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	extern void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime );
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 42
+
+
+ 118:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portSUPPRESS_TICKS_AND_SLEEP( xExpectedIdleTime ) vPortSuppressTicksAndSleep( xExpectedIdl
+ 119:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+ 120:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 121:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 122:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* Architecture specific optimisations. */
+ 123:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifndef configUSE_PORT_OPTIMISED_TASK_SELECTION
+ 124:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
+ 125:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+ 126:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 127:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #if configUSE_PORT_OPTIMISED_TASK_SELECTION == 1
+ 128:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 129:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Generic helper function. */
+ 130:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	__attribute__( ( always_inline ) ) static inline uint8_t ucPortCountLeadingZeros( uint32_t ulBitma
+ 131:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	{
+ 132:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	uint8_t ucReturn;
+ 133:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 134:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 		__asm volatile ( "clz %0, %1" : "=r" ( ucReturn ) : "r" ( ulBitmap ) : "memory" );
+ 135:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 		return ucReturn;
+ 136:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	}
+ 137:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 138:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Check the configuration. */
+ 139:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#if( configMAX_PRIORITIES > 32 )
+ 140:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 		#error configUSE_PORT_OPTIMISED_TASK_SELECTION can only be set to 1 when configMAX_PRIORITIES is 
+ 141:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#endif
+ 142:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 143:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Store/clear the ready priorities in a bit map. */
+ 144:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portRECORD_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) |= ( 1UL 
+ 145:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portRESET_READY_PRIORITY( uxPriority, uxReadyPriorities ) ( uxReadyPriorities ) &= ~( 1UL 
+ 146:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 147:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/*-----------------------------------------------------------*/
+ 148:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 149:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portGET_HIGHEST_PRIORITY( uxTopPriority, uxReadyPriorities ) uxTopPriority = ( 31UL - ( ui
+ 150:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 151:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif /* configUSE_PORT_OPTIMISED_TASK_SELECTION */
+ 152:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 153:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 154:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 155:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifdef configASSERT
+ 156:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	void vPortValidateInterruptPriority( void );
+ 157:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() 	vPortValidateInterruptPriority()
+ 158:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+ 159:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 160:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /* portNOP() is not required by this port. */
+ 161:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portNOP()
+ 162:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 163:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #define portINLINE	__inline
+ 164:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 165:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #ifndef portFORCE_INLINE
+ 166:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	#define portFORCE_INLINE inline __attribute__(( always_inline))
+ 167:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** #endif
+ 168:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 169:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 170:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 171:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** portFORCE_INLINE static BaseType_t xPortIsInsideInterrupt( void )
+ 172:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** {
+ 173:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** uint32_t ulCurrentInterrupt;
+ 174:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** BaseType_t xReturn;
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 43
+
+
+ 175:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 176:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	/* Obtain the number of the currently executing interrupt. */
+ 177:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	__asm volatile( "mrs %0, ipsr" : "=r"( ulCurrentInterrupt ) :: "memory" );
+ 178:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 179:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	if( ulCurrentInterrupt == 0 )
+ 180:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	{
+ 181:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 		xReturn = pdFALSE;
+ 182:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	}
+ 183:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	else
+ 184:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	{
+ 185:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 		xReturn = pdTRUE;
+ 186:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	}
+ 187:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 188:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	return xReturn;
+ 189:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** }
+ 190:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 191:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** /*-----------------------------------------------------------*/
+ 192:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** portFORCE_INLINE static void vPortRaiseBASEPRI( void )
+ 1632              		.loc 2 193 30 view .LVU385
+ 1633              	.LBB7:
+ 194:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** {
+ 195:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** uint32_t ulNewBASEPRI;
+ 1634              		.loc 2 195 1 view .LVU386
+ 196:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 197:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 	__asm volatile
+ 1635              		.loc 2 197 2 view .LVU387
+ 1636              		.syntax unified
+ 1637              	@ 197 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h" 1
+ 1638 0000 4FF02003 			mov r3, #32												
+ 1639 0004 83F31188 		msr basepri, r3											
+ 1640 0008 BFF36F8F 		isb														
+ 1641 000c BFF34F8F 		dsb														
+ 1642              	
+ 1643              	@ 0 "" 2
+ 1644              		.thumb
+ 1645              		.syntax unified
+ 1646              	.L149:
+ 1647              	.LBE7:
+ 1648              	.LBE6:
+ 322:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 1649              		.loc 1 322 5 view .LVU388
+ 323:Core/Src/balance_car/app_tasks.c ****     }
+ 1650              		.loc 1 323 5 view .LVU389
+ 322:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 1651              		.loc 1 322 5 view .LVU390
+ 1652 0010 FEE7     		b	.L149
+ 1653              		.cfi_endproc
+ 1654              	.LFE84:
+ 1656              		.section	.text.vApplicationStackOverflowHook,"ax",%progbits
+ 1657              		.align	1
+ 1658              		.global	vApplicationStackOverflowHook
+ 1659              		.syntax unified
+ 1660              		.thumb
+ 1661              		.thumb_func
+ 1663              	vApplicationStackOverflowHook:
+ 1664              	.LVL106:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 44
+
+
+ 1665              	.LFB85:
+ 324:Core/Src/balance_car/app_tasks.c **** }
+ 325:Core/Src/balance_car/app_tasks.c **** 
+ 326:Core/Src/balance_car/app_tasks.c **** void vApplicationStackOverflowHook(TaskHandle_t task, char *name)
+ 327:Core/Src/balance_car/app_tasks.c **** {
+ 1666              		.loc 1 327 1 view -0
+ 1667              		.cfi_startproc
+ 1668              		@ Volatile: function does not return.
+ 1669              		@ args = 0, pretend = 0, frame = 0
+ 1670              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1671              		@ link register save eliminated.
+ 328:Core/Src/balance_car/app_tasks.c ****     (void)task;
+ 1672              		.loc 1 328 5 view .LVU392
+ 329:Core/Src/balance_car/app_tasks.c ****     (void)name;
+ 1673              		.loc 1 329 5 view .LVU393
+ 330:Core/Src/balance_car/app_tasks.c ****     taskDISABLE_INTERRUPTS();
+ 1674              		.loc 1 330 5 view .LVU394
+ 1675              	.LBB8:
+ 1676              	.LBI8:
+ 193:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** {
+ 1677              		.loc 2 193 30 view .LVU395
+ 1678              	.LBB9:
+ 195:Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h **** 
+ 1679              		.loc 2 195 1 view .LVU396
+ 1680              		.loc 2 197 2 view .LVU397
+ 1681              		.syntax unified
+ 1682              	@ 197 "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h" 1
+ 1683 0000 4FF02003 			mov r3, #32												
+ 1684 0004 83F31188 		msr basepri, r3											
+ 1685 0008 BFF36F8F 		isb														
+ 1686 000c BFF34F8F 		dsb														
+ 1687              	
+ 1688              	@ 0 "" 2
+ 1689              		.thumb
+ 1690              		.syntax unified
+ 1691              	.L151:
+ 1692              	.LBE9:
+ 1693              	.LBE8:
+ 331:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 1694              		.loc 1 331 5 view .LVU398
+ 332:Core/Src/balance_car/app_tasks.c ****     }
+ 1695              		.loc 1 332 5 view .LVU399
+ 331:Core/Src/balance_car/app_tasks.c ****     for (;;) {
+ 1696              		.loc 1 331 5 view .LVU400
+ 1697 0010 FEE7     		b	.L151
+ 1698              		.cfi_endproc
+ 1699              	.LFE85:
+ 1701              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 1702              		.align	2
+ 1703              	.LC6:
+ 1704 0000 5461736B 		.ascii	"Task_SensorCollect\000"
+ 1704      5F53656E 
+ 1704      736F7243 
+ 1704      6F6C6C65 
+ 1704      637400
+ 1705 0013 00       		.align	2
+ 1706              	.LC4:
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 45
+
+
+ 1707 0014 5461736B 		.ascii	"Task_BluetoothApp\000"
+ 1707      5F426C75 
+ 1707      65746F6F 
+ 1707      74684170 
+ 1707      7000
+ 1708 0026 0000     		.align	2
+ 1709              	.LC2:
+ 1710 0028 5461736B 		.ascii	"Task_UartRaspberry\000"
+ 1710      5F556172 
+ 1710      74526173 
+ 1710      70626572 
+ 1710      727900
+ 1711 003b 00       		.align	2
+ 1712              	.LC0:
+ 1713 003c 5461736B 		.ascii	"Task_BalanceControl\000"
+ 1713      5F42616C 
+ 1713      616E6365 
+ 1713      436F6E74 
+ 1713      726F6C00 
+ 1714              		.section	.bss.s_pid_snapshot,"aw",%nobits
+ 1715              		.align	2
+ 1718              	s_pid_snapshot:
+ 1719 0000 00000000 		.space	180
+ 1719      00000000 
+ 1719      00000000 
+ 1719      00000000 
+ 1719      00000000 
+ 1720              		.section	.bss.s_sensor_snapshot,"aw",%nobits
+ 1721              		.align	2
+ 1724              	s_sensor_snapshot:
+ 1725 0000 00000000 		.space	40
+ 1725      00000000 
+ 1725      00000000 
+ 1725      00000000 
+ 1725      00000000 
+ 1726              		.section	.bss.s_balance_snapshot,"aw",%nobits
+ 1727              		.align	2
+ 1730              	s_balance_snapshot:
+ 1731 0000 00000000 		.space	72
+ 1731      00000000 
+ 1731      00000000 
+ 1731      00000000 
+ 1731      00000000 
+ 1732              		.global	g_app_task_monitor
+ 1733              		.section	.bss.g_app_task_monitor,"aw",%nobits
+ 1734              		.align	2
+ 1737              	g_app_task_monitor:
+ 1738 0000 00000000 		.space	36
+ 1738      00000000 
+ 1738      00000000 
+ 1738      00000000 
+ 1738      00000000 
+ 1739              		.global	Queue_RaspberryRxLine
+ 1740              		.section	.bss.Queue_RaspberryRxLine,"aw",%nobits
+ 1741              		.align	2
+ 1744              	Queue_RaspberryRxLine:
+ 1745 0000 00000000 		.space	4
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 46
+
+
+ 1746              		.global	Queue_BluetoothRxLine
+ 1747              		.section	.bss.Queue_BluetoothRxLine,"aw",%nobits
+ 1748              		.align	2
+ 1751              	Queue_BluetoothRxLine:
+ 1752 0000 00000000 		.space	4
+ 1753              		.global	Queue_PidUpdate
+ 1754              		.section	.bss.Queue_PidUpdate,"aw",%nobits
+ 1755              		.align	2
+ 1758              	Queue_PidUpdate:
+ 1759 0000 00000000 		.space	4
+ 1760              		.global	Queue_ControlCommand
+ 1761              		.section	.bss.Queue_ControlCommand,"aw",%nobits
+ 1762              		.align	2
+ 1765              	Queue_ControlCommand:
+ 1766 0000 00000000 		.space	4
+ 1767              		.global	Sem_BluetoothRxReady
+ 1768              		.section	.bss.Sem_BluetoothRxReady,"aw",%nobits
+ 1769              		.align	2
+ 1772              	Sem_BluetoothRxReady:
+ 1773 0000 00000000 		.space	4
+ 1774              		.global	Sem_RaspberryTxMutex
+ 1775              		.section	.bss.Sem_RaspberryTxMutex,"aw",%nobits
+ 1776              		.align	2
+ 1779              	Sem_RaspberryTxMutex:
+ 1780 0000 00000000 		.space	4
+ 1781              		.global	Sem_BluetoothTxMutex
+ 1782              		.section	.bss.Sem_BluetoothTxMutex,"aw",%nobits
+ 1783              		.align	2
+ 1786              	Sem_BluetoothTxMutex:
+ 1787 0000 00000000 		.space	4
+ 1788              		.global	Sem_SensorStateMutex
+ 1789              		.section	.bss.Sem_SensorStateMutex,"aw",%nobits
+ 1790              		.align	2
+ 1793              	Sem_SensorStateMutex:
+ 1794 0000 00000000 		.space	4
+ 1795              		.global	Sem_BalanceStateMutex
+ 1796              		.section	.bss.Sem_BalanceStateMutex,"aw",%nobits
+ 1797              		.align	2
+ 1800              	Sem_BalanceStateMutex:
+ 1801 0000 00000000 		.space	4
+ 1802              		.global	Sem_BalanceControl
+ 1803              		.section	.bss.Sem_BalanceControl,"aw",%nobits
+ 1804              		.align	2
+ 1807              	Sem_BalanceControl:
+ 1808 0000 00000000 		.space	4
+ 1809              		.section	.rodata
+ 1810              		.align	2
+ 1811              		.set	.LANCHOR0,. + 0
+ 1812              	.LC8:
+ 1813 0000 3C000000 		.word	.LC0
+ 1814 0004 00000000 		.word	Task_BalanceControl
+ 1815 0008 0300     		.short	3
+ 1816 000a 0000     		.space	2
+ 1817 000c 00000000 		.word	0
+ 1818 0010 80010000 		.word	384
+ 1819              	.LC9:
+ 1820 0014 28000000 		.word	.LC2
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 47
+
+
+ 1821 0018 00000000 		.word	Task_UartRaspberry
+ 1822 001c 0200     		.short	2
+ 1823 001e 0000     		.space	2
+ 1824 0020 00000000 		.word	0
+ 1825 0024 00020000 		.word	512
+ 1826              	.LC10:
+ 1827 0028 14000000 		.word	.LC4
+ 1828 002c 00000000 		.word	Task_BluetoothApp
+ 1829 0030 0000     		.short	0
+ 1830 0032 0000     		.space	2
+ 1831 0034 00000000 		.word	0
+ 1832 0038 00020000 		.word	512
+ 1833              	.LC11:
+ 1834 003c 00000000 		.word	.LC6
+ 1835 0040 00000000 		.word	Task_SensorCollect
+ 1836 0044 FEFF     		.short	-2
+ 1837 0046 0000     		.space	2
+ 1838 0048 00000000 		.word	0
+ 1839 004c 00010000 		.word	256
+ 1840              		.text
+ 1841              	.Letext0:
+ 1842              		.file 3 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 1843              		.file 4 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 1844              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 1845              		.file 6 "Core/Inc/balance_car/app_sensors.h"
+ 1846              		.file 7 "Core/Inc/balance_car/pid.h"
+ 1847              		.file 8 "Core/Inc/balance_car/balance_control.h"
+ 1848              		.file 9 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
+ 1849              		.file 10 "Middlewares/Third_Party/FreeRTOS/Source/include/queue.h"
+ 1850              		.file 11 "Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h"
+ 1851              		.file 12 "Core/Inc/balance_car/app_tasks.h"
+ 1852              		.file 13 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h"
+ 1853              		.file 14 "Core/Inc/balance_car/remote_control.h"
+ 1854              		.file 15 "Core/Inc/balance_car/raspi_link.h"
+ 1855              		.file 16 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 1856              		.file 17 "<built-in>"
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 48
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 app_tasks.c
+   D:\TMP\ccDv9WpG.s:19     .text.AppTasks_ApplyQueuedCommands:00000000 $t
+   D:\TMP\ccDv9WpG.s:24     .text.AppTasks_ApplyQueuedCommands:00000000 AppTasks_ApplyQueuedCommands
+   D:\TMP\ccDv9WpG.s:88     .text.AppTasks_ApplyQueuedCommands:00000044 $d
+   D:\TMP\ccDv9WpG.s:1765   .bss.Queue_ControlCommand:00000000 Queue_ControlCommand
+   D:\TMP\ccDv9WpG.s:93     .text.AppTasks_ApplyQueuedPidUpdates:00000000 $t
+   D:\TMP\ccDv9WpG.s:98     .text.AppTasks_ApplyQueuedPidUpdates:00000000 AppTasks_ApplyQueuedPidUpdates
+   D:\TMP\ccDv9WpG.s:187    .text.AppTasks_ApplyQueuedPidUpdates:0000004c $d
+   D:\TMP\ccDv9WpG.s:1758   .bss.Queue_PidUpdate:00000000 Queue_PidUpdate
+   D:\TMP\ccDv9WpG.s:195    .text.Task_BalanceControl:00000000 $t
+   D:\TMP\ccDv9WpG.s:201    .text.Task_BalanceControl:00000000 Task_BalanceControl
+   D:\TMP\ccDv9WpG.s:320    .text.Task_BalanceControl:00000080 $d
+   D:\TMP\ccDv9WpG.s:1800   .bss.Sem_BalanceStateMutex:00000000 Sem_BalanceStateMutex
+   D:\TMP\ccDv9WpG.s:1737   .bss.g_app_task_monitor:00000000 g_app_task_monitor
+   D:\TMP\ccDv9WpG.s:1807   .bss.Sem_BalanceControl:00000000 Sem_BalanceControl
+   D:\TMP\ccDv9WpG.s:327    .text.Task_UartRaspberry:00000000 $t
+   D:\TMP\ccDv9WpG.s:333    .text.Task_UartRaspberry:00000000 Task_UartRaspberry
+   D:\TMP\ccDv9WpG.s:385    .text.Task_UartRaspberry:00000028 $d
+   D:\TMP\ccDv9WpG.s:390    .text.Task_BluetoothApp:00000000 $t
+   D:\TMP\ccDv9WpG.s:396    .text.Task_BluetoothApp:00000000 Task_BluetoothApp
+   D:\TMP\ccDv9WpG.s:442    .text.Task_BluetoothApp:00000020 $d
+   D:\TMP\ccDv9WpG.s:1772   .bss.Sem_BluetoothRxReady:00000000 Sem_BluetoothRxReady
+   D:\TMP\ccDv9WpG.s:448    .text.Task_SensorCollect:00000000 $t
+   D:\TMP\ccDv9WpG.s:454    .text.Task_SensorCollect:00000000 Task_SensorCollect
+   D:\TMP\ccDv9WpG.s:550    .text.Task_SensorCollect:00000058 $d
+   D:\TMP\ccDv9WpG.s:1793   .bss.Sem_SensorStateMutex:00000000 Sem_SensorStateMutex
+   D:\TMP\ccDv9WpG.s:556    .text.AppTasks_Init:00000000 $t
+   D:\TMP\ccDv9WpG.s:562    .text.AppTasks_Init:00000000 AppTasks_Init
+   D:\TMP\ccDv9WpG.s:835    .text.AppTasks_Init:0000017c $d
+   D:\TMP\ccDv9WpG.s:1786   .bss.Sem_BluetoothTxMutex:00000000 Sem_BluetoothTxMutex
+   D:\TMP\ccDv9WpG.s:1779   .bss.Sem_RaspberryTxMutex:00000000 Sem_RaspberryTxMutex
+   D:\TMP\ccDv9WpG.s:1751   .bss.Queue_BluetoothRxLine:00000000 Queue_BluetoothRxLine
+   D:\TMP\ccDv9WpG.s:1744   .bss.Queue_RaspberryRxLine:00000000 Queue_RaspberryRxLine
+   D:\TMP\ccDv9WpG.s:850    .text.AppTasks_NotifyBalanceFromISR:00000000 $t
+   D:\TMP\ccDv9WpG.s:856    .text.AppTasks_NotifyBalanceFromISR:00000000 AppTasks_NotifyBalanceFromISR
+   D:\TMP\ccDv9WpG.s:913    .text.AppTasks_NotifyBalanceFromISR:00000034 $d
+   D:\TMP\ccDv9WpG.s:918    .text.AppTasks_NotifyBluetoothRxFromISR:00000000 $t
+   D:\TMP\ccDv9WpG.s:924    .text.AppTasks_NotifyBluetoothRxFromISR:00000000 AppTasks_NotifyBluetoothRxFromISR
+   D:\TMP\ccDv9WpG.s:957    .text.AppTasks_NotifyBluetoothRxFromISR:00000014 $d
+   D:\TMP\ccDv9WpG.s:962    .text.AppTasks_SubmitControlCommandFromTask:00000000 $t
+   D:\TMP\ccDv9WpG.s:968    .text.AppTasks_SubmitControlCommandFromTask:00000000 AppTasks_SubmitControlCommandFromTask
+   D:\TMP\ccDv9WpG.s:1072   .text.AppTasks_SubmitControlCommandFromTask:00000060 $d
+   D:\TMP\ccDv9WpG.s:1077   .text.AppTasks_SubmitPidUpdateFromTask:00000000 $t
+   D:\TMP\ccDv9WpG.s:1083   .text.AppTasks_SubmitPidUpdateFromTask:00000000 AppTasks_SubmitPidUpdateFromTask
+   D:\TMP\ccDv9WpG.s:1240   .text.AppTasks_SubmitPidUpdateFromTask:00000088 $d
+   D:\TMP\ccDv9WpG.s:1248   .text.AppTasks_CopyBalanceState:00000000 $t
+   D:\TMP\ccDv9WpG.s:1254   .text.AppTasks_CopyBalanceState:00000000 AppTasks_CopyBalanceState
+   D:\TMP\ccDv9WpG.s:1346   .text.AppTasks_CopyBalanceState:00000054 $d
+   D:\TMP\ccDv9WpG.s:1730   .bss.s_balance_snapshot:00000000 s_balance_snapshot
+   D:\TMP\ccDv9WpG.s:1353   .text.AppTasks_CopySensorState:00000000 $t
+   D:\TMP\ccDv9WpG.s:1359   .text.AppTasks_CopySensorState:00000000 AppTasks_CopySensorState
+   D:\TMP\ccDv9WpG.s:1467   .text.AppTasks_CopySensorState:00000078 $d
+   D:\TMP\ccDv9WpG.s:1724   .bss.s_sensor_snapshot:00000000 s_sensor_snapshot
+   D:\TMP\ccDv9WpG.s:1474   .text.AppTasks_CopyPidSnapshot:00000000 $t
+   D:\TMP\ccDv9WpG.s:1480   .text.AppTasks_CopyPidSnapshot:00000000 AppTasks_CopyPidSnapshot
+   D:\TMP\ccDv9WpG.s:1605   .text.AppTasks_CopyPidSnapshot:0000009c $d
+ARM GAS  D:\TMP\ccDv9WpG.s 			page 49
+
+
+   D:\TMP\ccDv9WpG.s:1718   .bss.s_pid_snapshot:00000000 s_pid_snapshot
+   D:\TMP\ccDv9WpG.s:1614   .text.vApplicationMallocFailedHook:00000000 $t
+   D:\TMP\ccDv9WpG.s:1620   .text.vApplicationMallocFailedHook:00000000 vApplicationMallocFailedHook
+   D:\TMP\ccDv9WpG.s:1657   .text.vApplicationStackOverflowHook:00000000 $t
+   D:\TMP\ccDv9WpG.s:1663   .text.vApplicationStackOverflowHook:00000000 vApplicationStackOverflowHook
+   D:\TMP\ccDv9WpG.s:1702   .rodata.str1.4:00000000 $d
+   D:\TMP\ccDv9WpG.s:1715   .bss.s_pid_snapshot:00000000 $d
+   D:\TMP\ccDv9WpG.s:1721   .bss.s_sensor_snapshot:00000000 $d
+   D:\TMP\ccDv9WpG.s:1727   .bss.s_balance_snapshot:00000000 $d
+   D:\TMP\ccDv9WpG.s:1734   .bss.g_app_task_monitor:00000000 $d
+   D:\TMP\ccDv9WpG.s:1741   .bss.Queue_RaspberryRxLine:00000000 $d
+   D:\TMP\ccDv9WpG.s:1748   .bss.Queue_BluetoothRxLine:00000000 $d
+   D:\TMP\ccDv9WpG.s:1755   .bss.Queue_PidUpdate:00000000 $d
+   D:\TMP\ccDv9WpG.s:1762   .bss.Queue_ControlCommand:00000000 $d
+   D:\TMP\ccDv9WpG.s:1769   .bss.Sem_BluetoothRxReady:00000000 $d
+   D:\TMP\ccDv9WpG.s:1776   .bss.Sem_RaspberryTxMutex:00000000 $d
+   D:\TMP\ccDv9WpG.s:1783   .bss.Sem_BluetoothTxMutex:00000000 $d
+   D:\TMP\ccDv9WpG.s:1790   .bss.Sem_SensorStateMutex:00000000 $d
+   D:\TMP\ccDv9WpG.s:1797   .bss.Sem_BalanceStateMutex:00000000 $d
+   D:\TMP\ccDv9WpG.s:1804   .bss.Sem_BalanceControl:00000000 $d
+   D:\TMP\ccDv9WpG.s:1810   .rodata:00000000 $d
+
+UNDEFINED SYMBOLS
+xQueueReceive
+BalanceCar_ApplyControlCommand
+g_angle_pid
+g_turn_pid
+g_speed_pid
+BalanceCar_ControlStep10ms
+xQueueGenericSend
+HAL_GetTick
+BalanceCar_ServiceRequests
+xQueueSemaphoreTake
+xTaskGetTickCount
+RaspiLink_Background
+vTaskDelayUntil
+RemoteControl_Background
+AppSensors_Background
+AppSensors_NeedsServiceSoon
+xQueueGenericCreate
+xQueueCreateMutex
+osThreadCreate
+xQueueGiveFromISR
+xTaskGetSchedulerState
+memcpy
+vPortEnterCritical
+vPortExitCritical
+g_balance_state
+g_sensor_state

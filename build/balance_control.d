@@ -26,9 +26,22 @@ build/balance_control.o: Core/Src/balance_car/balance_control.c \
  Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- Core/Inc/balance_car/app_sensors.h Core/Inc/balance_car/encoder_hal.h \
- Core/Inc/balance_car/motor_tb6612.h Core/Inc/balance_car/mpu6050_hal.h \
- Core/Inc/balance_car/raspi_link.h Core/Inc/balance_car/remote_control.h
+ Core/Inc/balance_car/app_sensors.h Core/Inc/balance_car/app_tasks.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
+ Core/Inc/FreeRTOSConfig.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
+ Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
+ Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
+ Core/Inc/balance_car/encoder_hal.h Core/Inc/balance_car/motor_tb6612.h \
+ Core/Inc/balance_car/mpu6050_hal.h Core/Inc/balance_car/raspi_link.h \
+ Core/Inc/balance_car/remote_control.h
 Core/Inc/balance_car/balance_control.h:
 Core/Inc/balance_car/pid.h:
 Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -60,6 +73,19 @@ Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h:
 Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 Core/Inc/balance_car/app_sensors.h:
+Core/Inc/balance_car/app_tasks.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
+Core/Inc/FreeRTOSConfig.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM3/portmacro.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:
+Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
 Core/Inc/balance_car/encoder_hal.h:
 Core/Inc/balance_car/motor_tb6612.h:
 Core/Inc/balance_car/mpu6050_hal.h:

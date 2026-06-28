@@ -30,6 +30,7 @@ typedef struct {
     uint32_t invalid_frame_count;
     uint32_t checksum_error_count;
     uint32_t timeout_count;
+    uint32_t partial_timeout_count;
     uint32_t last_rx_ms;
     uint32_t last_tx_ms;
     uint32_t last_seq;

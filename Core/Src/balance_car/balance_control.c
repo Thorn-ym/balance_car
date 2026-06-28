@@ -1,6 +1,7 @@
 #include "balance_car/balance_control.h"
 
 #include "balance_car/app_sensors.h"
+#include "balance_car/app_tasks.h"
 #include "balance_car/encoder_hal.h"
 #include "balance_car/motor_tb6612.h"
 #include "balance_car/mpu6050_hal.h"
@@ -36,7 +37,7 @@ volatile BalanceCarState_t g_balance_state = {0}; /* Ozone: 运行状态观察�
 PID_t g_angle_pid = {       /* Ozone: 角度环，第一阶段只调这个 */
     .Kp = 12.0f,             /* 比例: 第一次架空可先降到1.0测试方向 */
     .Ki = 0.25f,             /* 积分: 初调可先设0，最后再少量加 */
-    .Kd = 8.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
+    .Kd = 16.0f,             /* 微分: 抑制摆动，Kp方向正确后再加 */
     .OutMax = 100.0f,
     .OutMin = -100.0f,
     .OutOffset = 3.0f,      /* 电机死区补偿；初调可先设0 */
@@ -66,7 +67,6 @@ PID_t g_turn_pid = {        /* Ozone: 转向环，速度环稳定后最后调 */
 
 static TIM_HandleTypeDef s_htim4;
 static volatile uint8_t s_angle_tick_pending;
-static volatile uint8_t s_speed_tick_pending;
 static uint8_t s_last_run_enable;
 static float s_angle;
 static float s_dif_pwm;
@@ -130,6 +130,26 @@ static void BalanceCar_ResetPidAndOutputs(void)
     g_balance_state.dif_pwm = 0;
 }
 
+void BalanceCar_ApplyControlCommand(uint8_t run_valid,
+                                    uint8_t run_enable,
+                                    uint8_t reset_pid,
+                                    uint8_t clear_fault,
+                                    float speed_target,
+                                    float turn_target)
+{
+    if (clear_fault != 0U) {
+        g_balance_debug.clear_fault_request = 1U;
+    }
+    if (reset_pid != 0U) {
+        g_balance_debug.reset_pid_request = 1U;
+    }
+    if (run_valid != 0U) {
+        g_balance_debug.run_enable = run_enable;
+    }
+    g_balance_debug.speed_target = speed_target;
+    g_balance_debug.turn_target = turn_target;
+}
+
 static int16_t BalanceCar_ClampPwm(float value)
 {
     if (value > (float)MOTOR_PWM_LIMIT) {
@@ -171,8 +191,8 @@ static void BalanceCar_RunAngleLoop(void)
     g_balance_state.gz = raw.gz;
 
     float gy_calibrated = (float)raw.gy - g_balance_debug.gyro_y_offset;
-    // float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
-    // float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
+    float gz_calibrated = (float)raw.gz - g_balance_debug.gyro_z_offset;
+    float gyro_z_rate = gz_calibrated / 32768.0f * 2000.0f;
     float angle_acc = -atan2f((float)raw.ax, (float)raw.az) / PI_F * 180.0f;
     angle_acc += g_balance_debug.angle_offset;
 
@@ -292,10 +312,14 @@ HAL_StatusTypeDef BalanceCar_Init(void)
 
 void BalanceCar_Background(void)
 {
-    RaspiLink_Background();
-    AppSensors_Background();
-    RemoteControl_Background();
+    BalanceCar_ServiceRequests();
+    while (s_angle_tick_pending != 0U) {
+        BalanceCar_ControlStep10ms();
+    }
+}
 
+void BalanceCar_ServiceRequests(void)
+{
     if (g_balance_debug.clear_fault_request != 0U) {
         g_balance_debug.clear_fault_request = 0U;
         g_balance_state.fault_flags = BALANCE_FAULT_NONE;
@@ -313,17 +337,27 @@ void BalanceCar_Background(void)
     }
     s_last_run_enable = g_balance_debug.run_enable;
 
-    while (s_angle_tick_pending != 0U) {
+    if (g_balance_debug.run_enable == 0U) {
+        BalanceCar_Stop();
+    }
+}
+
+void BalanceCar_ControlStep10ms(void)
+{
+    static uint8_t speed_divider;
+
+    if (s_angle_tick_pending != 0U) {
         __disable_irq();
         s_angle_tick_pending--;
         __enable_irq();
-        BalanceCar_RunAngleLoop();
     }
 
-    while (s_speed_tick_pending != 0U) {
-        __disable_irq();
-        s_speed_tick_pending--;
-        __enable_irq();
+    BalanceCar_ServiceRequests();
+    BalanceCar_RunAngleLoop();
+
+    speed_divider++;
+    if (speed_divider >= 5U) {
+        speed_divider = 0U;
         BalanceCar_RunSpeedLoop();
     }
 
@@ -335,7 +369,6 @@ void BalanceCar_Background(void)
 void BalanceCar_TimerTick1ms(void)
 {
     static uint8_t count_angle;
-    static uint8_t count_speed;
 
     g_balance_state.control_ms++;
     BalanceCar_ButtonTick1ms();
@@ -348,17 +381,7 @@ void BalanceCar_TimerTick1ms(void)
             g_balance_state.timer_error_flag = 1U;
         } else {
             s_angle_tick_pending++;
-        }
-    }
-
-    count_speed++;
-    if (count_speed >= 50U) {
-        count_speed = 0U;
-        if (s_speed_tick_pending == 255U) {
-            BalanceCar_SetFault(BALANCE_FAULT_TIMER_OVERRUN);
-            g_balance_state.timer_error_flag = 1U;
-        } else {
-            s_speed_tick_pending++;
+            AppTasks_NotifyBalanceFromISR();
         }
     }
 }

@@ -36,6 +36,7 @@ extern volatile AppSensorState_t g_sensor_state;
 
 HAL_StatusTypeDef AppSensors_Init(void);
 void AppSensors_Background(void);
+uint8_t AppSensors_NeedsServiceSoon(void);
 void AppSensors_SetFault(uint32_t fault);
 void AppSensors_ClearFault(uint32_t fault);
 

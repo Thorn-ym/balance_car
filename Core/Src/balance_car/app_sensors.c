@@ -144,3 +144,8 @@ void AppSensors_Background(void)
         AppSensors_ReadHx711();
     }
 }
+
+uint8_t AppSensors_NeedsServiceSoon(void)
+{
+    return s_dht_waiting;
+}

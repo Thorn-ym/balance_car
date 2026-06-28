@@ -75,5 +75,13 @@ extern PID_t g_turn_pid;                           /* Ozone调参: 转向环PID�
 HAL_StatusTypeDef BalanceCar_Init(void);
 void BalanceCar_Background(void);
 void BalanceCar_TimerTick1ms(void);
+void BalanceCar_ServiceRequests(void);
+void BalanceCar_ControlStep10ms(void);
+void BalanceCar_ApplyControlCommand(uint8_t run_valid,
+                                    uint8_t run_enable,
+                                    uint8_t reset_pid,
+                                    uint8_t clear_fault,
+                                    float speed_target,
+                                    float turn_target);
 
 #endif

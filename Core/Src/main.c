@@ -21,7 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "balance_car/app_tasks.h"
 #include "balance_car/balance_control.h"
+#include "cmsis_os.h"
 
 /* USER CODE END Includes */
 
@@ -89,6 +91,11 @@ int main(void)
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN 2 */
   (void)BalanceCar_Init();
+  if (AppTasks_Init() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  osKernelStart(); 
 
   /* USER CODE END 2 */
 
@@ -99,7 +106,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    BalanceCar_Background();
   }
   /* USER CODE END 3 */
 }

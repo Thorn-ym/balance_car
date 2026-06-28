@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -58,7 +58,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
   12:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Instance = I2C1;
   13:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Init.ClockSpeed = 400000U;
   14:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 2
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 2
 
 
   15:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Init.OwnAddress1 = 0U;
@@ -118,7 +118,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
   18:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
   72              		.loc 1 18 30 is_stmt 0 view .LVU19
   73 0024 8361     		str	r3, [r0, #24]
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 3
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 3
 
 
   19:Core/Src/balance_car/i2c_bus.c ****     s_hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
@@ -178,7 +178,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
   30:Core/Src/balance_car/i2c_bus.c **** I2C_HandleTypeDef *BalanceI2C1_GetHandle(void)
   31:Core/Src/balance_car/i2c_bus.c **** {
  117              		.loc 1 31 1 is_stmt 1 view -0
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 4
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 4
 
 
  118              		.cfi_startproc
@@ -238,7 +238,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
  166 000e 03F18043 		add	r3, r3, #1073741824
  167 0012 03F50433 		add	r3, r3, #135168
  168 0016 9A69     		ldr	r2, [r3, #24]
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 5
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 5
 
 
  169 0018 42F00802 		orr	r2, r2, #8
@@ -257,7 +257,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
  180              		.loc 1 41 13 is_stmt 0 view .LVU46
  181 0028 0268     		ldr	r2, [r0]
  182              		.loc 1 41 8 view .LVU47
- 183 002a 164B     		ldr	r3, .L17
+ 183 002a 1E4B     		ldr	r3, .L17
  184 002c 9A42     		cmp	r2, r3
  185 002e 02D0     		beq	.L16
  186              	.LVL2:
@@ -267,15 +267,19 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
   44:Core/Src/balance_car/i2c_bus.c ****         __HAL_AFIO_REMAP_I2C1_ENABLE();
   45:Core/Src/balance_car/i2c_bus.c **** 
   46:Core/Src/balance_car/i2c_bus.c ****         gpio.Pin = GPIO_PIN_8 | GPIO_PIN_9;
-  47:Core/Src/balance_car/i2c_bus.c ****     } else {
-  48:Core/Src/balance_car/i2c_bus.c ****         return;
-  49:Core/Src/balance_car/i2c_bus.c ****     }
-  50:Core/Src/balance_car/i2c_bus.c **** 
-  51:Core/Src/balance_car/i2c_bus.c ****     gpio.Mode = GPIO_MODE_AF_OD;
-  52:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
-  53:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
-  54:Core/Src/balance_car/i2c_bus.c **** }
- 188              		.loc 1 54 1 view .LVU48
+  47:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_EV_IRQn, 4U, 0U);
+  48:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+  49:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_ER_IRQn, 4U, 0U);
+  50:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+  51:Core/Src/balance_car/i2c_bus.c ****     } else {
+  52:Core/Src/balance_car/i2c_bus.c ****         return;
+  53:Core/Src/balance_car/i2c_bus.c ****     }
+  54:Core/Src/balance_car/i2c_bus.c **** 
+  55:Core/Src/balance_car/i2c_bus.c ****     gpio.Mode = GPIO_MODE_AF_OD;
+  56:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+  57:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
+  58:Core/Src/balance_car/i2c_bus.c **** }
+ 188              		.loc 1 58 1 view .LVU48
  189 0030 09B0     		add	sp, sp, #36
  190              	.LCFI3:
  191              		.cfi_remember_state
@@ -294,13 +298,13 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
   42:Core/Src/balance_car/i2c_bus.c ****         __HAL_RCC_AFIO_CLK_ENABLE();
  202              		.loc 1 42 9 view .LVU51
  203 0036 03F5DE33 		add	r3, r3, #113664
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 6
+
+
  204 003a 9A69     		ldr	r2, [r3, #24]
  205 003c 42F00102 		orr	r2, r2, #1
  206 0040 9A61     		str	r2, [r3, #24]
   42:Core/Src/balance_car/i2c_bus.c ****         __HAL_RCC_AFIO_CLK_ENABLE();
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 6
-
-
  207              		.loc 1 42 9 view .LVU52
  208 0042 9A69     		ldr	r2, [r3, #24]
  209 0044 02F00102 		and	r2, r2, #1
@@ -337,7 +341,7 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
  231              	.LBB5:
   44:Core/Src/balance_car/i2c_bus.c **** 
  232              		.loc 1 44 9 view .LVU62
- 233 005e 0A4A     		ldr	r2, .L17+4
+ 233 005e 124A     		ldr	r2, .L17+4
  234 0060 5368     		ldr	r3, [r2, #4]
  235              	.LVL4:
   44:Core/Src/balance_car/i2c_bus.c **** 
@@ -354,93 +358,120 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 1
  243              		.loc 1 44 9 is_stmt 1 view .LVU66
  244 006a 5360     		str	r3, [r2, #4]
  245              	.LBE5:
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 7
+
+
   44:Core/Src/balance_car/i2c_bus.c **** 
  246              		.loc 1 44 9 view .LVU67
-  46:Core/Src/balance_car/i2c_bus.c ****     } else {
+  46:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_EV_IRQn, 4U, 0U);
  247              		.loc 1 46 9 view .LVU68
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 7
-
-
-  46:Core/Src/balance_car/i2c_bus.c ****     } else {
+  46:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_EV_IRQn, 4U, 0U);
  248              		.loc 1 46 18 is_stmt 0 view .LVU69
  249 006c 4FF44073 		mov	r3, #768
  250              	.LVL7:
-  46:Core/Src/balance_car/i2c_bus.c ****     } else {
+  46:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_EV_IRQn, 4U, 0U);
  251              		.loc 1 46 18 view .LVU70
  252 0070 0493     		str	r3, [sp, #16]
  253              	.LVL8:
-  51:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- 254              		.loc 1 51 5 is_stmt 1 view .LVU71
-  51:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- 255              		.loc 1 51 15 is_stmt 0 view .LVU72
- 256 0072 1223     		movs	r3, #18
- 257 0074 0593     		str	r3, [sp, #20]
-  52:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
- 258              		.loc 1 52 5 is_stmt 1 view .LVU73
-  52:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
- 259              		.loc 1 52 16 is_stmt 0 view .LVU74
- 260 0076 0323     		movs	r3, #3
- 261 0078 0793     		str	r3, [sp, #28]
-  53:Core/Src/balance_car/i2c_bus.c **** }
- 262              		.loc 1 53 5 is_stmt 1 view .LVU75
- 263 007a 04A9     		add	r1, sp, #16
- 264 007c 0348     		ldr	r0, .L17+8
- 265              	.LVL9:
-  53:Core/Src/balance_car/i2c_bus.c **** }
- 266              		.loc 1 53 5 is_stmt 0 view .LVU76
- 267 007e FFF7FEFF 		bl	HAL_GPIO_Init
- 268              	.LVL10:
- 269 0082 D5E7     		b	.L12
- 270              	.L18:
- 271              		.align	2
- 272              	.L17:
- 273 0084 00540040 		.word	1073763328
- 274 0088 00000140 		.word	1073807360
- 275 008c 000C0140 		.word	1073810432
- 276              		.cfi_endproc
- 277              	.LFE67:
- 279              		.section	.bss.s_i2c1_initialized,"aw",%nobits
- 282              	s_i2c1_initialized:
- 283 0000 00       		.space	1
- 284              		.section	.bss.s_hi2c1,"aw",%nobits
- 285              		.align	2
- 288              	s_hi2c1:
- 289 0000 00000000 		.space	84
- 289      00000000 
- 289      00000000 
- 289      00000000 
- 289      00000000 
- 290              		.text
- 291              	.Letext0:
- 292              		.file 2 "C:/msys64/mingw64/arm-none-eabi/include/machine/_default_types.h"
- 293              		.file 3 "C:/msys64/mingw64/arm-none-eabi/include/sys/_stdint.h"
- 294              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
- 295              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 296              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
- 297              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 8
+  47:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+ 254              		.loc 1 47 9 is_stmt 1 view .LVU71
+ 255 0072 0022     		movs	r2, #0
+ 256 0074 0421     		movs	r1, #4
+ 257 0076 1F20     		movs	r0, #31
+ 258              	.LVL9:
+  47:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+ 259              		.loc 1 47 9 is_stmt 0 view .LVU72
+ 260 0078 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 261              	.LVL10:
+  48:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_SetPriority(I2C1_ER_IRQn, 4U, 0U);
+ 262              		.loc 1 48 9 is_stmt 1 view .LVU73
+ 263 007c 1F20     		movs	r0, #31
+ 264 007e FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 265              	.LVL11:
+  49:Core/Src/balance_car/i2c_bus.c ****         HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+ 266              		.loc 1 49 9 view .LVU74
+ 267 0082 0022     		movs	r2, #0
+ 268 0084 0421     		movs	r1, #4
+ 269 0086 2020     		movs	r0, #32
+ 270 0088 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 271              	.LVL12:
+  50:Core/Src/balance_car/i2c_bus.c ****     } else {
+ 272              		.loc 1 50 9 view .LVU75
+ 273 008c 2020     		movs	r0, #32
+ 274 008e FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 275              	.LVL13:
+  55:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+ 276              		.loc 1 55 5 view .LVU76
+  55:Core/Src/balance_car/i2c_bus.c ****     gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+ 277              		.loc 1 55 15 is_stmt 0 view .LVU77
+ 278 0092 1223     		movs	r3, #18
+ 279 0094 0593     		str	r3, [sp, #20]
+  56:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
+ 280              		.loc 1 56 5 is_stmt 1 view .LVU78
+  56:Core/Src/balance_car/i2c_bus.c ****     HAL_GPIO_Init(GPIOB, &gpio);
+ 281              		.loc 1 56 16 is_stmt 0 view .LVU79
+ 282 0096 0323     		movs	r3, #3
+ 283 0098 0793     		str	r3, [sp, #28]
+  57:Core/Src/balance_car/i2c_bus.c **** }
+ 284              		.loc 1 57 5 is_stmt 1 view .LVU80
+ 285 009a 04A9     		add	r1, sp, #16
+ 286 009c 0348     		ldr	r0, .L17+8
+ 287 009e FFF7FEFF 		bl	HAL_GPIO_Init
+ 288              	.LVL14:
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 8
 
 
- 298              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
-ARM GAS  C:\Users\future\AppData\Local\Temp\ccNIfbEI.s 			page 9
+ 289 00a2 C5E7     		b	.L12
+ 290              	.L18:
+ 291              		.align	2
+ 292              	.L17:
+ 293 00a4 00540040 		.word	1073763328
+ 294 00a8 00000140 		.word	1073807360
+ 295 00ac 000C0140 		.word	1073810432
+ 296              		.cfi_endproc
+ 297              	.LFE67:
+ 299              		.section	.bss.s_i2c1_initialized,"aw",%nobits
+ 302              	s_i2c1_initialized:
+ 303 0000 00       		.space	1
+ 304              		.section	.bss.s_hi2c1,"aw",%nobits
+ 305              		.align	2
+ 308              	s_hi2c1:
+ 309 0000 00000000 		.space	84
+ 309      00000000 
+ 309      00000000 
+ 309      00000000 
+ 309      00000000 
+ 310              		.text
+ 311              	.Letext0:
+ 312              		.file 2 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 313              		.file 3 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 314              		.file 4 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 315              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 316              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 317              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 318              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 319              		.file 9 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h"
+ARM GAS  D:\TMP\cc8pTmVE.s 			page 9
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 i2c_bus.c
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:19     .text.BalanceI2C1_Init:00000000 $t
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:25     .text.BalanceI2C1_Init:00000000 BalanceI2C1_Init
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:101    .text.BalanceI2C1_Init:0000003c $d
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:282    .bss.s_i2c1_initialized:00000000 s_i2c1_initialized
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:288    .bss.s_hi2c1:00000000 s_hi2c1
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:109    .text.BalanceI2C1_GetHandle:00000000 $t
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:115    .text.BalanceI2C1_GetHandle:00000000 BalanceI2C1_GetHandle
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:129    .text.BalanceI2C1_GetHandle:00000004 $d
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:134    .text.HAL_I2C_MspInit:00000000 $t
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:140    .text.HAL_I2C_MspInit:00000000 HAL_I2C_MspInit
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:273    .text.HAL_I2C_MspInit:00000084 $d
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:283    .bss.s_i2c1_initialized:00000000 $d
-C:\Users\future\AppData\Local\Temp\ccNIfbEI.s:285    .bss.s_hi2c1:00000000 $d
+   D:\TMP\cc8pTmVE.s:19     .text.BalanceI2C1_Init:00000000 $t
+   D:\TMP\cc8pTmVE.s:25     .text.BalanceI2C1_Init:00000000 BalanceI2C1_Init
+   D:\TMP\cc8pTmVE.s:101    .text.BalanceI2C1_Init:0000003c $d
+   D:\TMP\cc8pTmVE.s:302    .bss.s_i2c1_initialized:00000000 s_i2c1_initialized
+   D:\TMP\cc8pTmVE.s:308    .bss.s_hi2c1:00000000 s_hi2c1
+   D:\TMP\cc8pTmVE.s:109    .text.BalanceI2C1_GetHandle:00000000 $t
+   D:\TMP\cc8pTmVE.s:115    .text.BalanceI2C1_GetHandle:00000000 BalanceI2C1_GetHandle
+   D:\TMP\cc8pTmVE.s:129    .text.BalanceI2C1_GetHandle:00000004 $d
+   D:\TMP\cc8pTmVE.s:134    .text.HAL_I2C_MspInit:00000000 $t
+   D:\TMP\cc8pTmVE.s:140    .text.HAL_I2C_MspInit:00000000 HAL_I2C_MspInit
+   D:\TMP\cc8pTmVE.s:293    .text.HAL_I2C_MspInit:000000a4 $d
+   D:\TMP\cc8pTmVE.s:303    .bss.s_i2c1_initialized:00000000 $d
+   D:\TMP\cc8pTmVE.s:305    .bss.s_hi2c1:00000000 $d
 
 UNDEFINED SYMBOLS
 HAL_I2C_Init
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
 HAL_GPIO_Init

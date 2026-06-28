@@ -44,6 +44,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c)
         __HAL_AFIO_REMAP_I2C1_ENABLE();
 
         gpio.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+        HAL_NVIC_SetPriority(I2C1_EV_IRQn, 4U, 0U);
+        HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
+        HAL_NVIC_SetPriority(I2C1_ER_IRQn, 4U, 0U);
+        HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
     } else {
         return;
     }

@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 1
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -18,14 +18,14 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 1
   15              	.Ltext0:
   16              		.cfi_sections	.debug_frame
   17              		.file 1 "Core/Src/balance_car/mpu6050_hal.c"
-  18              		.section	.text.Mpu6050_ReadReg,"ax",%progbits
+  18              		.section	.text.Mpu6050_ParseRaw,"ax",%progbits
   19              		.align	1
   20              		.syntax unified
   21              		.thumb
   22              		.thumb_func
-  24              	Mpu6050_ReadReg:
+  24              	Mpu6050_ParseRaw:
   25              	.LVL0:
-  26              	.LFB66:
+  26              	.LFB65:
    1:Core/Src/balance_car/mpu6050_hal.c **** #include "balance_car/mpu6050_hal.h"
    2:Core/Src/balance_car/mpu6050_hal.c **** 
    3:Core/Src/balance_car/mpu6050_hal.c **** #include "balance_car/i2c_bus.h"
@@ -39,535 +39,1291 @@ ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 1
   11:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_GYRO_CONFIG       0x1BU
   12:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_ACCEL_CONFIG      0x1CU
   13:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_ACCEL_XOUT_H      0x3BU
-  14:Core/Src/balance_car/mpu6050_hal.c **** 
-  15:Core/Src/balance_car/mpu6050_hal.c **** static uint8_t s_last_id;
-  16:Core/Src/balance_car/mpu6050_hal.c **** 
-  17:Core/Src/balance_car/mpu6050_hal.c **** static HAL_StatusTypeDef Mpu6050_WriteReg(uint8_t reg, uint8_t value)
-  18:Core/Src/balance_car/mpu6050_hal.c **** {
-  19:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
-  20:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
-  21:Core/Src/balance_car/mpu6050_hal.c **** }
-  22:Core/Src/balance_car/mpu6050_hal.c **** 
-  23:Core/Src/balance_car/mpu6050_hal.c **** static HAL_StatusTypeDef Mpu6050_ReadReg(uint8_t reg, uint8_t *value)
-  24:Core/Src/balance_car/mpu6050_hal.c **** {
-  27              		.loc 1 24 1 view -0
+  14:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_RAW_DATA_LEN      14U
+  15:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_ASYNC_TIMEOUT_MS  20U
+  16:Core/Src/balance_car/mpu6050_hal.c **** #define MPU6050_STALE_TIMEOUT_MS  60U
+  17:Core/Src/balance_car/mpu6050_hal.c **** 
+  18:Core/Src/balance_car/mpu6050_hal.c **** static uint8_t s_last_id;
+  19:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint8_t s_async_busy;
+  20:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint8_t s_sample_valid;
+  21:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint32_t s_async_start_tick;
+  22:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint32_t s_last_sample_tick;
+  23:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint32_t s_async_timeout_count;
+  24:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint32_t s_rx_complete_count;
+  25:Core/Src/balance_car/mpu6050_hal.c **** static volatile uint32_t s_rx_error_count;
+  26:Core/Src/balance_car/mpu6050_hal.c **** static uint8_t s_async_data[MPU6050_RAW_DATA_LEN];
+  27:Core/Src/balance_car/mpu6050_hal.c **** static Mpu6050Raw_t s_last_raw;
+  28:Core/Src/balance_car/mpu6050_hal.c **** 
+  29:Core/Src/balance_car/mpu6050_hal.c **** static void Mpu6050_ParseRaw(const uint8_t *data, Mpu6050Raw_t *raw)
+  30:Core/Src/balance_car/mpu6050_hal.c **** {
+  27              		.loc 1 30 1 view -0
   28              		.cfi_startproc
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 2
+
+
   29              		@ args = 0, pretend = 0, frame = 0
   30              		@ frame_needed = 0, uses_anonymous_args = 0
-  31              		.loc 1 24 1 is_stmt 0 view .LVU1
-  32 0000 30B5     		push	{r4, r5, lr}
-  33              	.LCFI0:
-  34              		.cfi_def_cfa_offset 12
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 2
+  31              		@ link register save eliminated.
+  31:Core/Src/balance_car/mpu6050_hal.c ****     raw->ax = (int16_t)((uint16_t)data[0] << 8 | data[1]);
+  32              		.loc 1 31 5 view .LVU1
+  33              		.loc 1 31 39 is_stmt 0 view .LVU2
+  34 0000 0278     		ldrb	r2, [r0]	@ zero_extendqisi2
+  35              		.loc 1 31 54 view .LVU3
+  36 0002 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+  37              		.loc 1 31 15 view .LVU4
+  38 0004 43EA0223 		orr	r3, r3, r2, lsl #8
+  39              		.loc 1 31 13 view .LVU5
+  40 0008 0B80     		strh	r3, [r1]	@ movhi
+  32:Core/Src/balance_car/mpu6050_hal.c ****     raw->ay = (int16_t)((uint16_t)data[2] << 8 | data[3]);
+  41              		.loc 1 32 5 is_stmt 1 view .LVU6
+  42              		.loc 1 32 39 is_stmt 0 view .LVU7
+  43 000a 8278     		ldrb	r2, [r0, #2]	@ zero_extendqisi2
+  44              		.loc 1 32 54 view .LVU8
+  45 000c C378     		ldrb	r3, [r0, #3]	@ zero_extendqisi2
+  46              		.loc 1 32 15 view .LVU9
+  47 000e 43EA0223 		orr	r3, r3, r2, lsl #8
+  48              		.loc 1 32 13 view .LVU10
+  49 0012 4B80     		strh	r3, [r1, #2]	@ movhi
+  33:Core/Src/balance_car/mpu6050_hal.c ****     raw->az = (int16_t)((uint16_t)data[4] << 8 | data[5]);
+  50              		.loc 1 33 5 is_stmt 1 view .LVU11
+  51              		.loc 1 33 39 is_stmt 0 view .LVU12
+  52 0014 0279     		ldrb	r2, [r0, #4]	@ zero_extendqisi2
+  53              		.loc 1 33 54 view .LVU13
+  54 0016 4379     		ldrb	r3, [r0, #5]	@ zero_extendqisi2
+  55              		.loc 1 33 15 view .LVU14
+  56 0018 43EA0223 		orr	r3, r3, r2, lsl #8
+  57              		.loc 1 33 13 view .LVU15
+  58 001c 8B80     		strh	r3, [r1, #4]	@ movhi
+  34:Core/Src/balance_car/mpu6050_hal.c ****     raw->gx = (int16_t)((uint16_t)data[8] << 8 | data[9]);
+  59              		.loc 1 34 5 is_stmt 1 view .LVU16
+  60              		.loc 1 34 39 is_stmt 0 view .LVU17
+  61 001e 027A     		ldrb	r2, [r0, #8]	@ zero_extendqisi2
+  62              		.loc 1 34 54 view .LVU18
+  63 0020 437A     		ldrb	r3, [r0, #9]	@ zero_extendqisi2
+  64              		.loc 1 34 15 view .LVU19
+  65 0022 43EA0223 		orr	r3, r3, r2, lsl #8
+  66              		.loc 1 34 13 view .LVU20
+  67 0026 CB80     		strh	r3, [r1, #6]	@ movhi
+  35:Core/Src/balance_car/mpu6050_hal.c ****     raw->gy = (int16_t)((uint16_t)data[10] << 8 | data[11]);
+  68              		.loc 1 35 5 is_stmt 1 view .LVU21
+  69              		.loc 1 35 39 is_stmt 0 view .LVU22
+  70 0028 827A     		ldrb	r2, [r0, #10]	@ zero_extendqisi2
+  71              		.loc 1 35 55 view .LVU23
+  72 002a C37A     		ldrb	r3, [r0, #11]	@ zero_extendqisi2
+  73              		.loc 1 35 15 view .LVU24
+  74 002c 43EA0223 		orr	r3, r3, r2, lsl #8
+  75              		.loc 1 35 13 view .LVU25
+  76 0030 0B81     		strh	r3, [r1, #8]	@ movhi
+  36:Core/Src/balance_car/mpu6050_hal.c ****     raw->gz = (int16_t)((uint16_t)data[12] << 8 | data[13]);
+  77              		.loc 1 36 5 is_stmt 1 view .LVU26
+  78              		.loc 1 36 39 is_stmt 0 view .LVU27
+  79 0032 027B     		ldrb	r2, [r0, #12]	@ zero_extendqisi2
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 3
 
 
-  35              		.cfi_offset 4, -12
-  36              		.cfi_offset 5, -8
-  37              		.cfi_offset 14, -4
-  38 0002 85B0     		sub	sp, sp, #20
-  39              	.LCFI1:
-  40              		.cfi_def_cfa_offset 32
-  41 0004 0446     		mov	r4, r0
-  42 0006 0D46     		mov	r5, r1
-  25:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Read(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
-  43              		.loc 1 25 5 is_stmt 1 view .LVU2
-  44              		.loc 1 25 12 is_stmt 0 view .LVU3
-  45 0008 FFF7FEFF 		bl	BalanceI2C1_GetHandle
-  46              	.LVL1:
-  47              		.loc 1 25 12 discriminator 1 view .LVU4
-  48 000c 0A23     		movs	r3, #10
-  49 000e 0293     		str	r3, [sp, #8]
-  50 0010 0123     		movs	r3, #1
-  51 0012 0193     		str	r3, [sp, #4]
-  52 0014 0095     		str	r5, [sp]
-  53 0016 2246     		mov	r2, r4
-  54 0018 D021     		movs	r1, #208
-  55 001a FFF7FEFF 		bl	HAL_I2C_Mem_Read
-  56              	.LVL2:
-  26:Core/Src/balance_car/mpu6050_hal.c ****                             value, 1U, 10U);
-  27:Core/Src/balance_car/mpu6050_hal.c **** }
-  57              		.loc 1 27 1 view .LVU5
-  58 001e 05B0     		add	sp, sp, #20
-  59              	.LCFI2:
-  60              		.cfi_def_cfa_offset 12
-  61              		@ sp needed
-  62 0020 30BD     		pop	{r4, r5, pc}
-  63              		.loc 1 27 1 view .LVU6
-  64              		.cfi_endproc
-  65              	.LFE66:
-  67              		.section	.text.Mpu6050_WriteReg,"ax",%progbits
-  68              		.align	1
-  69              		.syntax unified
-  70              		.thumb
-  71              		.thumb_func
-  73              	Mpu6050_WriteReg:
-  74              	.LVL3:
-  75              	.LFB65:
-  18:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
-  76              		.loc 1 18 1 is_stmt 1 view -0
-  77              		.cfi_startproc
-  78              		@ args = 0, pretend = 0, frame = 8
-  79              		@ frame_needed = 0, uses_anonymous_args = 0
-  18:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
-  80              		.loc 1 18 1 is_stmt 0 view .LVU8
-  81 0000 10B5     		push	{r4, lr}
-  82              	.LCFI3:
-  83              		.cfi_def_cfa_offset 8
-  84              		.cfi_offset 4, -8
-  85              		.cfi_offset 14, -4
-  86 0002 86B0     		sub	sp, sp, #24
-  87              	.LCFI4:
-  88              		.cfi_def_cfa_offset 32
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 3
+  80              		.loc 1 36 55 view .LVU28
+  81 0034 437B     		ldrb	r3, [r0, #13]	@ zero_extendqisi2
+  82              		.loc 1 36 15 view .LVU29
+  83 0036 43EA0223 		orr	r3, r3, r2, lsl #8
+  84              		.loc 1 36 13 view .LVU30
+  85 003a 4B81     		strh	r3, [r1, #10]	@ movhi
+  37:Core/Src/balance_car/mpu6050_hal.c **** }
+  86              		.loc 1 37 1 view .LVU31
+  87 003c 7047     		bx	lr
+  88              		.cfi_endproc
+  89              	.LFE65:
+  91              		.section	.text.Mpu6050_ReadReg,"ax",%progbits
+  92              		.align	1
+  93              		.syntax unified
+  94              		.thumb
+  95              		.thumb_func
+  97              	Mpu6050_ReadReg:
+  98              	.LVL1:
+  99              	.LFB67:
+  38:Core/Src/balance_car/mpu6050_hal.c **** 
+  39:Core/Src/balance_car/mpu6050_hal.c **** static HAL_StatusTypeDef Mpu6050_WriteReg(uint8_t reg, uint8_t value)
+  40:Core/Src/balance_car/mpu6050_hal.c **** {
+  41:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
+  42:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
+  43:Core/Src/balance_car/mpu6050_hal.c **** }
+  44:Core/Src/balance_car/mpu6050_hal.c **** 
+  45:Core/Src/balance_car/mpu6050_hal.c **** static HAL_StatusTypeDef Mpu6050_ReadReg(uint8_t reg, uint8_t *value)
+  46:Core/Src/balance_car/mpu6050_hal.c **** {
+ 100              		.loc 1 46 1 is_stmt 1 view -0
+ 101              		.cfi_startproc
+ 102              		@ args = 0, pretend = 0, frame = 0
+ 103              		@ frame_needed = 0, uses_anonymous_args = 0
+ 104              		.loc 1 46 1 is_stmt 0 view .LVU33
+ 105 0000 30B5     		push	{r4, r5, lr}
+ 106              	.LCFI0:
+ 107              		.cfi_def_cfa_offset 12
+ 108              		.cfi_offset 4, -12
+ 109              		.cfi_offset 5, -8
+ 110              		.cfi_offset 14, -4
+ 111 0002 85B0     		sub	sp, sp, #20
+ 112              	.LCFI1:
+ 113              		.cfi_def_cfa_offset 32
+ 114 0004 0446     		mov	r4, r0
+ 115 0006 0D46     		mov	r5, r1
+  47:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Read(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
+ 116              		.loc 1 47 5 is_stmt 1 view .LVU34
+ 117              		.loc 1 47 12 is_stmt 0 view .LVU35
+ 118 0008 FFF7FEFF 		bl	BalanceI2C1_GetHandle
+ 119              	.LVL2:
+ 120              		.loc 1 47 12 discriminator 1 view .LVU36
+ 121 000c 0A23     		movs	r3, #10
+ 122 000e 0293     		str	r3, [sp, #8]
+ 123 0010 0123     		movs	r3, #1
+ 124 0012 0193     		str	r3, [sp, #4]
+ 125 0014 0095     		str	r5, [sp]
+ 126 0016 2246     		mov	r2, r4
+ 127 0018 D021     		movs	r1, #208
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 4
 
 
-  89 0004 0446     		mov	r4, r0
-  90 0006 8DF81710 		strb	r1, [sp, #23]
-  19:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
-  91              		.loc 1 19 5 is_stmt 1 view .LVU9
-  19:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
-  92              		.loc 1 19 12 is_stmt 0 view .LVU10
-  93 000a FFF7FEFF 		bl	BalanceI2C1_GetHandle
-  94              	.LVL4:
-  19:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
-  95              		.loc 1 19 12 discriminator 1 view .LVU11
-  96 000e 0A23     		movs	r3, #10
-  97 0010 0293     		str	r3, [sp, #8]
-  98 0012 0123     		movs	r3, #1
-  99 0014 0193     		str	r3, [sp, #4]
- 100 0016 0DF11702 		add	r2, sp, #23
- 101 001a 0092     		str	r2, [sp]
- 102 001c 2246     		mov	r2, r4
- 103 001e D021     		movs	r1, #208
- 104 0020 FFF7FEFF 		bl	HAL_I2C_Mem_Write
- 105              	.LVL5:
-  21:Core/Src/balance_car/mpu6050_hal.c **** 
- 106              		.loc 1 21 1 view .LVU12
- 107 0024 06B0     		add	sp, sp, #24
- 108              	.LCFI5:
- 109              		.cfi_def_cfa_offset 8
- 110              		@ sp needed
- 111 0026 10BD     		pop	{r4, pc}
-  21:Core/Src/balance_car/mpu6050_hal.c **** 
- 112              		.loc 1 21 1 view .LVU13
- 113              		.cfi_endproc
- 114              	.LFE65:
- 116              		.section	.text.Mpu6050_Init,"ax",%progbits
- 117              		.align	1
- 118              		.global	Mpu6050_Init
- 119              		.syntax unified
- 120              		.thumb
- 121              		.thumb_func
- 123              	Mpu6050_Init:
- 124              	.LFB67:
-  28:Core/Src/balance_car/mpu6050_hal.c **** 
-  29:Core/Src/balance_car/mpu6050_hal.c **** HAL_StatusTypeDef Mpu6050_Init(void)
-  30:Core/Src/balance_car/mpu6050_hal.c **** {
- 125              		.loc 1 30 1 is_stmt 1 view -0
- 126              		.cfi_startproc
- 127              		@ args = 0, pretend = 0, frame = 0
- 128              		@ frame_needed = 0, uses_anonymous_args = 0
- 129 0000 08B5     		push	{r3, lr}
- 130              	.LCFI6:
- 131              		.cfi_def_cfa_offset 8
- 132              		.cfi_offset 3, -8
- 133              		.cfi_offset 14, -4
-  31:Core/Src/balance_car/mpu6050_hal.c ****     if (BalanceI2C1_Init() != HAL_OK) {
- 134              		.loc 1 31 5 view .LVU15
- 135              		.loc 1 31 9 is_stmt 0 view .LVU16
- 136 0002 FFF7FEFF 		bl	BalanceI2C1_Init
- 137              	.LVL6:
- 138              		.loc 1 31 8 discriminator 1 view .LVU17
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 4
+ 128 001a FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 129              	.LVL3:
+  48:Core/Src/balance_car/mpu6050_hal.c ****                             value, 1U, 10U);
+  49:Core/Src/balance_car/mpu6050_hal.c **** }
+ 130              		.loc 1 49 1 view .LVU37
+ 131 001e 05B0     		add	sp, sp, #20
+ 132              	.LCFI2:
+ 133              		.cfi_def_cfa_offset 12
+ 134              		@ sp needed
+ 135 0020 30BD     		pop	{r4, r5, pc}
+ 136              		.loc 1 49 1 view .LVU38
+ 137              		.cfi_endproc
+ 138              	.LFE67:
+ 140              		.section	.text.Mpu6050_WriteReg,"ax",%progbits
+ 141              		.align	1
+ 142              		.syntax unified
+ 143              		.thumb
+ 144              		.thumb_func
+ 146              	Mpu6050_WriteReg:
+ 147              	.LVL4:
+ 148              	.LFB66:
+  40:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
+ 149              		.loc 1 40 1 is_stmt 1 view -0
+ 150              		.cfi_startproc
+ 151              		@ args = 0, pretend = 0, frame = 8
+ 152              		@ frame_needed = 0, uses_anonymous_args = 0
+  40:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_I2C_Mem_Write(BalanceI2C1_GetHandle(), MPU6050_ADDR, reg, I2C_MEMADD_SIZE_8BIT,
+ 153              		.loc 1 40 1 is_stmt 0 view .LVU40
+ 154 0000 10B5     		push	{r4, lr}
+ 155              	.LCFI3:
+ 156              		.cfi_def_cfa_offset 8
+ 157              		.cfi_offset 4, -8
+ 158              		.cfi_offset 14, -4
+ 159 0002 86B0     		sub	sp, sp, #24
+ 160              	.LCFI4:
+ 161              		.cfi_def_cfa_offset 32
+ 162 0004 0446     		mov	r4, r0
+ 163 0006 8DF81710 		strb	r1, [sp, #23]
+  41:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
+ 164              		.loc 1 41 5 is_stmt 1 view .LVU41
+  41:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
+ 165              		.loc 1 41 12 is_stmt 0 view .LVU42
+ 166 000a FFF7FEFF 		bl	BalanceI2C1_GetHandle
+ 167              	.LVL5:
+  41:Core/Src/balance_car/mpu6050_hal.c ****                              &value, 1U, 10U);
+ 168              		.loc 1 41 12 discriminator 1 view .LVU43
+ 169 000e 0A23     		movs	r3, #10
+ 170 0010 0293     		str	r3, [sp, #8]
+ 171 0012 0123     		movs	r3, #1
+ 172 0014 0193     		str	r3, [sp, #4]
+ 173 0016 0DF11702 		add	r2, sp, #23
+ 174 001a 0092     		str	r2, [sp]
+ 175 001c 2246     		mov	r2, r4
+ 176 001e D021     		movs	r1, #208
+ 177 0020 FFF7FEFF 		bl	HAL_I2C_Mem_Write
+ 178              	.LVL6:
+  43:Core/Src/balance_car/mpu6050_hal.c **** 
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 5
 
 
- 139 0006 08B1     		cbz	r0, .L17
-  32:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 140              		.loc 1 32 16 view .LVU18
- 141 0008 0120     		movs	r0, #1
- 142              	.L6:
-  33:Core/Src/balance_car/mpu6050_hal.c ****     }
-  34:Core/Src/balance_car/mpu6050_hal.c **** 
-  35:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_ReadReg(MPU6050_WHO_AM_I, &s_last_id) != HAL_OK) {
-  36:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  37:Core/Src/balance_car/mpu6050_hal.c ****     }
-  38:Core/Src/balance_car/mpu6050_hal.c ****     if (s_last_id != 0x68U) {
-  39:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  40:Core/Src/balance_car/mpu6050_hal.c ****     }
-  41:Core/Src/balance_car/mpu6050_hal.c **** 
-  42:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_PWR_MGMT_1, 0x01U) != HAL_OK) {
-  43:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  44:Core/Src/balance_car/mpu6050_hal.c ****     }
-  45:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_PWR_MGMT_2, 0x00U) != HAL_OK) {
-  46:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  47:Core/Src/balance_car/mpu6050_hal.c ****     }
-  48:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_SMPLRT_DIV, 0x07U) != HAL_OK) {
-  49:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  50:Core/Src/balance_car/mpu6050_hal.c ****     }
-  51:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_CONFIG, 0x00U) != HAL_OK) {
-  52:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  53:Core/Src/balance_car/mpu6050_hal.c ****     }
-  54:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_GYRO_CONFIG, 0x18U) != HAL_OK) {
-  55:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  56:Core/Src/balance_car/mpu6050_hal.c ****     }
-  57:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_ACCEL_CONFIG, 0x18U) != HAL_OK) {
+ 179              		.loc 1 43 1 view .LVU44
+ 180 0024 06B0     		add	sp, sp, #24
+ 181              	.LCFI5:
+ 182              		.cfi_def_cfa_offset 8
+ 183              		@ sp needed
+ 184 0026 10BD     		pop	{r4, pc}
+  43:Core/Src/balance_car/mpu6050_hal.c **** 
+ 185              		.loc 1 43 1 view .LVU45
+ 186              		.cfi_endproc
+ 187              	.LFE66:
+ 189              		.section	.text.Mpu6050_Init,"ax",%progbits
+ 190              		.align	1
+ 191              		.global	Mpu6050_Init
+ 192              		.syntax unified
+ 193              		.thumb
+ 194              		.thumb_func
+ 196              	Mpu6050_Init:
+ 197              	.LFB68:
+  50:Core/Src/balance_car/mpu6050_hal.c **** 
+  51:Core/Src/balance_car/mpu6050_hal.c **** HAL_StatusTypeDef Mpu6050_Init(void)
+  52:Core/Src/balance_car/mpu6050_hal.c **** {
+ 198              		.loc 1 52 1 is_stmt 1 view -0
+ 199              		.cfi_startproc
+ 200              		@ args = 0, pretend = 0, frame = 16
+ 201              		@ frame_needed = 0, uses_anonymous_args = 0
+ 202 0000 10B5     		push	{r4, lr}
+ 203              	.LCFI6:
+ 204              		.cfi_def_cfa_offset 8
+ 205              		.cfi_offset 4, -8
+ 206              		.cfi_offset 14, -4
+ 207 0002 88B0     		sub	sp, sp, #32
+ 208              	.LCFI7:
+ 209              		.cfi_def_cfa_offset 40
+  53:Core/Src/balance_car/mpu6050_hal.c ****     if (BalanceI2C1_Init() != HAL_OK) {
+ 210              		.loc 1 53 5 view .LVU47
+ 211              		.loc 1 53 9 is_stmt 0 view .LVU48
+ 212 0004 FFF7FEFF 		bl	BalanceI2C1_Init
+ 213              	.LVL7:
+ 214              		.loc 1 53 8 discriminator 1 view .LVU49
+ 215 0008 18B1     		cbz	r0, .L19
+  54:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 216              		.loc 1 54 16 view .LVU50
+ 217 000a 0124     		movs	r4, #1
+ 218              	.L7:
+  55:Core/Src/balance_car/mpu6050_hal.c ****     }
+  56:Core/Src/balance_car/mpu6050_hal.c **** 
+  57:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_ReadReg(MPU6050_WHO_AM_I, &s_last_id) != HAL_OK) {
   58:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
   59:Core/Src/balance_car/mpu6050_hal.c ****     }
-  60:Core/Src/balance_car/mpu6050_hal.c **** 
-  61:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_OK;
-  62:Core/Src/balance_car/mpu6050_hal.c **** }
- 143              		.loc 1 62 1 view .LVU19
- 144 000a 08BD     		pop	{r3, pc}
- 145              	.L17:
-  35:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 146              		.loc 1 35 5 is_stmt 1 view .LVU20
-  35:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 147              		.loc 1 35 9 is_stmt 0 view .LVU21
- 148 000c 1B49     		ldr	r1, .L24
- 149 000e 7520     		movs	r0, #117
- 150 0010 FFF7FEFF 		bl	Mpu6050_ReadReg
- 151              	.LVL7:
-  35:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 152              		.loc 1 35 8 discriminator 1 view .LVU22
- 153 0014 80BB     		cbnz	r0, .L8
-  38:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 154              		.loc 1 38 5 is_stmt 1 view .LVU23
-  38:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 155              		.loc 1 38 19 is_stmt 0 view .LVU24
- 156 0016 194B     		ldr	r3, .L24
- 157 0018 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
-  38:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 158              		.loc 1 38 8 view .LVU25
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 5
-
-
- 159 001a 682B     		cmp	r3, #104
- 160 001c 01D0     		beq	.L18
-  39:Core/Src/balance_car/mpu6050_hal.c ****     }
- 161              		.loc 1 39 16 view .LVU26
- 162 001e 0120     		movs	r0, #1
- 163 0020 F3E7     		b	.L6
- 164              	.L18:
-  42:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 165              		.loc 1 42 5 is_stmt 1 view .LVU27
-  42:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 166              		.loc 1 42 9 is_stmt 0 view .LVU28
- 167 0022 0121     		movs	r1, #1
- 168 0024 6B20     		movs	r0, #107
- 169 0026 FFF7FEFF 		bl	Mpu6050_WriteReg
- 170              	.LVL8:
-  42:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 171              		.loc 1 42 8 discriminator 1 view .LVU29
- 172 002a 08B1     		cbz	r0, .L19
-  43:Core/Src/balance_car/mpu6050_hal.c ****     }
- 173              		.loc 1 43 16 view .LVU30
- 174 002c 0120     		movs	r0, #1
- 175 002e ECE7     		b	.L6
- 176              	.L19:
-  45:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 177              		.loc 1 45 5 is_stmt 1 view .LVU31
-  45:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 178              		.loc 1 45 9 is_stmt 0 view .LVU32
- 179 0030 0021     		movs	r1, #0
- 180 0032 6C20     		movs	r0, #108
- 181 0034 FFF7FEFF 		bl	Mpu6050_WriteReg
- 182              	.LVL9:
-  45:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 183              		.loc 1 45 8 discriminator 1 view .LVU33
- 184 0038 08B1     		cbz	r0, .L20
-  46:Core/Src/balance_car/mpu6050_hal.c ****     }
- 185              		.loc 1 46 16 view .LVU34
- 186 003a 0120     		movs	r0, #1
- 187 003c E5E7     		b	.L6
- 188              	.L20:
-  48:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 189              		.loc 1 48 5 is_stmt 1 view .LVU35
-  48:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 190              		.loc 1 48 9 is_stmt 0 view .LVU36
- 191 003e 0721     		movs	r1, #7
- 192 0040 1920     		movs	r0, #25
- 193 0042 FFF7FEFF 		bl	Mpu6050_WriteReg
- 194              	.LVL10:
-  48:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 195              		.loc 1 48 8 discriminator 1 view .LVU37
- 196 0046 08B1     		cbz	r0, .L21
-  49:Core/Src/balance_car/mpu6050_hal.c ****     }
- 197              		.loc 1 49 16 view .LVU38
- 198 0048 0120     		movs	r0, #1
- 199 004a DEE7     		b	.L6
- 200              	.L21:
-  51:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 201              		.loc 1 51 5 is_stmt 1 view .LVU39
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 6
-
-
-  51:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 202              		.loc 1 51 9 is_stmt 0 view .LVU40
- 203 004c 0021     		movs	r1, #0
- 204 004e 1A20     		movs	r0, #26
- 205 0050 FFF7FEFF 		bl	Mpu6050_WriteReg
- 206              	.LVL11:
-  51:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 207              		.loc 1 51 8 discriminator 1 view .LVU41
- 208 0054 08B1     		cbz	r0, .L22
-  52:Core/Src/balance_car/mpu6050_hal.c ****     }
- 209              		.loc 1 52 16 view .LVU42
- 210 0056 0120     		movs	r0, #1
- 211 0058 D7E7     		b	.L6
- 212              	.L22:
-  54:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 213              		.loc 1 54 5 is_stmt 1 view .LVU43
-  54:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 214              		.loc 1 54 9 is_stmt 0 view .LVU44
- 215 005a 1821     		movs	r1, #24
- 216 005c 1B20     		movs	r0, #27
- 217 005e FFF7FEFF 		bl	Mpu6050_WriteReg
- 218              	.LVL12:
-  54:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 219              		.loc 1 54 8 discriminator 1 view .LVU45
- 220 0062 08B1     		cbz	r0, .L23
-  55:Core/Src/balance_car/mpu6050_hal.c ****     }
- 221              		.loc 1 55 16 view .LVU46
- 222 0064 0120     		movs	r0, #1
- 223 0066 D0E7     		b	.L6
- 224              	.L23:
-  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 225              		.loc 1 57 5 is_stmt 1 view .LVU47
-  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 226              		.loc 1 57 9 is_stmt 0 view .LVU48
- 227 0068 1821     		movs	r1, #24
- 228 006a 1C20     		movs	r0, #28
- 229 006c FFF7FEFF 		bl	Mpu6050_WriteReg
- 230              	.LVL13:
-  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
- 231              		.loc 1 57 8 discriminator 1 view .LVU49
- 232 0070 0028     		cmp	r0, #0
- 233 0072 CAD0     		beq	.L6
-  58:Core/Src/balance_car/mpu6050_hal.c ****     }
- 234              		.loc 1 58 16 view .LVU50
- 235 0074 0120     		movs	r0, #1
- 236 0076 C8E7     		b	.L6
- 237              	.L8:
-  36:Core/Src/balance_car/mpu6050_hal.c ****     }
- 238              		.loc 1 36 16 view .LVU51
- 239 0078 0120     		movs	r0, #1
- 240 007a C6E7     		b	.L6
- 241              	.L25:
- 242              		.align	2
- 243              	.L24:
- 244 007c 00000000 		.word	s_last_id
- 245              		.cfi_endproc
- 246              	.LFE67:
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 7
-
-
- 248              		.section	.text.Mpu6050_ReadRaw,"ax",%progbits
- 249              		.align	1
- 250              		.global	Mpu6050_ReadRaw
- 251              		.syntax unified
- 252              		.thumb
- 253              		.thumb_func
- 255              	Mpu6050_ReadRaw:
- 256              	.LVL14:
- 257              	.LFB68:
+  60:Core/Src/balance_car/mpu6050_hal.c ****     if (s_last_id != 0x68U) {
+  61:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  62:Core/Src/balance_car/mpu6050_hal.c ****     }
   63:Core/Src/balance_car/mpu6050_hal.c **** 
-  64:Core/Src/balance_car/mpu6050_hal.c **** HAL_StatusTypeDef Mpu6050_ReadRaw(Mpu6050Raw_t *raw)
-  65:Core/Src/balance_car/mpu6050_hal.c **** {
- 258              		.loc 1 65 1 is_stmt 1 view -0
- 259              		.cfi_startproc
- 260              		@ args = 0, pretend = 0, frame = 16
- 261              		@ frame_needed = 0, uses_anonymous_args = 0
- 262              		.loc 1 65 1 is_stmt 0 view .LVU53
- 263 0000 10B5     		push	{r4, lr}
- 264              	.LCFI7:
- 265              		.cfi_def_cfa_offset 8
- 266              		.cfi_offset 4, -8
- 267              		.cfi_offset 14, -4
- 268 0002 88B0     		sub	sp, sp, #32
- 269              	.LCFI8:
- 270              		.cfi_def_cfa_offset 40
- 271 0004 0446     		mov	r4, r0
-  66:Core/Src/balance_car/mpu6050_hal.c ****     uint8_t data[14];
- 272              		.loc 1 66 5 is_stmt 1 view .LVU54
-  67:Core/Src/balance_car/mpu6050_hal.c **** 
-  68:Core/Src/balance_car/mpu6050_hal.c ****     if (HAL_I2C_Mem_Read(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
- 273              		.loc 1 68 5 view .LVU55
- 274              		.loc 1 68 9 is_stmt 0 view .LVU56
- 275 0006 FFF7FEFF 		bl	BalanceI2C1_GetHandle
- 276              	.LVL15:
- 277              		.loc 1 68 9 discriminator 1 view .LVU57
- 278 000a 0523     		movs	r3, #5
- 279 000c 0293     		str	r3, [sp, #8]
- 280 000e 0E23     		movs	r3, #14
- 281 0010 0193     		str	r3, [sp, #4]
- 282 0012 04AB     		add	r3, sp, #16
- 283 0014 0093     		str	r3, [sp]
- 284 0016 0123     		movs	r3, #1
- 285 0018 3B22     		movs	r2, #59
- 286 001a D021     		movs	r1, #208
- 287 001c FFF7FEFF 		bl	HAL_I2C_Mem_Read
- 288              	.LVL16:
- 289              		.loc 1 68 8 discriminator 2 view .LVU58
- 290 0020 58BB     		cbnz	r0, .L28
-  69:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 5U) != HAL_OK) {
-  70:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
-  71:Core/Src/balance_car/mpu6050_hal.c ****     }
-  72:Core/Src/balance_car/mpu6050_hal.c **** 
-  73:Core/Src/balance_car/mpu6050_hal.c ****     raw->ax = (int16_t)((uint16_t)data[0] << 8 | data[1]);
- 291              		.loc 1 73 5 is_stmt 1 view .LVU59
- 292              		.loc 1 73 39 is_stmt 0 view .LVU60
- 293 0022 9DF81020 		ldrb	r2, [sp, #16]	@ zero_extendqisi2
- 294              		.loc 1 73 54 view .LVU61
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 8
+  64:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_PWR_MGMT_1, 0x01U) != HAL_OK) {
+  65:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  66:Core/Src/balance_car/mpu6050_hal.c ****     }
+  67:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_PWR_MGMT_2, 0x00U) != HAL_OK) {
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 6
 
 
- 295 0026 9DF81130 		ldrb	r3, [sp, #17]	@ zero_extendqisi2
- 296              		.loc 1 73 15 view .LVU62
- 297 002a 43EA0223 		orr	r3, r3, r2, lsl #8
- 298              		.loc 1 73 13 view .LVU63
- 299 002e 2380     		strh	r3, [r4]	@ movhi
-  74:Core/Src/balance_car/mpu6050_hal.c ****     raw->ay = (int16_t)((uint16_t)data[2] << 8 | data[3]);
- 300              		.loc 1 74 5 is_stmt 1 view .LVU64
- 301              		.loc 1 74 39 is_stmt 0 view .LVU65
- 302 0030 9DF81220 		ldrb	r2, [sp, #18]	@ zero_extendqisi2
- 303              		.loc 1 74 54 view .LVU66
- 304 0034 9DF81330 		ldrb	r3, [sp, #19]	@ zero_extendqisi2
- 305              		.loc 1 74 15 view .LVU67
- 306 0038 43EA0223 		orr	r3, r3, r2, lsl #8
- 307              		.loc 1 74 13 view .LVU68
- 308 003c 6380     		strh	r3, [r4, #2]	@ movhi
-  75:Core/Src/balance_car/mpu6050_hal.c ****     raw->az = (int16_t)((uint16_t)data[4] << 8 | data[5]);
- 309              		.loc 1 75 5 is_stmt 1 view .LVU69
- 310              		.loc 1 75 39 is_stmt 0 view .LVU70
- 311 003e 9DF81420 		ldrb	r2, [sp, #20]	@ zero_extendqisi2
- 312              		.loc 1 75 54 view .LVU71
- 313 0042 9DF81530 		ldrb	r3, [sp, #21]	@ zero_extendqisi2
- 314              		.loc 1 75 15 view .LVU72
- 315 0046 43EA0223 		orr	r3, r3, r2, lsl #8
- 316              		.loc 1 75 13 view .LVU73
- 317 004a A380     		strh	r3, [r4, #4]	@ movhi
-  76:Core/Src/balance_car/mpu6050_hal.c ****     raw->gx = (int16_t)((uint16_t)data[8] << 8 | data[9]);
- 318              		.loc 1 76 5 is_stmt 1 view .LVU74
- 319              		.loc 1 76 39 is_stmt 0 view .LVU75
- 320 004c 9DF81820 		ldrb	r2, [sp, #24]	@ zero_extendqisi2
- 321              		.loc 1 76 54 view .LVU76
- 322 0050 9DF81930 		ldrb	r3, [sp, #25]	@ zero_extendqisi2
- 323              		.loc 1 76 15 view .LVU77
- 324 0054 43EA0223 		orr	r3, r3, r2, lsl #8
- 325              		.loc 1 76 13 view .LVU78
- 326 0058 E380     		strh	r3, [r4, #6]	@ movhi
-  77:Core/Src/balance_car/mpu6050_hal.c ****     raw->gy = (int16_t)((uint16_t)data[10] << 8 | data[11]);
- 327              		.loc 1 77 5 is_stmt 1 view .LVU79
- 328              		.loc 1 77 39 is_stmt 0 view .LVU80
- 329 005a 9DF81A20 		ldrb	r2, [sp, #26]	@ zero_extendqisi2
- 330              		.loc 1 77 55 view .LVU81
- 331 005e 9DF81B30 		ldrb	r3, [sp, #27]	@ zero_extendqisi2
- 332              		.loc 1 77 15 view .LVU82
- 333 0062 43EA0223 		orr	r3, r3, r2, lsl #8
- 334              		.loc 1 77 13 view .LVU83
- 335 0066 2381     		strh	r3, [r4, #8]	@ movhi
-  78:Core/Src/balance_car/mpu6050_hal.c ****     raw->gz = (int16_t)((uint16_t)data[12] << 8 | data[13]);
- 336              		.loc 1 78 5 is_stmt 1 view .LVU84
- 337              		.loc 1 78 39 is_stmt 0 view .LVU85
- 338 0068 9DF81C20 		ldrb	r2, [sp, #28]	@ zero_extendqisi2
- 339              		.loc 1 78 55 view .LVU86
- 340 006c 9DF81D30 		ldrb	r3, [sp, #29]	@ zero_extendqisi2
- 341              		.loc 1 78 15 view .LVU87
- 342 0070 43EA0223 		orr	r3, r3, r2, lsl #8
- 343              		.loc 1 78 13 view .LVU88
- 344 0074 6381     		strh	r3, [r4, #10]	@ movhi
-  79:Core/Src/balance_car/mpu6050_hal.c **** 
-  80:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_OK;
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 9
-
-
- 345              		.loc 1 80 5 is_stmt 1 view .LVU89
- 346              	.L27:
-  81:Core/Src/balance_car/mpu6050_hal.c **** }
- 347              		.loc 1 81 1 is_stmt 0 view .LVU90
- 348 0076 08B0     		add	sp, sp, #32
- 349              	.LCFI9:
- 350              		.cfi_remember_state
- 351              		.cfi_def_cfa_offset 8
- 352              		@ sp needed
- 353 0078 10BD     		pop	{r4, pc}
- 354              	.LVL17:
- 355              	.L28:
- 356              	.LCFI10:
- 357              		.cfi_restore_state
-  70:Core/Src/balance_car/mpu6050_hal.c ****     }
- 358              		.loc 1 70 16 view .LVU91
- 359 007a 0120     		movs	r0, #1
- 360 007c FBE7     		b	.L27
- 361              		.cfi_endproc
- 362              	.LFE68:
- 364              		.section	.text.Mpu6050_GetLastId,"ax",%progbits
- 365              		.align	1
- 366              		.global	Mpu6050_GetLastId
- 367              		.syntax unified
- 368              		.thumb
- 369              		.thumb_func
- 371              	Mpu6050_GetLastId:
- 372              	.LFB69:
+  68:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  69:Core/Src/balance_car/mpu6050_hal.c ****     }
+  70:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_SMPLRT_DIV, 0x07U) != HAL_OK) {
+  71:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  72:Core/Src/balance_car/mpu6050_hal.c ****     }
+  73:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_CONFIG, 0x00U) != HAL_OK) {
+  74:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  75:Core/Src/balance_car/mpu6050_hal.c ****     }
+  76:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_GYRO_CONFIG, 0x18U) != HAL_OK) {
+  77:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  78:Core/Src/balance_car/mpu6050_hal.c ****     }
+  79:Core/Src/balance_car/mpu6050_hal.c ****     if (Mpu6050_WriteReg(MPU6050_ACCEL_CONFIG, 0x18U) != HAL_OK) {
+  80:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  81:Core/Src/balance_car/mpu6050_hal.c ****     }
   82:Core/Src/balance_car/mpu6050_hal.c **** 
-  83:Core/Src/balance_car/mpu6050_hal.c **** uint8_t Mpu6050_GetLastId(void)
-  84:Core/Src/balance_car/mpu6050_hal.c **** {
- 373              		.loc 1 84 1 is_stmt 1 view -0
- 374              		.cfi_startproc
- 375              		@ args = 0, pretend = 0, frame = 0
- 376              		@ frame_needed = 0, uses_anonymous_args = 0
- 377              		@ link register save eliminated.
-  85:Core/Src/balance_car/mpu6050_hal.c ****     return s_last_id;
- 378              		.loc 1 85 5 view .LVU93
-  86:Core/Src/balance_car/mpu6050_hal.c **** }
- 379              		.loc 1 86 1 is_stmt 0 view .LVU94
- 380 0000 014B     		ldr	r3, .L31
- 381 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
- 382 0004 7047     		bx	lr
- 383              	.L32:
- 384 0006 00BF     		.align	2
- 385              	.L31:
- 386 0008 00000000 		.word	s_last_id
- 387              		.cfi_endproc
- 388              	.LFE69:
- 390              		.section	.bss.s_last_id,"aw",%nobits
- 393              	s_last_id:
- 394 0000 00       		.space	1
- 395              		.text
- 396              	.Letext0:
- 397              		.file 2 "C:/msys64/mingw64/arm-none-eabi/include/machine/_default_types.h"
- 398              		.file 3 "C:/msys64/mingw64/arm-none-eabi/include/sys/_stdint.h"
- 399              		.file 4 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 10
+  83:Core/Src/balance_car/mpu6050_hal.c ****     uint8_t data[MPU6050_RAW_DATA_LEN];
+  84:Core/Src/balance_car/mpu6050_hal.c ****     if (HAL_I2C_Mem_Read(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+  85:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 10U) != HAL_OK) {
+  86:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+  87:Core/Src/balance_car/mpu6050_hal.c ****     }
+  88:Core/Src/balance_car/mpu6050_hal.c **** 
+  89:Core/Src/balance_car/mpu6050_hal.c ****     Mpu6050_ParseRaw(data, &s_last_raw);
+  90:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+  91:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+  92:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+  93:Core/Src/balance_car/mpu6050_hal.c **** 
+  94:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_OK;
+  95:Core/Src/balance_car/mpu6050_hal.c **** }
+ 219              		.loc 1 95 1 view .LVU51
+ 220 000c 2046     		mov	r0, r4
+ 221 000e 08B0     		add	sp, sp, #32
+ 222              	.LCFI8:
+ 223              		.cfi_remember_state
+ 224              		.cfi_def_cfa_offset 8
+ 225              		@ sp needed
+ 226 0010 10BD     		pop	{r4, pc}
+ 227              	.L19:
+ 228              	.LCFI9:
+ 229              		.cfi_restore_state
+  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 230              		.loc 1 57 5 is_stmt 1 view .LVU52
+  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 231              		.loc 1 57 9 is_stmt 0 view .LVU53
+ 232 0012 2C49     		ldr	r1, .L28
+ 233 0014 7520     		movs	r0, #117
+ 234 0016 FFF7FEFF 		bl	Mpu6050_ReadReg
+ 235              	.LVL8:
+  57:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 236              		.loc 1 57 8 discriminator 1 view .LVU54
+ 237 001a 0028     		cmp	r0, #0
+ 238 001c 4FD1     		bne	.L9
+  60:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 239              		.loc 1 60 5 is_stmt 1 view .LVU55
+  60:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 240              		.loc 1 60 19 is_stmt 0 view .LVU56
+ 241 001e 294B     		ldr	r3, .L28
+ 242 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 7
 
 
- 400              		.file 5 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
- 401              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
- 402              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
- 403              		.file 8 "Core/Inc/balance_car/mpu6050_hal.h"
- 404              		.file 9 "Core/Inc/balance_car/i2c_bus.h"
-ARM GAS  C:\Users\future\AppData\Local\Temp\cc99dMz3.s 			page 11
+  60:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 243              		.loc 1 60 8 view .LVU57
+ 244 0022 682B     		cmp	r3, #104
+ 245 0024 01D0     		beq	.L20
+  61:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 246              		.loc 1 61 16 view .LVU58
+ 247 0026 0124     		movs	r4, #1
+ 248 0028 F0E7     		b	.L7
+ 249              	.L20:
+  64:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 250              		.loc 1 64 5 is_stmt 1 view .LVU59
+  64:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 251              		.loc 1 64 9 is_stmt 0 view .LVU60
+ 252 002a 0121     		movs	r1, #1
+ 253 002c 6B20     		movs	r0, #107
+ 254 002e FFF7FEFF 		bl	Mpu6050_WriteReg
+ 255              	.LVL9:
+  64:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 256              		.loc 1 64 8 discriminator 1 view .LVU61
+ 257 0032 08B1     		cbz	r0, .L21
+  65:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 258              		.loc 1 65 16 view .LVU62
+ 259 0034 0124     		movs	r4, #1
+ 260 0036 E9E7     		b	.L7
+ 261              	.L21:
+  67:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 262              		.loc 1 67 5 is_stmt 1 view .LVU63
+  67:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 263              		.loc 1 67 9 is_stmt 0 view .LVU64
+ 264 0038 0021     		movs	r1, #0
+ 265 003a 6C20     		movs	r0, #108
+ 266 003c FFF7FEFF 		bl	Mpu6050_WriteReg
+ 267              	.LVL10:
+  67:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 268              		.loc 1 67 8 discriminator 1 view .LVU65
+ 269 0040 08B1     		cbz	r0, .L22
+  68:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 270              		.loc 1 68 16 view .LVU66
+ 271 0042 0124     		movs	r4, #1
+ 272 0044 E2E7     		b	.L7
+ 273              	.L22:
+  70:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 274              		.loc 1 70 5 is_stmt 1 view .LVU67
+  70:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 275              		.loc 1 70 9 is_stmt 0 view .LVU68
+ 276 0046 0721     		movs	r1, #7
+ 277 0048 1920     		movs	r0, #25
+ 278 004a FFF7FEFF 		bl	Mpu6050_WriteReg
+ 279              	.LVL11:
+  70:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 280              		.loc 1 70 8 discriminator 1 view .LVU69
+ 281 004e 08B1     		cbz	r0, .L23
+  71:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 282              		.loc 1 71 16 view .LVU70
+ 283 0050 0124     		movs	r4, #1
+ 284 0052 DBE7     		b	.L7
+ 285              	.L23:
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 8
+
+
+  73:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 286              		.loc 1 73 5 is_stmt 1 view .LVU71
+  73:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 287              		.loc 1 73 9 is_stmt 0 view .LVU72
+ 288 0054 0021     		movs	r1, #0
+ 289 0056 1A20     		movs	r0, #26
+ 290 0058 FFF7FEFF 		bl	Mpu6050_WriteReg
+ 291              	.LVL12:
+  73:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 292              		.loc 1 73 8 discriminator 1 view .LVU73
+ 293 005c 08B1     		cbz	r0, .L24
+  74:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 294              		.loc 1 74 16 view .LVU74
+ 295 005e 0124     		movs	r4, #1
+ 296 0060 D4E7     		b	.L7
+ 297              	.L24:
+  76:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 298              		.loc 1 76 5 is_stmt 1 view .LVU75
+  76:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 299              		.loc 1 76 9 is_stmt 0 view .LVU76
+ 300 0062 1821     		movs	r1, #24
+ 301 0064 1B20     		movs	r0, #27
+ 302 0066 FFF7FEFF 		bl	Mpu6050_WriteReg
+ 303              	.LVL13:
+  76:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 304              		.loc 1 76 8 discriminator 1 view .LVU77
+ 305 006a 08B1     		cbz	r0, .L25
+  77:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 306              		.loc 1 77 16 view .LVU78
+ 307 006c 0124     		movs	r4, #1
+ 308 006e CDE7     		b	.L7
+ 309              	.L25:
+  79:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 310              		.loc 1 79 5 is_stmt 1 view .LVU79
+  79:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 311              		.loc 1 79 9 is_stmt 0 view .LVU80
+ 312 0070 1821     		movs	r1, #24
+ 313 0072 1C20     		movs	r0, #28
+ 314 0074 FFF7FEFF 		bl	Mpu6050_WriteReg
+ 315              	.LVL14:
+  79:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 316              		.loc 1 79 8 discriminator 1 view .LVU81
+ 317 0078 08B1     		cbz	r0, .L26
+  80:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 318              		.loc 1 80 16 view .LVU82
+ 319 007a 0124     		movs	r4, #1
+ 320 007c C6E7     		b	.L7
+ 321              	.L26:
+  83:Core/Src/balance_car/mpu6050_hal.c ****     if (HAL_I2C_Mem_Read(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+ 322              		.loc 1 83 5 is_stmt 1 view .LVU83
+  84:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 10U) != HAL_OK) {
+ 323              		.loc 1 84 5 view .LVU84
+  84:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 10U) != HAL_OK) {
+ 324              		.loc 1 84 9 is_stmt 0 view .LVU85
+ 325 007e FFF7FEFF 		bl	BalanceI2C1_GetHandle
+ 326              	.LVL15:
+  84:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 10U) != HAL_OK) {
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 9
+
+
+ 327              		.loc 1 84 9 discriminator 1 view .LVU86
+ 328 0082 0A23     		movs	r3, #10
+ 329 0084 0293     		str	r3, [sp, #8]
+ 330 0086 0E23     		movs	r3, #14
+ 331 0088 0193     		str	r3, [sp, #4]
+ 332 008a 04AB     		add	r3, sp, #16
+ 333 008c 0093     		str	r3, [sp]
+ 334 008e 0123     		movs	r3, #1
+ 335 0090 3B22     		movs	r2, #59
+ 336 0092 D021     		movs	r1, #208
+ 337 0094 FFF7FEFF 		bl	HAL_I2C_Mem_Read
+ 338              	.LVL16:
+  84:Core/Src/balance_car/mpu6050_hal.c ****                          I2C_MEMADD_SIZE_8BIT, data, sizeof(data), 10U) != HAL_OK) {
+ 339              		.loc 1 84 8 discriminator 2 view .LVU87
+ 340 0098 0446     		mov	r4, r0
+ 341 009a 08B1     		cbz	r0, .L27
+  86:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 342              		.loc 1 86 16 view .LVU88
+ 343 009c 0124     		movs	r4, #1
+ 344 009e B5E7     		b	.L7
+ 345              	.L27:
+  89:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+ 346              		.loc 1 89 5 is_stmt 1 view .LVU89
+ 347 00a0 0949     		ldr	r1, .L28+4
+ 348 00a2 04A8     		add	r0, sp, #16
+ 349 00a4 FFF7FEFF 		bl	Mpu6050_ParseRaw
+ 350              	.LVL17:
+  90:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+ 351              		.loc 1 90 5 view .LVU90
+  90:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+ 352              		.loc 1 90 20 is_stmt 0 view .LVU91
+ 353 00a8 084B     		ldr	r3, .L28+8
+ 354 00aa 0122     		movs	r2, #1
+ 355 00ac 1A70     		strb	r2, [r3]
+  91:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 356              		.loc 1 91 5 is_stmt 1 view .LVU92
+  91:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 357              		.loc 1 91 26 is_stmt 0 view .LVU93
+ 358 00ae FFF7FEFF 		bl	HAL_GetTick
+ 359              	.LVL18:
+  91:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 360              		.loc 1 91 24 discriminator 1 view .LVU94
+ 361 00b2 074A     		ldr	r2, .L28+12
+ 362 00b4 1060     		str	r0, [r2]
+  92:Core/Src/balance_car/mpu6050_hal.c **** 
+ 363              		.loc 1 92 5 is_stmt 1 view .LVU95
+  92:Core/Src/balance_car/mpu6050_hal.c **** 
+ 364              		.loc 1 92 18 is_stmt 0 view .LVU96
+ 365 00b6 074B     		ldr	r3, .L28+16
+ 366 00b8 0022     		movs	r2, #0
+ 367 00ba 1A70     		strb	r2, [r3]
+  94:Core/Src/balance_car/mpu6050_hal.c **** }
+ 368              		.loc 1 94 5 is_stmt 1 view .LVU97
+  94:Core/Src/balance_car/mpu6050_hal.c **** }
+ 369              		.loc 1 94 12 is_stmt 0 view .LVU98
+ 370 00bc A6E7     		b	.L7
+ 371              	.L9:
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 10
+
+
+  58:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 372              		.loc 1 58 16 view .LVU99
+ 373 00be 0124     		movs	r4, #1
+ 374 00c0 A4E7     		b	.L7
+ 375              	.L29:
+ 376 00c2 00BF     		.align	2
+ 377              	.L28:
+ 378 00c4 00000000 		.word	s_last_id
+ 379 00c8 00000000 		.word	s_last_raw
+ 380 00cc 00000000 		.word	s_sample_valid
+ 381 00d0 00000000 		.word	s_last_sample_tick
+ 382 00d4 00000000 		.word	s_async_busy
+ 383              		.cfi_endproc
+ 384              	.LFE68:
+ 386              		.section	.text.Mpu6050_ReadRaw,"ax",%progbits
+ 387              		.align	1
+ 388              		.global	Mpu6050_ReadRaw
+ 389              		.syntax unified
+ 390              		.thumb
+ 391              		.thumb_func
+ 393              	Mpu6050_ReadRaw:
+ 394              	.LVL19:
+ 395              	.LFB69:
+  96:Core/Src/balance_car/mpu6050_hal.c **** 
+  97:Core/Src/balance_car/mpu6050_hal.c **** HAL_StatusTypeDef Mpu6050_ReadRaw(Mpu6050Raw_t *raw)
+  98:Core/Src/balance_car/mpu6050_hal.c **** {
+ 396              		.loc 1 98 1 is_stmt 1 view -0
+ 397              		.cfi_startproc
+ 398              		@ args = 0, pretend = 0, frame = 0
+ 399              		@ frame_needed = 0, uses_anonymous_args = 0
+  99:Core/Src/balance_car/mpu6050_hal.c ****     if (raw == NULL) {
+ 400              		.loc 1 99 5 view .LVU101
+ 401              		.loc 1 99 8 is_stmt 0 view .LVU102
+ 402 0000 0028     		cmp	r0, #0
+ 403 0002 50D0     		beq	.L36
+  98:Core/Src/balance_car/mpu6050_hal.c ****     if (raw == NULL) {
+ 404              		.loc 1 98 1 view .LVU103
+ 405 0004 30B5     		push	{r4, r5, lr}
+ 406              	.LCFI10:
+ 407              		.cfi_def_cfa_offset 12
+ 408              		.cfi_offset 4, -12
+ 409              		.cfi_offset 5, -8
+ 410              		.cfi_offset 14, -4
+ 411 0006 83B0     		sub	sp, sp, #12
+ 412              	.LCFI11:
+ 413              		.cfi_def_cfa_offset 24
+ 414 0008 0446     		mov	r4, r0
+ 100:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 101:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 102:Core/Src/balance_car/mpu6050_hal.c **** 
+ 103:Core/Src/balance_car/mpu6050_hal.c ****     if (s_async_busy != 0U && (uint32_t)(HAL_GetTick() - s_async_start_tick) > MPU6050_ASYNC_TIMEOU
+ 415              		.loc 1 103 5 is_stmt 1 view .LVU104
+ 416              		.loc 1 103 22 is_stmt 0 view .LVU105
+ 417 000a 284B     		ldr	r3, .L44
+ 418 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 419              		.loc 1 103 8 view .LVU106
+ 420 000e 4BB9     		cbnz	r3, .L41
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 11
+
+
+ 421              	.LVL20:
+ 422              	.L32:
+ 104:Core/Src/balance_car/mpu6050_hal.c ****         s_async_timeout_count++;
+ 105:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 0U;
+ 106:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 107:Core/Src/balance_car/mpu6050_hal.c **** 
+ 108:Core/Src/balance_car/mpu6050_hal.c ****     if (s_async_busy == 0U && HAL_I2C_GetState(BalanceI2C1_GetHandle()) == HAL_I2C_STATE_READY) {
+ 423              		.loc 1 108 5 is_stmt 1 view .LVU107
+ 424              		.loc 1 108 22 is_stmt 0 view .LVU108
+ 425 0010 264B     		ldr	r3, .L44
+ 426 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 427              		.loc 1 108 8 view .LVU109
+ 428 0014 ABB1     		cbz	r3, .L42
+ 429              	.L33:
+ 109:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 1U;
+ 110:Core/Src/balance_car/mpu6050_hal.c ****         s_async_start_tick = HAL_GetTick();
+ 111:Core/Src/balance_car/mpu6050_hal.c ****         if (HAL_I2C_Mem_Read_IT(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+ 112:Core/Src/balance_car/mpu6050_hal.c ****                                 I2C_MEMADD_SIZE_8BIT, s_async_data, sizeof(s_async_data)) == HAL_OK
+ 113:Core/Src/balance_car/mpu6050_hal.c ****         } else {
+ 114:Core/Src/balance_car/mpu6050_hal.c ****             s_async_busy = 0U;
+ 115:Core/Src/balance_car/mpu6050_hal.c ****             s_rx_error_count++;
+ 116:Core/Src/balance_car/mpu6050_hal.c ****         }
+ 117:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 118:Core/Src/balance_car/mpu6050_hal.c **** 
+ 119:Core/Src/balance_car/mpu6050_hal.c ****     if (s_sample_valid == 0U ||
+ 430              		.loc 1 119 5 is_stmt 1 view .LVU110
+ 431              		.loc 1 119 24 is_stmt 0 view .LVU111
+ 432 0016 264B     		ldr	r3, .L44+4
+ 433 0018 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 434              		.loc 1 119 8 view .LVU112
+ 435 001a 002B     		cmp	r3, #0
+ 436 001c 33D1     		bne	.L43
+ 437              	.L34:
+ 120:Core/Src/balance_car/mpu6050_hal.c ****         (uint32_t)(HAL_GetTick() - s_last_sample_tick) > MPU6050_STALE_TIMEOUT_MS) {
+ 121:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 438              		.loc 1 121 9 is_stmt 1 view .LVU113
+ 439              		.loc 1 121 16 is_stmt 0 view .LVU114
+ 440 001e 0120     		movs	r0, #1
+ 441              	.L31:
+ 122:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 123:Core/Src/balance_car/mpu6050_hal.c **** 
+ 124:Core/Src/balance_car/mpu6050_hal.c ****     __disable_irq();
+ 125:Core/Src/balance_car/mpu6050_hal.c ****     *raw = s_last_raw;
+ 126:Core/Src/balance_car/mpu6050_hal.c ****     __enable_irq();
+ 127:Core/Src/balance_car/mpu6050_hal.c **** 
+ 128:Core/Src/balance_car/mpu6050_hal.c ****     return HAL_OK;
+ 129:Core/Src/balance_car/mpu6050_hal.c **** }
+ 442              		.loc 1 129 1 view .LVU115
+ 443 0020 03B0     		add	sp, sp, #12
+ 444              	.LCFI12:
+ 445              		.cfi_remember_state
+ 446              		.cfi_def_cfa_offset 12
+ 447              		@ sp needed
+ 448 0022 30BD     		pop	{r4, r5, pc}
+ 449              	.LVL21:
+ 450              	.L41:
+ 451              	.LCFI13:
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 12
+
+
+ 452              		.cfi_restore_state
+ 103:Core/Src/balance_car/mpu6050_hal.c ****         s_async_timeout_count++;
+ 453              		.loc 1 103 42 discriminator 1 view .LVU116
+ 454 0024 FFF7FEFF 		bl	HAL_GetTick
+ 455              	.LVL22:
+ 103:Core/Src/balance_car/mpu6050_hal.c ****         s_async_timeout_count++;
+ 456              		.loc 1 103 56 discriminator 1 view .LVU117
+ 457 0028 224B     		ldr	r3, .L44+8
+ 458 002a 1B68     		ldr	r3, [r3]
+ 459 002c C01A     		subs	r0, r0, r3
+ 103:Core/Src/balance_car/mpu6050_hal.c ****         s_async_timeout_count++;
+ 460              		.loc 1 103 28 discriminator 1 view .LVU118
+ 461 002e 1428     		cmp	r0, #20
+ 462 0030 EED9     		bls	.L32
+ 104:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 0U;
+ 463              		.loc 1 104 9 is_stmt 1 view .LVU119
+ 104:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 0U;
+ 464              		.loc 1 104 30 is_stmt 0 view .LVU120
+ 465 0032 214A     		ldr	r2, .L44+12
+ 466 0034 1368     		ldr	r3, [r2]
+ 467 0036 0133     		adds	r3, r3, #1
+ 468 0038 1360     		str	r3, [r2]
+ 105:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 469              		.loc 1 105 9 is_stmt 1 view .LVU121
+ 105:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 470              		.loc 1 105 22 is_stmt 0 view .LVU122
+ 471 003a 1C4B     		ldr	r3, .L44
+ 472 003c 0022     		movs	r2, #0
+ 473 003e 1A70     		strb	r2, [r3]
+ 474 0040 E6E7     		b	.L32
+ 475              	.L42:
+ 108:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 1U;
+ 476              		.loc 1 108 31 discriminator 1 view .LVU123
+ 477 0042 FFF7FEFF 		bl	BalanceI2C1_GetHandle
+ 478              	.LVL23:
+ 479 0046 FFF7FEFF 		bl	HAL_I2C_GetState
+ 480              	.LVL24:
+ 108:Core/Src/balance_car/mpu6050_hal.c ****         s_async_busy = 1U;
+ 481              		.loc 1 108 28 discriminator 2 view .LVU124
+ 482 004a 2028     		cmp	r0, #32
+ 483 004c E3D1     		bne	.L33
+ 109:Core/Src/balance_car/mpu6050_hal.c ****         s_async_start_tick = HAL_GetTick();
+ 484              		.loc 1 109 9 is_stmt 1 view .LVU125
+ 109:Core/Src/balance_car/mpu6050_hal.c ****         s_async_start_tick = HAL_GetTick();
+ 485              		.loc 1 109 22 is_stmt 0 view .LVU126
+ 486 004e 0125     		movs	r5, #1
+ 487 0050 164B     		ldr	r3, .L44
+ 488 0052 1D70     		strb	r5, [r3]
+ 110:Core/Src/balance_car/mpu6050_hal.c ****         if (HAL_I2C_Mem_Read_IT(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+ 489              		.loc 1 110 9 is_stmt 1 view .LVU127
+ 110:Core/Src/balance_car/mpu6050_hal.c ****         if (HAL_I2C_Mem_Read_IT(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+ 490              		.loc 1 110 30 is_stmt 0 view .LVU128
+ 491 0054 FFF7FEFF 		bl	HAL_GetTick
+ 492              	.LVL25:
+ 110:Core/Src/balance_car/mpu6050_hal.c ****         if (HAL_I2C_Mem_Read_IT(BalanceI2C1_GetHandle(), MPU6050_ADDR, MPU6050_ACCEL_XOUT_H,
+ 493              		.loc 1 110 28 discriminator 1 view .LVU129
+ 494 0058 164B     		ldr	r3, .L44+8
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 13
+
+
+ 495 005a 1860     		str	r0, [r3]
+ 111:Core/Src/balance_car/mpu6050_hal.c ****                                 I2C_MEMADD_SIZE_8BIT, s_async_data, sizeof(s_async_data)) == HAL_OK
+ 496              		.loc 1 111 9 is_stmt 1 view .LVU130
+ 111:Core/Src/balance_car/mpu6050_hal.c ****                                 I2C_MEMADD_SIZE_8BIT, s_async_data, sizeof(s_async_data)) == HAL_OK
+ 497              		.loc 1 111 13 is_stmt 0 view .LVU131
+ 498 005c FFF7FEFF 		bl	BalanceI2C1_GetHandle
+ 499              	.LVL26:
+ 111:Core/Src/balance_car/mpu6050_hal.c ****                                 I2C_MEMADD_SIZE_8BIT, s_async_data, sizeof(s_async_data)) == HAL_OK
+ 500              		.loc 1 111 13 discriminator 1 view .LVU132
+ 501 0060 0E23     		movs	r3, #14
+ 502 0062 0193     		str	r3, [sp, #4]
+ 503 0064 154B     		ldr	r3, .L44+16
+ 504 0066 0093     		str	r3, [sp]
+ 505 0068 2B46     		mov	r3, r5
+ 506 006a 3B22     		movs	r2, #59
+ 507 006c D021     		movs	r1, #208
+ 508 006e FFF7FEFF 		bl	HAL_I2C_Mem_Read_IT
+ 509              	.LVL27:
+ 111:Core/Src/balance_car/mpu6050_hal.c ****                                 I2C_MEMADD_SIZE_8BIT, s_async_data, sizeof(s_async_data)) == HAL_OK
+ 510              		.loc 1 111 12 discriminator 2 view .LVU133
+ 511 0072 0028     		cmp	r0, #0
+ 512 0074 CFD0     		beq	.L33
+ 114:Core/Src/balance_car/mpu6050_hal.c ****             s_rx_error_count++;
+ 513              		.loc 1 114 13 is_stmt 1 view .LVU134
+ 114:Core/Src/balance_car/mpu6050_hal.c ****             s_rx_error_count++;
+ 514              		.loc 1 114 26 is_stmt 0 view .LVU135
+ 515 0076 0D4B     		ldr	r3, .L44
+ 516 0078 0022     		movs	r2, #0
+ 517 007a 1A70     		strb	r2, [r3]
+ 115:Core/Src/balance_car/mpu6050_hal.c ****         }
+ 518              		.loc 1 115 13 is_stmt 1 view .LVU136
+ 115:Core/Src/balance_car/mpu6050_hal.c ****         }
+ 519              		.loc 1 115 29 is_stmt 0 view .LVU137
+ 520 007c 104A     		ldr	r2, .L44+20
+ 521 007e 1368     		ldr	r3, [r2]
+ 522 0080 2B44     		add	r3, r3, r5
+ 523 0082 1360     		str	r3, [r2]
+ 524 0084 C7E7     		b	.L33
+ 525              	.L43:
+ 120:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 526              		.loc 1 120 20 view .LVU138
+ 527 0086 FFF7FEFF 		bl	HAL_GetTick
+ 528              	.LVL28:
+ 120:Core/Src/balance_car/mpu6050_hal.c ****         return HAL_ERROR;
+ 529              		.loc 1 120 34 discriminator 1 view .LVU139
+ 530 008a 0E4B     		ldr	r3, .L44+24
+ 531 008c 1B68     		ldr	r3, [r3]
+ 532 008e C01A     		subs	r0, r0, r3
+ 119:Core/Src/balance_car/mpu6050_hal.c ****         (uint32_t)(HAL_GetTick() - s_last_sample_tick) > MPU6050_STALE_TIMEOUT_MS) {
+ 533              		.loc 1 119 30 discriminator 1 view .LVU140
+ 534 0090 3C28     		cmp	r0, #60
+ 535 0092 C4D8     		bhi	.L34
+ 124:Core/Src/balance_car/mpu6050_hal.c ****     *raw = s_last_raw;
+ 536              		.loc 1 124 5 is_stmt 1 view .LVU141
+ 537              	.LBB6:
+ 538              	.LBI6:
+ 539              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 14
+
+
+   1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
+   2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @version  V5.0.4
+   5:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @date     09. April 2018
+   6:Drivers/CMSIS/Include/cmsis_gcc.h ****  ******************************************************************************/
+   7:Drivers/CMSIS/Include/cmsis_gcc.h **** /*
+   8:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+   9:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  10:Drivers/CMSIS/Include/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  12:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
+  18:Drivers/CMSIS/Include/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:Drivers/CMSIS/Include/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:Drivers/CMSIS/Include/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:Drivers/CMSIS/Include/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:Drivers/CMSIS/Include/cmsis_gcc.h ****  * limitations under the License.
+  23:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+  24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+  32:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  34:Drivers/CMSIS/Include/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __has_builtin
+  36:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  38:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+  39:Drivers/CMSIS/Include/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ASM
+  41:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  43:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __INLINE
+  44:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  46:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE                 
+  50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif                                           
+  52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  55:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __USED
+  56:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 15
+
+
+  58:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __WEAK
+  59:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  61:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED
+  62:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  64:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  67:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:Drivers/CMSIS/Include/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  78:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  89:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+  94:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 102:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 113:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 16
+
+
+ 115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
+ 116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 118:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 119:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 120:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 121:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
+ 122:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 123:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 124:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 125:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 126:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+ 132:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 133:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 134:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ 135:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ 136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 137:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 138:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 139:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ 140:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 540              		.loc 2 140 27 view .LVU142
+ 541              	.LBB7:
+ 141:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 142:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+ 542              		.loc 2 142 3 view .LVU143
+ 543              		.syntax unified
+ 544              	@ 142 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 545 0094 72B6     		cpsid i
+ 546              	@ 0 "" 2
+ 547              		.thumb
+ 548              		.syntax unified
+ 549              	.LBE7:
+ 550              	.LBE6:
+ 125:Core/Src/balance_car/mpu6050_hal.c ****     __enable_irq();
+ 551              		.loc 1 125 5 view .LVU144
+ 125:Core/Src/balance_car/mpu6050_hal.c ****     __enable_irq();
+ 552              		.loc 1 125 10 is_stmt 0 view .LVU145
+ 553 0096 0C4B     		ldr	r3, .L44+28
+ 554 0098 07CB     		ldmia	r3!, {r0, r1, r2}
+ 555 009a 2060     		str	r0, [r4]	@ unaligned
+ 556 009c 6160     		str	r1, [r4, #4]	@ unaligned
+ 557 009e A260     		str	r2, [r4, #8]	@ unaligned
+ 126:Core/Src/balance_car/mpu6050_hal.c **** 
+ 558              		.loc 1 126 5 is_stmt 1 view .LVU146
+ 559              	.LBB8:
+ 560              	.LBI8:
+ 129:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ 561              		.loc 2 129 27 view .LVU147
+ 562              	.LBB9:
+ 131:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ 563              		.loc 2 131 3 view .LVU148
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 17
+
+
+ 564              		.syntax unified
+ 565              	@ 131 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 566 00a0 62B6     		cpsie i
+ 567              	@ 0 "" 2
+ 568              		.thumb
+ 569              		.syntax unified
+ 570              	.LBE9:
+ 571              	.LBE8:
+ 128:Core/Src/balance_car/mpu6050_hal.c **** }
+ 572              		.loc 1 128 5 view .LVU149
+ 128:Core/Src/balance_car/mpu6050_hal.c **** }
+ 573              		.loc 1 128 12 is_stmt 0 view .LVU150
+ 574 00a2 0020     		movs	r0, #0
+ 575 00a4 BCE7     		b	.L31
+ 576              	.LVL29:
+ 577              	.L36:
+ 578              	.LCFI14:
+ 579              		.cfi_def_cfa_offset 0
+ 580              		.cfi_restore 4
+ 581              		.cfi_restore 5
+ 582              		.cfi_restore 14
+ 100:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 583              		.loc 1 100 16 view .LVU151
+ 584 00a6 0120     		movs	r0, #1
+ 585              	.LVL30:
+ 586              		.loc 1 129 1 view .LVU152
+ 587 00a8 7047     		bx	lr
+ 588              	.L45:
+ 589 00aa 00BF     		.align	2
+ 590              	.L44:
+ 591 00ac 00000000 		.word	s_async_busy
+ 592 00b0 00000000 		.word	s_sample_valid
+ 593 00b4 00000000 		.word	s_async_start_tick
+ 594 00b8 00000000 		.word	s_async_timeout_count
+ 595 00bc 00000000 		.word	s_async_data
+ 596 00c0 00000000 		.word	s_rx_error_count
+ 597 00c4 00000000 		.word	s_last_sample_tick
+ 598 00c8 00000000 		.word	s_last_raw
+ 599              		.cfi_endproc
+ 600              	.LFE69:
+ 602              		.section	.text.Mpu6050_GetLastId,"ax",%progbits
+ 603              		.align	1
+ 604              		.global	Mpu6050_GetLastId
+ 605              		.syntax unified
+ 606              		.thumb
+ 607              		.thumb_func
+ 609              	Mpu6050_GetLastId:
+ 610              	.LFB70:
+ 130:Core/Src/balance_car/mpu6050_hal.c **** 
+ 131:Core/Src/balance_car/mpu6050_hal.c **** uint8_t Mpu6050_GetLastId(void)
+ 132:Core/Src/balance_car/mpu6050_hal.c **** {
+ 611              		.loc 1 132 1 is_stmt 1 view -0
+ 612              		.cfi_startproc
+ 613              		@ args = 0, pretend = 0, frame = 0
+ 614              		@ frame_needed = 0, uses_anonymous_args = 0
+ 615              		@ link register save eliminated.
+ 133:Core/Src/balance_car/mpu6050_hal.c ****     return s_last_id;
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 18
+
+
+ 616              		.loc 1 133 5 view .LVU154
+ 134:Core/Src/balance_car/mpu6050_hal.c **** }
+ 617              		.loc 1 134 1 is_stmt 0 view .LVU155
+ 618 0000 014B     		ldr	r3, .L47
+ 619 0002 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 620 0004 7047     		bx	lr
+ 621              	.L48:
+ 622 0006 00BF     		.align	2
+ 623              	.L47:
+ 624 0008 00000000 		.word	s_last_id
+ 625              		.cfi_endproc
+ 626              	.LFE70:
+ 628              		.section	.text.HAL_I2C_MemRxCpltCallback,"ax",%progbits
+ 629              		.align	1
+ 630              		.global	HAL_I2C_MemRxCpltCallback
+ 631              		.syntax unified
+ 632              		.thumb
+ 633              		.thumb_func
+ 635              	HAL_I2C_MemRxCpltCallback:
+ 636              	.LVL31:
+ 637              	.LFB71:
+ 135:Core/Src/balance_car/mpu6050_hal.c **** 
+ 136:Core/Src/balance_car/mpu6050_hal.c **** void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+ 137:Core/Src/balance_car/mpu6050_hal.c **** {
+ 638              		.loc 1 137 1 is_stmt 1 view -0
+ 639              		.cfi_startproc
+ 640              		@ args = 0, pretend = 0, frame = 0
+ 641              		@ frame_needed = 0, uses_anonymous_args = 0
+ 642              		.loc 1 137 1 is_stmt 0 view .LVU157
+ 643 0000 08B5     		push	{r3, lr}
+ 644              	.LCFI15:
+ 645              		.cfi_def_cfa_offset 8
+ 646              		.cfi_offset 3, -8
+ 647              		.cfi_offset 14, -4
+ 138:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 648              		.loc 1 138 5 is_stmt 1 view .LVU158
+ 649              		.loc 1 138 13 is_stmt 0 view .LVU159
+ 650 0002 0268     		ldr	r2, [r0]
+ 651              		.loc 1 138 8 view .LVU160
+ 652 0004 0D4B     		ldr	r3, .L53
+ 653 0006 9A42     		cmp	r2, r3
+ 654 0008 00D0     		beq	.L52
+ 655              	.LVL32:
+ 656              	.L49:
+ 139:Core/Src/balance_car/mpu6050_hal.c ****         return;
+ 140:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 141:Core/Src/balance_car/mpu6050_hal.c **** 
+ 142:Core/Src/balance_car/mpu6050_hal.c ****     Mpu6050_ParseRaw(s_async_data, &s_last_raw);
+ 143:Core/Src/balance_car/mpu6050_hal.c ****     s_rx_complete_count++;
+ 144:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+ 145:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+ 146:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 147:Core/Src/balance_car/mpu6050_hal.c **** }
+ 657              		.loc 1 147 1 view .LVU161
+ 658 000a 08BD     		pop	{r3, pc}
+ 659              	.LVL33:
+ 660              	.L52:
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 19
+
+
+ 138:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 661              		.loc 1 138 48 discriminator 1 view .LVU162
+ 662 000c 0C4B     		ldr	r3, .L53+4
+ 663 000e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 138:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 664              		.loc 1 138 32 discriminator 1 view .LVU163
+ 665 0010 002B     		cmp	r3, #0
+ 666 0012 FAD0     		beq	.L49
+ 142:Core/Src/balance_car/mpu6050_hal.c ****     s_rx_complete_count++;
+ 667              		.loc 1 142 5 is_stmt 1 view .LVU164
+ 668 0014 0B49     		ldr	r1, .L53+8
+ 669 0016 0C48     		ldr	r0, .L53+12
+ 670              	.LVL34:
+ 142:Core/Src/balance_car/mpu6050_hal.c ****     s_rx_complete_count++;
+ 671              		.loc 1 142 5 is_stmt 0 view .LVU165
+ 672 0018 FFF7FEFF 		bl	Mpu6050_ParseRaw
+ 673              	.LVL35:
+ 143:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+ 674              		.loc 1 143 5 is_stmt 1 view .LVU166
+ 143:Core/Src/balance_car/mpu6050_hal.c ****     s_last_sample_tick = HAL_GetTick();
+ 675              		.loc 1 143 24 is_stmt 0 view .LVU167
+ 676 001c 0B4A     		ldr	r2, .L53+16
+ 677 001e 1368     		ldr	r3, [r2]
+ 678 0020 0133     		adds	r3, r3, #1
+ 679 0022 1360     		str	r3, [r2]
+ 144:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+ 680              		.loc 1 144 5 is_stmt 1 view .LVU168
+ 144:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+ 681              		.loc 1 144 26 is_stmt 0 view .LVU169
+ 682 0024 FFF7FEFF 		bl	HAL_GetTick
+ 683              	.LVL36:
+ 144:Core/Src/balance_car/mpu6050_hal.c ****     s_sample_valid = 1U;
+ 684              		.loc 1 144 24 discriminator 1 view .LVU170
+ 685 0028 094B     		ldr	r3, .L53+20
+ 686 002a 1860     		str	r0, [r3]
+ 145:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 687              		.loc 1 145 5 is_stmt 1 view .LVU171
+ 145:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 688              		.loc 1 145 20 is_stmt 0 view .LVU172
+ 689 002c 094B     		ldr	r3, .L53+24
+ 690 002e 0122     		movs	r2, #1
+ 691 0030 1A70     		strb	r2, [r3]
+ 146:Core/Src/balance_car/mpu6050_hal.c **** }
+ 692              		.loc 1 146 5 is_stmt 1 view .LVU173
+ 146:Core/Src/balance_car/mpu6050_hal.c **** }
+ 693              		.loc 1 146 18 is_stmt 0 view .LVU174
+ 694 0032 034B     		ldr	r3, .L53+4
+ 695 0034 0022     		movs	r2, #0
+ 696 0036 1A70     		strb	r2, [r3]
+ 697 0038 E7E7     		b	.L49
+ 698              	.L54:
+ 699 003a 00BF     		.align	2
+ 700              	.L53:
+ 701 003c 00540040 		.word	1073763328
+ 702 0040 00000000 		.word	s_async_busy
+ 703 0044 00000000 		.word	s_last_raw
+ 704 0048 00000000 		.word	s_async_data
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 20
+
+
+ 705 004c 00000000 		.word	s_rx_complete_count
+ 706 0050 00000000 		.word	s_last_sample_tick
+ 707 0054 00000000 		.word	s_sample_valid
+ 708              		.cfi_endproc
+ 709              	.LFE71:
+ 711              		.section	.text.HAL_I2C_ErrorCallback,"ax",%progbits
+ 712              		.align	1
+ 713              		.global	HAL_I2C_ErrorCallback
+ 714              		.syntax unified
+ 715              		.thumb
+ 716              		.thumb_func
+ 718              	HAL_I2C_ErrorCallback:
+ 719              	.LVL37:
+ 720              	.LFB72:
+ 148:Core/Src/balance_car/mpu6050_hal.c **** 
+ 149:Core/Src/balance_car/mpu6050_hal.c **** void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+ 150:Core/Src/balance_car/mpu6050_hal.c **** {
+ 721              		.loc 1 150 1 is_stmt 1 view -0
+ 722              		.cfi_startproc
+ 723              		@ args = 0, pretend = 0, frame = 0
+ 724              		@ frame_needed = 0, uses_anonymous_args = 0
+ 725              		@ link register save eliminated.
+ 151:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 726              		.loc 1 151 5 view .LVU176
+ 727              		.loc 1 151 13 is_stmt 0 view .LVU177
+ 728 0000 0268     		ldr	r2, [r0]
+ 729              		.loc 1 151 8 view .LVU178
+ 730 0002 084B     		ldr	r3, .L58
+ 731 0004 9A42     		cmp	r2, r3
+ 732 0006 00D0     		beq	.L57
+ 733              	.L55:
+ 152:Core/Src/balance_car/mpu6050_hal.c ****         return;
+ 153:Core/Src/balance_car/mpu6050_hal.c ****     }
+ 154:Core/Src/balance_car/mpu6050_hal.c **** 
+ 155:Core/Src/balance_car/mpu6050_hal.c ****     s_rx_error_count++;
+ 156:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 157:Core/Src/balance_car/mpu6050_hal.c **** }
+ 734              		.loc 1 157 1 view .LVU179
+ 735 0008 7047     		bx	lr
+ 736              	.L57:
+ 151:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 737              		.loc 1 151 48 discriminator 1 view .LVU180
+ 738 000a 074B     		ldr	r3, .L58+4
+ 739 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 151:Core/Src/balance_car/mpu6050_hal.c ****     if (hi2c->Instance != I2C1 || s_async_busy == 0U) {
+ 740              		.loc 1 151 32 discriminator 1 view .LVU181
+ 741 000e 002B     		cmp	r3, #0
+ 742 0010 FAD0     		beq	.L55
+ 155:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 743              		.loc 1 155 5 is_stmt 1 view .LVU182
+ 155:Core/Src/balance_car/mpu6050_hal.c ****     s_async_busy = 0U;
+ 744              		.loc 1 155 21 is_stmt 0 view .LVU183
+ 745 0012 064A     		ldr	r2, .L58+8
+ 746 0014 1368     		ldr	r3, [r2]
+ 747 0016 0133     		adds	r3, r3, #1
+ 748 0018 1360     		str	r3, [r2]
+ 156:Core/Src/balance_car/mpu6050_hal.c **** }
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 21
+
+
+ 749              		.loc 1 156 5 is_stmt 1 view .LVU184
+ 156:Core/Src/balance_car/mpu6050_hal.c **** }
+ 750              		.loc 1 156 18 is_stmt 0 view .LVU185
+ 751 001a 034B     		ldr	r3, .L58+4
+ 752 001c 0022     		movs	r2, #0
+ 753 001e 1A70     		strb	r2, [r3]
+ 754 0020 F2E7     		b	.L55
+ 755              	.L59:
+ 756 0022 00BF     		.align	2
+ 757              	.L58:
+ 758 0024 00540040 		.word	1073763328
+ 759 0028 00000000 		.word	s_async_busy
+ 760 002c 00000000 		.word	s_rx_error_count
+ 761              		.cfi_endproc
+ 762              	.LFE72:
+ 764              		.section	.bss.s_last_raw,"aw",%nobits
+ 765              		.align	2
+ 768              	s_last_raw:
+ 769 0000 00000000 		.space	12
+ 769      00000000 
+ 769      00000000 
+ 770              		.section	.bss.s_async_data,"aw",%nobits
+ 771              		.align	2
+ 774              	s_async_data:
+ 775 0000 00000000 		.space	14
+ 775      00000000 
+ 775      00000000 
+ 775      0000
+ 776              		.section	.bss.s_rx_error_count,"aw",%nobits
+ 777              		.align	2
+ 780              	s_rx_error_count:
+ 781 0000 00000000 		.space	4
+ 782              		.section	.bss.s_rx_complete_count,"aw",%nobits
+ 783              		.align	2
+ 786              	s_rx_complete_count:
+ 787 0000 00000000 		.space	4
+ 788              		.section	.bss.s_async_timeout_count,"aw",%nobits
+ 789              		.align	2
+ 792              	s_async_timeout_count:
+ 793 0000 00000000 		.space	4
+ 794              		.section	.bss.s_last_sample_tick,"aw",%nobits
+ 795              		.align	2
+ 798              	s_last_sample_tick:
+ 799 0000 00000000 		.space	4
+ 800              		.section	.bss.s_async_start_tick,"aw",%nobits
+ 801              		.align	2
+ 804              	s_async_start_tick:
+ 805 0000 00000000 		.space	4
+ 806              		.section	.bss.s_sample_valid,"aw",%nobits
+ 809              	s_sample_valid:
+ 810 0000 00       		.space	1
+ 811              		.section	.bss.s_async_busy,"aw",%nobits
+ 814              	s_async_busy:
+ 815 0000 00       		.space	1
+ 816              		.section	.bss.s_last_id,"aw",%nobits
+ 819              	s_last_id:
+ 820 0000 00       		.space	1
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 22
+
+
+ 821              		.text
+ 822              	.Letext0:
+ 823              		.file 3 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
+ 824              		.file 4 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
+ 825              		.file 5 "Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 826              		.file 6 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 827              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma.h"
+ 828              		.file 8 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h"
+ 829              		.file 9 "Core/Inc/balance_car/mpu6050_hal.h"
+ 830              		.file 10 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
+ 831              		.file 11 "Core/Inc/balance_car/i2c_bus.h"
+ARM GAS  D:\TMP\ccqT8qt3.s 			page 23
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 mpu6050_hal.c
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:19     .text.Mpu6050_ReadReg:00000000 $t
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:24     .text.Mpu6050_ReadReg:00000000 Mpu6050_ReadReg
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:68     .text.Mpu6050_WriteReg:00000000 $t
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:73     .text.Mpu6050_WriteReg:00000000 Mpu6050_WriteReg
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:117    .text.Mpu6050_Init:00000000 $t
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:123    .text.Mpu6050_Init:00000000 Mpu6050_Init
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:244    .text.Mpu6050_Init:0000007c $d
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:393    .bss.s_last_id:00000000 s_last_id
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:249    .text.Mpu6050_ReadRaw:00000000 $t
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:255    .text.Mpu6050_ReadRaw:00000000 Mpu6050_ReadRaw
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:365    .text.Mpu6050_GetLastId:00000000 $t
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:371    .text.Mpu6050_GetLastId:00000000 Mpu6050_GetLastId
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:386    .text.Mpu6050_GetLastId:00000008 $d
-C:\Users\future\AppData\Local\Temp\cc99dMz3.s:394    .bss.s_last_id:00000000 $d
+   D:\TMP\ccqT8qt3.s:19     .text.Mpu6050_ParseRaw:00000000 $t
+   D:\TMP\ccqT8qt3.s:24     .text.Mpu6050_ParseRaw:00000000 Mpu6050_ParseRaw
+   D:\TMP\ccqT8qt3.s:92     .text.Mpu6050_ReadReg:00000000 $t
+   D:\TMP\ccqT8qt3.s:97     .text.Mpu6050_ReadReg:00000000 Mpu6050_ReadReg
+   D:\TMP\ccqT8qt3.s:141    .text.Mpu6050_WriteReg:00000000 $t
+   D:\TMP\ccqT8qt3.s:146    .text.Mpu6050_WriteReg:00000000 Mpu6050_WriteReg
+   D:\TMP\ccqT8qt3.s:190    .text.Mpu6050_Init:00000000 $t
+   D:\TMP\ccqT8qt3.s:196    .text.Mpu6050_Init:00000000 Mpu6050_Init
+   D:\TMP\ccqT8qt3.s:378    .text.Mpu6050_Init:000000c4 $d
+   D:\TMP\ccqT8qt3.s:819    .bss.s_last_id:00000000 s_last_id
+   D:\TMP\ccqT8qt3.s:768    .bss.s_last_raw:00000000 s_last_raw
+   D:\TMP\ccqT8qt3.s:809    .bss.s_sample_valid:00000000 s_sample_valid
+   D:\TMP\ccqT8qt3.s:798    .bss.s_last_sample_tick:00000000 s_last_sample_tick
+   D:\TMP\ccqT8qt3.s:814    .bss.s_async_busy:00000000 s_async_busy
+   D:\TMP\ccqT8qt3.s:387    .text.Mpu6050_ReadRaw:00000000 $t
+   D:\TMP\ccqT8qt3.s:393    .text.Mpu6050_ReadRaw:00000000 Mpu6050_ReadRaw
+   D:\TMP\ccqT8qt3.s:591    .text.Mpu6050_ReadRaw:000000ac $d
+   D:\TMP\ccqT8qt3.s:804    .bss.s_async_start_tick:00000000 s_async_start_tick
+   D:\TMP\ccqT8qt3.s:792    .bss.s_async_timeout_count:00000000 s_async_timeout_count
+   D:\TMP\ccqT8qt3.s:774    .bss.s_async_data:00000000 s_async_data
+   D:\TMP\ccqT8qt3.s:780    .bss.s_rx_error_count:00000000 s_rx_error_count
+   D:\TMP\ccqT8qt3.s:603    .text.Mpu6050_GetLastId:00000000 $t
+   D:\TMP\ccqT8qt3.s:609    .text.Mpu6050_GetLastId:00000000 Mpu6050_GetLastId
+   D:\TMP\ccqT8qt3.s:624    .text.Mpu6050_GetLastId:00000008 $d
+   D:\TMP\ccqT8qt3.s:629    .text.HAL_I2C_MemRxCpltCallback:00000000 $t
+   D:\TMP\ccqT8qt3.s:635    .text.HAL_I2C_MemRxCpltCallback:00000000 HAL_I2C_MemRxCpltCallback
+   D:\TMP\ccqT8qt3.s:701    .text.HAL_I2C_MemRxCpltCallback:0000003c $d
+   D:\TMP\ccqT8qt3.s:786    .bss.s_rx_complete_count:00000000 s_rx_complete_count
+   D:\TMP\ccqT8qt3.s:712    .text.HAL_I2C_ErrorCallback:00000000 $t
+   D:\TMP\ccqT8qt3.s:718    .text.HAL_I2C_ErrorCallback:00000000 HAL_I2C_ErrorCallback
+   D:\TMP\ccqT8qt3.s:758    .text.HAL_I2C_ErrorCallback:00000024 $d
+   D:\TMP\ccqT8qt3.s:765    .bss.s_last_raw:00000000 $d
+   D:\TMP\ccqT8qt3.s:771    .bss.s_async_data:00000000 $d
+   D:\TMP\ccqT8qt3.s:777    .bss.s_rx_error_count:00000000 $d
+   D:\TMP\ccqT8qt3.s:783    .bss.s_rx_complete_count:00000000 $d
+   D:\TMP\ccqT8qt3.s:789    .bss.s_async_timeout_count:00000000 $d
+   D:\TMP\ccqT8qt3.s:795    .bss.s_last_sample_tick:00000000 $d
+   D:\TMP\ccqT8qt3.s:801    .bss.s_async_start_tick:00000000 $d
+   D:\TMP\ccqT8qt3.s:810    .bss.s_sample_valid:00000000 $d
+   D:\TMP\ccqT8qt3.s:815    .bss.s_async_busy:00000000 $d
+   D:\TMP\ccqT8qt3.s:820    .bss.s_last_id:00000000 $d
 
 UNDEFINED SYMBOLS
 BalanceI2C1_GetHandle
 HAL_I2C_Mem_Read
 HAL_I2C_Mem_Write
 BalanceI2C1_Init
+HAL_GetTick
+HAL_I2C_GetState
+HAL_I2C_Mem_Read_IT

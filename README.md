@@ -189,6 +189,8 @@ Core/Src/balance_car/
 | `hx711.c/.h` | PB12/PB13 读取 XFW-XH711/HX711 称重模块 |
 | `app_sensors.c/.h` | 温湿度、XH711 重量计算和 Ozone 状态变量 |
 | `display_ui.c/.h` | OLED UI 源码保留，但当前不参与编译 |
+| `app_tasks.c/.h` | FreeRTOS 任务调度层，集中创建任务、信号量、队列和任务函数 |
+| `FreeRTOSConfig.h` | FreeRTOS 内核配置，包含任务优先级数量、堆大小、栈溢出检测和中断优先级阈值 |
 
 Android APP 工程在：
 
@@ -202,16 +204,41 @@ CubeMX 生成的主入口在：
 Core/Src/main.c
 ```
 
-其中调用：
+启动流程：
 
 ```c
 (void)BalanceCar_Init();
-
-while (1)
-{
-    BalanceCar_Background();
-}
+AppTasks_Init();
+osKernelStart();
 ```
+
+`main.c` 不再用裸机 `while(1)` 轮询所有模块。外设初始化仍在 `BalanceCar_Init()` 内保持原有模块调用，调度逻辑集中在 `app_tasks.c`。
+
+FreeRTOS 任务划分：
+
+| 任务 | 优先级 | 触发/周期 | 职责 |
+| --- | --- | --- | --- |
+| `Task_BalanceControl` | `osPriorityRealtime` | TIM4 每 10ms 释放 `Sem_BalanceControl` 唤醒 | 读取 MPU6050、姿态解算、角度环、每 50ms 速度/转向环、电机 PWM 输出和安全停机 |
+| `Task_UartRaspberry` | `osPriorityHigh` | 20ms | 处理 USART1 PB6/PB7 树莓派 `$BB/$BO` 通讯 |
+| `Task_BluetoothApp` | `osPriorityNormal` | 50ms | 处理 USART3 PB10/PB11 蓝牙 APP 命令和遥测 |
+| `Task_SensorCollect` | `osPriorityLow` | 空闲 500ms；DHT11 起始等待期间 20ms 短服务 | 运行 DHT11、XH711 低速采集后台 |
+
+树莓派和蓝牙解析出的控制目标会写入 `Queue_ControlCommand`，PID 参数更新会写入 `Queue_PidUpdate`，都由最高优先级的平衡控制任务统一取出后更新 `g_balance_debug` 和三组 PID。这样通讯和传感器任务不会排在 MPU6050 采样之前。
+
+串口接收采用“中断搬运、任务解析”的方式：
+
+- 蓝牙完整命令行进入 `Queue_BluetoothRxLine`，`Task_BluetoothApp` 逐条解析，避免 50ms 后台周期内多条 APP 命令互相覆盖。
+- 树莓派完整帧进入 `Queue_RaspberryRxLine`，`Task_UartRaspberry` 逐条解析。
+- 蓝牙和树莓派各自使用独立 TX 互斥量保护发送缓冲区；发送仍使用 `HAL_UART_Transmit_IT()` 非阻塞接口。
+- 通讯任务读取姿态、传感器、PID 遥测时通过 `AppTasks_CopyBalanceState()`、`AppTasks_CopySensorState()`、`AppTasks_CopyPidSnapshot()` 获取受保护快照，不直接跨任务读写控制结构体。
+- `g_app_task_monitor` 提供四个任务的循环/唤醒计数和最近运行毫秒时间，便于在 Ozone 里确认任务调度仍在运行。
+- 蓝牙和树莓派接收都有半帧超时保护，超时未收到换行会丢弃当前缓冲并增加对应 `partial_timeout_count`。
+
+实时性边界：
+
+- 主循环轮询已经移除，通讯、低速传感器和遥测不会排在 10ms 平衡控制前面。
+- 为了保持 MPU6050 驱动内部逻辑不重写，当前 `Mpu6050_ReadRaw()` 仍复用 HAL 同步 I2C 读，单次读取带 5ms 超时保护。正常 I2C 通信只占用很短时间；若 I2C 硬件异常导致超时，平衡任务会停机并置 `BALANCE_FAULT_MPU_READ`。
+- 如果需要严格做到平衡任务内所有外设访问完全非阻塞，需要进一步允许改造 MPU6050 驱动为 I2C 中断/DMA 状态机；这会超出当前“驱动层内部逻辑不重写”的约束。
 
 ## 3. 编译方法
 
@@ -258,7 +285,7 @@ MPU6050 Z轴陀螺仪
 
 ### 4.1 10ms 角度环
 
-TIM4 每 1ms 产生节拍，后台每 10ms 执行一次角度环：
+TIM4 每 1ms 产生节拍，每 10ms 在中断中释放 `Sem_BalanceControl`。`Task_BalanceControl` 被唤醒后立即执行角度环：
 
 ```c
 Mpu6050_ReadRaw(&raw);
@@ -278,7 +305,7 @@ float ave_pwm = g_angle_pid.Out;
 
 ### 4.2 50ms 速度环和转向环
 
-后台每 50ms 读取编码器：
+`Task_BalanceControl` 每 5 次 10ms 控制步读取一次编码器，即 50ms 周期：
 
 ```c
 left_speed = left_delta / 13.0 / 0.05 / 30.0;
@@ -375,7 +402,7 @@ g_turn_pid
 
 ### 5.3 g_sensor_state
 
-这是 DHT11 和 XFW-XH711 的观察与校准入口。OLED 当前已从固件中移除，`oled_*` 字段保留但不会更新。
+这是 DHT11 和 XFW-XH711 的观察与校准入口。OLED 当前已从固件中移除，相关源码保留但不参与编译。
 
 | 变量 | 含义 |
 | --- | --- |
@@ -386,14 +413,11 @@ g_turn_pid
 | `hx711_zero_raw` | 空载零点原始值，可在 Ozone 中手动修正 |
 | `hx711_g_per_count` | 每个 XH711 count 对应多少克，可在 Ozone 中手动校准 |
 | `hx711_weight_g` | XH711 计算出的重量，单位 g |
-| `sensor_fault_flags` | 传感器和 OLED 故障位 |
+| `sensor_fault_flags` | DHT11 和 XH711 故障位 |
 | `dht_valid` | 1=DHT11 最近一次读取成功 |
 | `dht_fail_step` | DHT11 最近失败阶段，0=正常，1~3=响应阶段失败，4~5=数据位超时，6=校验失败 |
 | `hx711_valid` | 1=XH711 最近一次读取成功 |
-| `oled_ready` | 1=OLED 初始化成功且正在刷新 |
-| `oled_addr_7bit` | OLED 实际使用的 7 位 I2C 地址，正常通常是 `0x3C` 或 `0x3D` |
-| `oled_probe_mask` | OLED 地址探测结果，bit0=`0x3C` 有应答，bit1=`0x3D` 有应答 |
-| `oled_fail_step` | OLED 初始化失败步骤，1=I2C2 初始化失败，2=地址无应答，3=初始化命令失败，4=首次刷新失败 |
+| `oled_*` | 历史保留字段，当前固件不初始化 OLED，因此不会更新 |
 
 重量换算公式：
 
@@ -428,6 +452,7 @@ g_balance_state.angle
 | `valid_cmd_count` | 有效命令计数 |
 | `invalid_cmd_count` | 无效命令计数 |
 | `timeout_count` | 遥控超时次数 |
+| `partial_timeout_count` | 半条命令超过行超时时间后被丢弃次数 |
 | `last_rx_ms` | 最近一次有效命令的系统毫秒时间 |
 | `fault_flags` | 遥控模块故障位 |
 | `speed_cmd` | 最近一次遥控速度目标，已经过限幅 |
@@ -443,7 +468,20 @@ g_balance_state.angle
 - APP 摇杆连续遥控时发送 `CTL speed turn`，`speed_cmd/turn_cmd` 会同时更新。
 - 超过 500ms 没收到有效命令时，`link_active` 变 0，`speed_target/turn_target` 自动清零。
 
-### 5.5 g_remote_debug
+### 5.5 g_app_task_monitor
+
+这是 FreeRTOS 任务运行监测入口，用来确认调度层没有卡死。
+
+| 变量 | 含义 |
+| --- | --- |
+| `balance_wake_count` | 平衡任务被 TIM4 信号量唤醒的次数 |
+| `balance_timeout_count` | 平衡任务 30ms 内未收到控制信号量的次数，非 0 说明控制节拍异常 |
+| `balance_last_ms` | 平衡任务最近运行的系统毫秒时间 |
+| `raspi_loop_count` / `raspi_last_ms` | 树莓派通信任务循环次数和最近运行时间 |
+| `bluetooth_loop_count` / `bluetooth_last_ms` | 蓝牙 APP 任务循环次数和最近运行时间 |
+| `sensor_loop_count` / `sensor_last_ms` | 低速传感器任务循环次数和最近运行时间 |
+
+### 5.6 g_remote_debug
 
 这是蓝牙遥控功能的调试配置，可以在 Ozone 中临时修改。
 
@@ -463,9 +501,9 @@ g_balance_state.angle
 - 如果你只想用 Ozone 启动，不想让 APP 启动小车，可以把 `allow_run_command = 0`。
 - 如果松开 APP 方向键后车还继续走，优先看 `timeout_stop_enable` 是否为 1，以及 `timeout_count` 是否会增加。
 
-### 5.6 三个 PID
+### 5.7 三个 PID
 
-### 5.6 g_raspi_link_state
+### 5.8 g_raspi_link_state
 
 这是树莓派 UART 链路的接收状态。调 Pi 到 STM32 的 `$BB` 控制帧时主要看它。
 
@@ -480,6 +518,7 @@ g_balance_state.angle
 | `invalid_frame_count` | 无效帧计数 |
 | `checksum_error_count` | 校验失败计数 |
 | `timeout_count` | Pi 链路失联超时次数 |
+| `partial_timeout_count` | 半帧超过行超时时间后被丢弃次数 |
 | `last_rx_ms` | 最近一次有效帧的系统毫秒时间 |
 | `last_tx_ms` | 最近一次成功发送 `$BO` 的系统毫秒时间 |
 | `last_seq` | 最近一次有效帧的序号 |
@@ -508,7 +547,7 @@ g_balance_state.angle
 - `enable_motion=0` 或 `obstacle_stop=1` 时，`g_balance_debug.run_enable` 变 0，速度和转向目标清零。
 - 超过 500ms 没收到有效帧时，`timeout_count` 增加，平衡车停机。
 
-### 5.7 g_raspi_link_debug
+### 5.9 g_raspi_link_debug
 
 这是树莓派 UART 链路的调试配置，可以在 Ozone 中临时修改。
 
@@ -1138,14 +1177,13 @@ g_balance_state.angle
 g_balance_state.ave_speed
 ```
 
-### 6.8 OLED、温湿度和重量显示调试
+### 6.8 温湿度和重量采集调试
 
-先不要接电机电源，只接 STM32、MPU6050、OLED、DHT11 和 XFW-XH711。
+先不要接电机电源，只接 STM32、MPU6050、DHT11 和 XFW-XH711。OLED 当前不参与编译，PB10/PB11 留给 USART3 蓝牙。
 
 在 Ozone 中观察：
 
 ```c
-g_sensor_state.oled_ready
 g_sensor_state.temperature_c
 g_sensor_state.humidity_percent
 g_sensor_state.dht_valid
@@ -1157,14 +1195,10 @@ g_sensor_state.hx711_g_per_count
 g_sensor_state.hx711_weight_g
 g_sensor_state.weight_g
 g_sensor_state.sensor_fault_flags
-g_sensor_state.oled_addr_7bit
-g_sensor_state.oled_probe_mask
-g_sensor_state.oled_fail_step
 ```
 
 调好标准：
 
-- OLED 每隔约 500ms 更新一次显示。
 - DHT11 温湿度每隔约 2s 更新一次。
 - 按压称重传感器时，`hx711_raw` 连续变化。
 - 模块接好并正常出数时，`hx711_valid == 1`。
@@ -1292,7 +1326,7 @@ APP 使用流程：
 6. 点击中间下方的 `START` 发送 `RUN 1`。
 7. 左侧摇杆上下控制前进/后退，松开后速度自动归零。
 8. 右侧摇杆左右控制左转/右转，松开后转向自动归零。
-9. 中间区域会同步显示车上 OLED 的四行内容。
+9. 中间区域会同步显示 STM32 回传的传感器四行遥测。
 10. 点击中间下方的 `EMERGENCY STOP` 发送 `RUN 0`。
 
 APP 遥控输出：
@@ -1316,13 +1350,13 @@ APP 控制对应命令：
 | 右摇杆向左/向右 | `CTL 当前速度 当前转向` |
 | 右摇杆松开 | `CTL 当前速度 0` |
 
-STM32 每隔约 500ms 会通过蓝牙回传一行 OLED 数据：
+STM32 每隔约 500ms 会通过蓝牙回传一行传感器数据。行首仍使用 `OLED`，只是为了兼容 APP 现有解析协议，不代表当前固件还驱动车上 OLED：
 
 ```text
 OLED Temp:25.0 C|Humi:60 %|Weight:120 g|Raw:123456
 ```
 
-APP 收到后会拆成四行显示，尽量和车上 OLED 内容保持一致：
+APP 收到后会拆成四行显示：
 
 ```text
 Temp: 25.0 C
@@ -1472,7 +1506,7 @@ return -delta;
 | `0x00000001` | MPU6050 初始化失败 | 检查 PB8/PB9、供电、地址 |
 | `0x00000002` | MPU6050 读取失败 | 检查 I2C 接触、供电干扰 |
 | `0x00000004` | 倾角超过保护阈值 | 车倒了，程序自动停机 |
-| `0x00000008` | 控制节拍堆积 | 主循环太慢或卡住 |
+| `0x00000008` | 控制节拍堆积 | 平衡任务未及时消耗 TIM4 控制信号，检查中断、任务优先级或高优先级阻塞 |
 | `0x00000010` | 电机初始化失败 | 检查 TIM3 PWM/GPIO 初始化 |
 | `0x00000020` | 编码器初始化失败 | 检查 TIM1/TIM2 初始化 |
 | `0x00000040` | TIM4 初始化失败 | 检查控制节拍定时器 |
@@ -1494,17 +1528,8 @@ g_balance_debug.clear_fault_request = 1;
 | `0x00000002` | DHT11 读取失败 | 检查数据线、上拉、电源稳定性 |
 | `0x00000004` | XH711 初始化失败 | 检查 PB12/PB13 GPIO 配置 |
 | `0x00000008` | XH711 读取失败 | 检查 DT/SCK、供电、GND、称重传感器接线 |
-| `0x00000010` | OLED 初始化失败 | 检查 PB10/PB11、地址 0x3C、供电 |
-| `0x00000020` | OLED 刷新失败 | 检查 I2C 总线和 OLED 接触 |
-
-OLED 不亮时，优先看：
-
-```c
-g_sensor_state.oled_probe_mask
-g_sensor_state.oled_fail_step
-```
-
-如果 `oled_fail_step == 2` 且 `oled_probe_mask == 0`，说明 PB10/PB11 的 I2C2 总线上没有探测到 `0x3C` 或 `0x3D` OLED，应优先检查 SCL/SDA 是否接反、供电/GND、模块是否真的是 I2C 版本。
+| `0x00000010` | OLED 历史保留位 | 当前固件未编译 OLED 驱动，不会主动置位 |
+| `0x00000020` | OLED 历史保留位 | 当前固件未编译 OLED 驱动，不会主动置位 |
 
 `g_remote_state.fault_flags` 是蓝牙遥控模块故障位。
 
@@ -1653,9 +1678,13 @@ HEX/BIN 只适合烧录，不适合看变量。
 
 ### CubeMX 重新生成后要注意什么？
 
-本项目的 I2C、PWM、编码器、TIM4 控制节拍由 `Core/Src/balance_car/` 中的 HAL 初始化代码配置。如果重新用 CubeMX 生成代码，重点检查：
+本项目的 I2C、PWM、编码器、TIM4 控制节拍由 `Core/Src/balance_car/` 中的 HAL 初始化代码配置，FreeRTOS 调度层由 `app_tasks.c/.h` 和 `FreeRTOSConfig.h` 管理。如果重新用 CubeMX 生成代码，重点检查：
 
-- `main.c` 中是否还调用 `BalanceCar_Init()` 和 `BalanceCar_Background()`
+- `main.c` 中是否还调用 `BalanceCar_Init()`、`AppTasks_Init()` 和 `osKernelStart()`
+- `Makefile` 是否仍包含 `Core/Src/balance_car/app_tasks.c`
+- `Makefile` 是否仍包含 `Middlewares/Third_Party/FreeRTOS/Source/*.c`、`CMSIS_RTOS/cmsis_os.c`、`portable/GCC/ARM_CM3/port.c` 和 `portable/MemMang/heap_4.c`
+- `Makefile` 是否仍包含 FreeRTOS include 路径
+- `stm32f1xx_it.c` 中不要重新生成空的 `SVC_Handler`、`PendSV_Handler`、`SysTick_Handler` 覆盖 FreeRTOS 端口
 - `stm32f1xx_hal_msp.c` 中是否仍保留 SWD，不要禁用 SWD
 - `Makefile` 是否仍包含 `Core/Src/balance_car/*.c`
 - `Makefile` 是否仍包含 `Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c`

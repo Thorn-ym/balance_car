@@ -1,6 +1,11 @@
 #include "balance_car/raspi_link.h"
 
+#include "balance_car/app_tasks.h"
 #include "balance_car/balance_control.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "semphr.h"
+#include "task.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,8 +17,9 @@
 #define RASPI_UART_TX_PIN                  GPIO_PIN_6
 #define RASPI_UART_RX_PORT                 GPIOB
 #define RASPI_UART_RX_PIN                  GPIO_PIN_7
-#define RASPI_LINE_MAX                     79U
+#define RASPI_LINE_MAX                     APP_RASPI_LINE_MAX
 #define RASPI_TX_LINE_MAX                  95U
+#define RASPI_RX_LINE_TIMEOUT_MS           150U
 #define RASPI_PI_F                         3.1415926f
 #define RASPI_DEG_TO_RAD                   (RASPI_PI_F / 180.0f)
 
@@ -38,7 +44,10 @@ static char s_rx_line[RASPI_LINE_MAX + 1U];
 static volatile uint8_t s_rx_index;
 static volatile uint8_t s_line_ready;
 static char s_parse_line[RASPI_LINE_MAX + 1U];
+static char s_pending_line[RASPI_LINE_MAX + 1U];
 static char s_tx_line[RASPI_TX_LINE_MAX + 1U];
+static volatile uint8_t s_line_queued;
+static volatile uint32_t s_rx_line_start_ms;
 static uint32_t s_next_odom_tx_ms;
 static uint32_t s_last_odom_update_ms;
 
@@ -63,12 +72,20 @@ static float RaspiLink_Clamp(float value, float limit)
 
 static void RaspiLink_StopMotion(void)
 {
-    g_balance_debug.run_enable = 0U;
-    g_balance_debug.speed_target = 0.0f;
-    g_balance_debug.turn_target = 0.0f;
+    AppControlCommand_t command;
+
     g_raspi_link_state.linear_x_cmd = 0.0f;
     g_raspi_link_state.angular_z_cmd = 0.0f;
     g_raspi_link_state.speed_target_rps = 0.0f;
+
+    command.source = APP_CMD_SOURCE_RASPI;
+    command.run_valid = 1U;
+    command.run_enable = 0U;
+    command.reset_pid = 0U;
+    command.clear_fault = 0U;
+    command.speed_target = 0.0f;
+    command.turn_target = 0.0f;
+    AppTasks_SubmitControlCommandFromTask(&command);
 }
 
 static void RaspiLink_StartReceive(void)
@@ -123,7 +140,7 @@ static HAL_StatusTypeDef RaspiLink_UartInit(void)
         return HAL_ERROR;
     }
 
-    HAL_NVIC_SetPriority(USART1_IRQn, 2U, 1U);
+    HAL_NVIC_SetPriority(USART1_IRQn, 5U, 0U);
     HAL_NVIC_EnableIRQ(USART1_IRQn);
     return HAL_OK;
 }
@@ -135,6 +152,8 @@ HAL_StatusTypeDef RaspiLink_Init(void)
     memset((void *)&g_raspi_link_state, 0, sizeof(g_raspi_link_state));
     s_rx_index = 0U;
     s_line_ready = 0U;
+    s_line_queued = 0U;
+    s_rx_line_start_ms = 0U;
     s_next_odom_tx_ms = HAL_GetTick() + g_raspi_link_debug.odom_period_ms;
     s_last_odom_update_ms = HAL_GetTick();
     status = RaspiLink_UartInit();
@@ -331,11 +350,15 @@ static void RaspiLink_ProcessLine(char *line)
         return;
     }
 
-    if (g_raspi_link_debug.allow_run_enable != 0U) {
-        g_balance_debug.run_enable = 1U;
-    }
-    g_balance_debug.speed_target = speed_target_rps;
-    g_balance_debug.turn_target = angular_z;
+    AppControlCommand_t command;
+    command.source = APP_CMD_SOURCE_RASPI;
+    command.run_valid = g_raspi_link_debug.allow_run_enable;
+    command.run_enable = 1U;
+    command.reset_pid = 0U;
+    command.clear_fault = 0U;
+    command.speed_target = speed_target_rps;
+    command.turn_target = angular_z;
+    AppTasks_SubmitControlCommandFromTask(&command);
 }
 
 static void RaspiLink_CheckTimeout(void)
@@ -359,6 +382,29 @@ static void RaspiLink_CheckTimeout(void)
     }
 }
 
+static void RaspiLink_CheckLineTimeout(void)
+{
+    if (s_rx_index == 0U || s_rx_line_start_ms == 0U) {
+        return;
+    }
+    if ((uint32_t)(HAL_GetTick() - s_rx_line_start_ms) <= RASPI_RX_LINE_TIMEOUT_MS) {
+        return;
+    }
+
+    __disable_irq();
+    s_rx_index = 0U;
+    s_rx_line[0] = '\0';
+    s_pending_line[0] = '\0';
+    s_line_ready = 0U;
+    s_line_queued = 0U;
+    s_rx_line_start_ms = 0U;
+    __enable_irq();
+
+    g_raspi_link_state.partial_timeout_count++;
+    g_raspi_link_state.frame_ready = 0U;
+    RaspiLink_MarkInvalid(RASPI_LINK_FAULT_BAD_FRAME);
+}
+
 static void RaspiLink_NormalizeYaw(void)
 {
     while (g_raspi_link_state.odom_yaw_rad > RASPI_PI_F) {
@@ -376,6 +422,7 @@ static void RaspiLink_UpdateOdometry(uint32_t now)
     float wheel_radius_m = g_raspi_link_debug.wheel_radius_m;
     float linear_x_mps;
     float angular_z_rps;
+    BalanceCarState_t balance = {0};
 
     if (s_last_odom_update_ms == 0U) {
         s_last_odom_update_ms = now;
@@ -393,17 +440,18 @@ static void RaspiLink_UpdateOdometry(uint32_t now)
     }
 
     dt_s = (float)dt_ms / 1000.0f;
-    linear_x_mps = g_balance_state.ave_speed * 2.0f * RASPI_PI_F * wheel_radius_m;
-    angular_z_rps = g_balance_state.gyro_z_rate * RASPI_DEG_TO_RAD;
+    AppTasks_CopyBalanceState(&balance);
+    linear_x_mps = balance.ave_speed * 2.0f * RASPI_PI_F * wheel_radius_m;
+    angular_z_rps = balance.gyro_z_rate * RASPI_DEG_TO_RAD;
     if (angular_z_rps > -g_raspi_link_debug.odom_angular_deadband_rps &&
         angular_z_rps < g_raspi_link_debug.odom_angular_deadband_rps) {
         angular_z_rps = 0.0f;
     }
 
-    g_raspi_link_state.speed_actual_rps = g_balance_state.ave_speed;
+    g_raspi_link_state.speed_actual_rps = balance.ave_speed;
     g_raspi_link_state.speed_actual_mps = linear_x_mps;
-    g_raspi_link_state.left_pwm_snapshot = g_balance_state.left_pwm;
-    g_raspi_link_state.right_pwm_snapshot = g_balance_state.right_pwm;
+    g_raspi_link_state.left_pwm_snapshot = balance.left_pwm;
+    g_raspi_link_state.right_pwm_snapshot = balance.right_pwm;
     g_raspi_link_state.odom_linear_x_mps = linear_x_mps;
     g_raspi_link_state.odom_angular_z_rps = angular_z_rps;
     g_raspi_link_state.odom_yaw_rad += angular_z_rps * dt_s;
@@ -458,6 +506,11 @@ static void RaspiLink_SendOdometry(uint32_t now)
         g_raspi_link_state.tx_error_count++;
         return;
     }
+    if (Sem_RaspberryTxMutex != NULL &&
+        xSemaphoreTake(Sem_RaspberryTxMutex, pdMS_TO_TICKS(2U)) != pdPASS) {
+        g_raspi_link_state.tx_error_count++;
+        return;
+    }
 
     g_raspi_link_state.odom_seq++;
     RaspiLink_FormatFixed4(x_text, sizeof(x_text), g_raspi_link_state.odom_x_m);
@@ -476,6 +529,9 @@ static void RaspiLink_SendOdometry(uint32_t now)
                            wz_text);
     if (payload_len <= 0 || payload_len >= (int)sizeof(payload)) {
         g_raspi_link_state.tx_error_count++;
+        if (Sem_RaspberryTxMutex != NULL) {
+            (void)xSemaphoreGive(Sem_RaspberryTxMutex);
+        }
         return;
     }
 
@@ -483,6 +539,9 @@ static void RaspiLink_SendOdometry(uint32_t now)
     frame_len = snprintf(s_tx_line, sizeof(s_tx_line), "$%s*%02X\n", payload, checksum);
     if (frame_len <= 0 || frame_len >= (int)sizeof(s_tx_line)) {
         g_raspi_link_state.tx_error_count++;
+        if (Sem_RaspberryTxMutex != NULL) {
+            (void)xSemaphoreGive(Sem_RaspberryTxMutex);
+        }
         return;
     }
 
@@ -495,7 +554,13 @@ static void RaspiLink_SendOdometry(uint32_t now)
     if (HAL_UART_Transmit_IT(&s_huart_raspi, (uint8_t *)s_tx_line, (uint16_t)frame_len) != HAL_OK) {
         g_raspi_link_state.tx_busy = 0U;
         g_raspi_link_state.tx_error_count++;
+        if (Sem_RaspberryTxMutex != NULL) {
+            (void)xSemaphoreGive(Sem_RaspberryTxMutex);
+        }
         return;
+    }
+    if (Sem_RaspberryTxMutex != NULL) {
+        (void)xSemaphoreGive(Sem_RaspberryTxMutex);
     }
     g_raspi_link_state.tx_count++;
     g_raspi_link_state.last_tx_ms = now;
@@ -504,6 +569,8 @@ static void RaspiLink_SendOdometry(uint32_t now)
 void RaspiLink_Background(void)
 {
     uint32_t now = HAL_GetTick();
+    AppRaspiLine_t queued_line;
+    uint8_t processed_queued_line = 0U;
 
     if (g_raspi_link_debug.odom_reset_request != 0U) {
         g_raspi_link_debug.odom_reset_request = 0U;
@@ -512,11 +579,28 @@ void RaspiLink_Background(void)
         g_raspi_link_state.odom_yaw_rad = 0.0f;
     }
 
-    if (s_line_ready != 0U) {
+    while (Queue_RaspberryRxLine != NULL &&
+           xQueueReceive(Queue_RaspberryRxLine, &queued_line, 0U) == pdPASS) {
+        processed_queued_line = 1U;
+        strncpy(s_parse_line, queued_line.text, sizeof(s_parse_line) - 1U);
+        s_parse_line[sizeof(s_parse_line) - 1U] = '\0';
+        g_raspi_link_state.frame_ready = (uint8_t)(uxQueueMessagesWaiting(Queue_RaspberryRxLine) != 0U);
+        RaspiLink_ProcessLine(s_parse_line);
+    }
+
+    if (processed_queued_line != 0U) {
         __disable_irq();
-        strncpy(s_parse_line, s_rx_line, sizeof(s_parse_line) - 1U);
+        s_line_ready = 0U;
+        s_line_queued = 0U;
+        __enable_irq();
+    }
+
+    if (s_line_ready != 0U && s_line_queued == 0U) {
+        __disable_irq();
+        strncpy(s_parse_line, s_pending_line, sizeof(s_parse_line) - 1U);
         s_parse_line[sizeof(s_parse_line) - 1U] = '\0';
         s_line_ready = 0U;
+        s_line_queued = 0U;
         g_raspi_link_state.frame_ready = 0U;
         __enable_irq();
 
@@ -524,6 +608,7 @@ void RaspiLink_Background(void)
     }
 
     RaspiLink_UpdateOdometry(now);
+    RaspiLink_CheckLineTimeout();
     RaspiLink_CheckTimeout();
     RaspiLink_SendOdometry(now);
 }
@@ -536,6 +621,8 @@ void RaspiLink_IRQHandler(void)
 uint8_t RaspiLink_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     uint8_t ch;
+    AppRaspiLine_t queued_line;
+    BaseType_t higher_priority_task_woken = pdFALSE;
 
     if (huart->Instance != RASPI_UART) {
         return 0U;
@@ -551,18 +638,39 @@ uint8_t RaspiLink_RxCpltCallback(UART_HandleTypeDef *huart)
 
     if (ch == '\n') {
         s_rx_line[s_rx_index] = '\0';
+        strncpy(s_pending_line, s_rx_line, sizeof(s_pending_line) - 1U);
+        s_pending_line[sizeof(s_pending_line) - 1U] = '\0';
+        s_line_queued = 0U;
+        if (Queue_RaspberryRxLine != NULL &&
+            xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
+            strncpy(queued_line.text, s_rx_line, sizeof(queued_line.text) - 1U);
+            queued_line.text[sizeof(queued_line.text) - 1U] = '\0';
+            if (xQueueOverwriteFromISR(Queue_RaspberryRxLine,
+                                       &queued_line,
+                                       &higher_priority_task_woken) != pdPASS) {
+                RaspiLink_SetFault(RASPI_LINK_FAULT_LINE_OVERFLOW);
+            } else {
+                s_line_queued = 1U;
+            }
+        }
         s_rx_index = 0U;
+        s_rx_line_start_ms = 0U;
         s_line_ready = 1U;
         g_raspi_link_state.frame_ready = 1U;
         RaspiLink_StartReceive();
+        portYIELD_FROM_ISR(higher_priority_task_woken);
         return 1U;
     }
 
     if (s_rx_index < RASPI_LINE_MAX) {
+        if (s_rx_index == 0U) {
+            s_rx_line_start_ms = HAL_GetTick();
+        }
         s_rx_line[s_rx_index++] = (char)ch;
     } else {
         s_rx_index = 0U;
         s_rx_line[0] = '\0';
+        s_rx_line_start_ms = 0U;
         RaspiLink_SetFault(RASPI_LINK_FAULT_LINE_OVERFLOW);
     }
 
