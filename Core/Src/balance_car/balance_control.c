@@ -203,7 +203,7 @@ static void BalanceCar_RunAngleLoop(void)
     g_balance_state.angle_acc = angle_acc;
     g_balance_state.angle_gyro = angle_gyro;
     g_balance_state.angle = s_angle;
-    // g_balance_state.gyro_z_rate = gyro_z_rate;
+    g_balance_state.gyro_z_rate = gyro_z_rate;
 
     if (s_angle > g_balance_debug.fall_angle_limit || s_angle < -g_balance_debug.fall_angle_limit) {
         BalanceCar_SetFault(BALANCE_FAULT_FALL);

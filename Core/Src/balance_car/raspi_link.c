@@ -27,7 +27,7 @@ volatile RaspiLinkState_t g_raspi_link_state = {0};
 volatile RaspiLinkDebug_t g_raspi_link_debug = {
     .enable = 1U,
     .timeout_stop_enable = 1U,
-    .allow_run_enable = 1U,
+    .allow_run_enable = 0U,
     .odom_tx_enable = 1U,
     .odom_reset_request = 0U,
     .speed_limit = 3.0f,
@@ -79,7 +79,7 @@ static void RaspiLink_StopMotion(void)
     g_raspi_link_state.speed_target_rps = 0.0f;
 
     command.source = APP_CMD_SOURCE_RASPI;
-    command.run_valid = 1U;
+    command.run_valid = 0U;
     command.run_enable = 0U;
     command.reset_pid = 0U;
     command.clear_fault = 0U;
@@ -352,7 +352,7 @@ static void RaspiLink_ProcessLine(char *line)
 
     AppControlCommand_t command;
     command.source = APP_CMD_SOURCE_RASPI;
-    command.run_valid = g_raspi_link_debug.allow_run_enable;
+    command.run_valid = 0U;
     command.run_enable = 1U;
     command.reset_pid = 0U;
     command.clear_fault = 0U;
