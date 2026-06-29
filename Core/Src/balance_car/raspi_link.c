@@ -33,7 +33,7 @@ volatile RaspiLinkDebug_t g_raspi_link_debug = {
     .speed_limit = 3.0f,
     .turn_limit = 2.0f,
     .wheel_radius_m = 0.0325f,
-    .odom_angular_deadband_rps = 0.02f,
+    .odom_angular_deadband_rps = 0.05f,
     .timeout_ms = 500U,
     .odom_period_ms = 50U,
 };

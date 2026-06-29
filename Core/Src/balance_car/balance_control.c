@@ -49,8 +49,8 @@ PID_t g_speed_pid = {       /* Ozone: 速度环，角度环稳定后再调 */
     .Kp = 0.60f,
     .Ki = 0.07f, 
     .Kd = 0,
-    .OutMax = 5.0f,
-    .OutMin = -5.0f,
+    .OutMax = 8.0f,
+    .OutMin = -8.0f,
     .ErrorIntMax = 150.0f,
     .ErrorIntMin = -150.0f,
 };

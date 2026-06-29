@@ -144,6 +144,10 @@ public class MainActivity extends Activity {
     private float lastSentTurn = Float.NaN;
     private int debugLineCount;
     private String lastDebugLine = "未收到DBG";
+    private String latestTempText = "Temp: --.- C";
+    private String latestHumiText = "Humi: -- %";
+    private String latestWeightText = "Weight: -- g";
+    private String latestRawText = "Raw: ----";
 
     private final Runnable pidSendTask = new Runnable() {
         @Override
@@ -297,6 +301,7 @@ public class MainActivity extends Activity {
         View topGlow = glowBar();
         centerPanel.addView(topGlow);
         telemetryView = new TelemetryDisplayView(this);
+        telemetryView.setTelemetry(latestTempText, latestHumiText, latestWeightText, latestRawText);
         centerPanel.addView(telemetryView, new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             0,
@@ -1147,12 +1152,12 @@ public class MainActivity extends Activity {
         }
         String payload = cleanLine.substring(5);
         String[] parts = payload.split("\\|");
+        latestTempText = parts.length > 0 ? parts[0] : "Temp: --.- C";
+        latestHumiText = parts.length > 1 ? parts[1] : "Humi: -- %";
+        latestWeightText = parts.length > 2 ? parts[2] : "Weight: -- g";
+        latestRawText = parts.length > 3 ? parts[3] : "Raw: ----";
         if (telemetryView != null) {
-            telemetryView.setTelemetry(
-                parts.length > 0 ? parts[0] : "Temp: --.- C",
-                parts.length > 1 ? parts[1] : "Humi: -- %",
-                parts.length > 2 ? parts[2] : "Weight: -- g",
-                parts.length > 3 ? parts[3] : "ADC: ----");
+            telemetryView.setTelemetry(latestTempText, latestHumiText, latestWeightText, latestRawText);
         }
     }
 

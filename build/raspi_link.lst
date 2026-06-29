@@ -1,4 +1,4 @@
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 1
 
 
    1              		.cpu cortex-m3
@@ -58,13 +58,13 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   30:Core/Src/balance_car/raspi_link.c ****     .allow_run_enable = 0U,
   31:Core/Src/balance_car/raspi_link.c ****     .odom_tx_enable = 1U,
   32:Core/Src/balance_car/raspi_link.c ****     .odom_reset_request = 0U,
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 2
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 2
 
 
   33:Core/Src/balance_car/raspi_link.c ****     .speed_limit = 3.0f,
   34:Core/Src/balance_car/raspi_link.c ****     .turn_limit = 2.0f,
   35:Core/Src/balance_car/raspi_link.c ****     .wheel_radius_m = 0.0325f,
-  36:Core/Src/balance_car/raspi_link.c ****     .odom_angular_deadband_rps = 0.02f,
+  36:Core/Src/balance_car/raspi_link.c ****     .odom_angular_deadband_rps = 0.05f,
   37:Core/Src/balance_car/raspi_link.c ****     .timeout_ms = 500U,
   38:Core/Src/balance_car/raspi_link.c ****     .odom_period_ms = 50U,
   39:Core/Src/balance_car/raspi_link.c **** };
@@ -118,7 +118,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   58              	.LFB74:
   58:Core/Src/balance_car/raspi_link.c **** 
   59:Core/Src/balance_car/raspi_link.c **** static float RaspiLink_Clamp(float value, float limit)
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 3
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 3
 
 
   60:Core/Src/balance_car/raspi_link.c **** {
@@ -178,7 +178,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   70:Core/Src/balance_car/raspi_link.c ****     return value;
  103              		.loc 1 70 12 view .LVU16
  104 0028 2C46     		mov	r4, r5
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 4
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 4
 
 
  105              	.L4:
@@ -238,7 +238,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  129              		.loc 1 99 1 is_stmt 1 view -0
  130              		.cfi_startproc
  131              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 5
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 5
 
 
  132              		@ frame_needed = 0, uses_anonymous_args = 0
@@ -298,7 +298,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  108:Core/Src/balance_car/raspi_link.c **** 
  109:Core/Src/balance_car/raspi_link.c **** static HAL_StatusTypeDef RaspiLink_UartInit(void)
  110:Core/Src/balance_car/raspi_link.c **** {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 6
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 6
 
 
  111:Core/Src/balance_car/raspi_link.c ****     GPIO_InitTypeDef gpio = {0};
@@ -358,7 +358,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  165:Core/Src/balance_car/raspi_link.c **** 
  166:Core/Src/balance_car/raspi_link.c **** static uint8_t RaspiLink_HexValue(char ch, uint8_t *value)
  167:Core/Src/balance_car/raspi_link.c **** {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 7
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 7
 
 
  176              		.loc 1 167 1 is_stmt 1 view -0
@@ -418,7 +418,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  170:Core/Src/balance_car/raspi_link.c ****     }
  213              		.loc 1 170 16 is_stmt 0 view .LVU51
  214 0024 0120     		movs	r0, #1
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 8
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 8
 
 
  215              	.LVL20:
@@ -478,7 +478,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  257              		@ frame_needed = 0, uses_anonymous_args = 0
  185:Core/Src/balance_car/raspi_link.c ****     uint8_t high;
  258              		.loc 1 185 5 view .LVU64
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 9
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 9
 
 
  186:Core/Src/balance_car/raspi_link.c ****     uint8_t low;
@@ -538,7 +538,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  305              		.loc 1 192 9 is_stmt 1 view .LVU81
  306              		.loc 1 192 16 is_stmt 0 view .LVU82
  307 0026 3046     		mov	r0, r6
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 10
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 10
 
 
  308 0028 14E0     		b	.L24
@@ -598,7 +598,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  189:Core/Src/balance_car/raspi_link.c ****     }
  354              		.loc 1 189 16 view .LVU94
  355 0050 00E0     		b	.L24
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 11
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 11
 
 
  356              	.L29:
@@ -658,7 +658,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  392              	.LVL36:
  393              		.loc 1 216 33 discriminator 2 view .LVU102
  394 0008 80B9     		cbnz	r0, .L42
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 12
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 12
 
 
  217:Core/Src/balance_car/raspi_link.c ****         return 0U;
@@ -718,7 +718,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  428              		.loc 1 217 16 view .LVU117
  429 0024 0020     		movs	r0, #0
  430              	.LVL39:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 13
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 13
 
 
  217:Core/Src/balance_car/raspi_link.c ****     }
@@ -778,7 +778,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  248:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.invalid_frame_count++;
  465              		.loc 1 248 5 is_stmt 1 view .LVU123
  466              		.loc 1 248 23 is_stmt 0 view .LVU124
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 14
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 14
 
 
  467 0002 044B     		ldr	r3, .L47
@@ -838,7 +838,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  274:Core/Src/balance_car/raspi_link.c ****     strncpy((char *)g_raspi_link_state.last_frame, line, sizeof(g_raspi_link_state.last_frame) - 1U
  275:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.last_frame[sizeof(g_raspi_link_state.last_frame) - 1U] = '\0';
  276:Core/Src/balance_car/raspi_link.c **** 
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 15
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 15
 
 
  277:Core/Src/balance_car/raspi_link.c ****     if (g_raspi_link_debug.enable == 0U) {
@@ -898,7 +898,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  331:Core/Src/balance_car/raspi_link.c ****     angular_z = RaspiLink_Clamp(angular_z, g_raspi_link_debug.turn_limit);
  332:Core/Src/balance_car/raspi_link.c ****     wheel_radius_m = g_raspi_link_debug.wheel_radius_m;
  333:Core/Src/balance_car/raspi_link.c ****     if (wheel_radius_m <= 0.0f) {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 16
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 16
 
 
  334:Core/Src/balance_car/raspi_link.c ****         wheel_radius_m = 0.0325f;
@@ -958,7 +958,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  388:Core/Src/balance_car/raspi_link.c ****         return;
  389:Core/Src/balance_car/raspi_link.c ****     }
  390:Core/Src/balance_car/raspi_link.c ****     if ((uint32_t)(HAL_GetTick() - s_rx_line_start_ms) <= RASPI_RX_LINE_TIMEOUT_MS) {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 17
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 17
 
 
  391:Core/Src/balance_car/raspi_link.c ****         return;
@@ -1018,7 +1018,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  528              	.LVL45:
  529 001a 0028     		cmp	r0, #0
  530 001c F2D1     		bne	.L51
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 18
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 18
 
 
  531 001e 05E0     		b	.L52
@@ -1078,7 +1078,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  578              	.LCFI8:
  579              		.cfi_def_cfa_offset 8
  580              		.cfi_offset 3, -8
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 19
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 19
 
 
  581              		.cfi_offset 14, -4
@@ -1138,7 +1138,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   13:Drivers/CMSIS/Include/cmsis_gcc.h ****  * not use this file except in compliance with the License.
   14:Drivers/CMSIS/Include/cmsis_gcc.h ****  * You may obtain a copy of the License at
   15:Drivers/CMSIS/Include/cmsis_gcc.h ****  *
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 20
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 20
 
 
   16:Drivers/CMSIS/Include/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
@@ -1198,7 +1198,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   70:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
   71:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic push
   72:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 21
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 21
 
 
   73:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
@@ -1258,7 +1258,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  127:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
  128:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  129:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 22
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 22
 
 
  130:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -1318,7 +1318,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  643 0034 1370     		strb	r3, [r2]
  400:Core/Src/balance_car/raspi_link.c ****     __enable_irq();
  644              		.loc 1 400 5 is_stmt 1 view .LVU170
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 23
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 23
 
 
  400:Core/Src/balance_car/raspi_link.c ****     __enable_irq();
@@ -1378,7 +1378,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  690              		.section	.text.RaspiLink_UartInit,"ax",%progbits
  691              		.align	1
  692              		.syntax unified
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 24
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 24
 
 
  693              		.thumb
@@ -1438,7 +1438,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  737              		.loc 1 114 5 view .LVU191
  114:Core/Src/balance_car/raspi_link.c ****     __HAL_RCC_USART1_CLK_ENABLE();
  738              		.loc 1 114 5 view .LVU192
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 25
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 25
 
 
  739 0022 9A69     		ldr	r2, [r3, #24]
@@ -1498,7 +1498,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  778              		.loc 1 116 5 is_stmt 1 view .LVU207
  779 0052 5360     		str	r3, [r2, #4]
  780              	.LBE21:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 26
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 26
 
 
  116:Core/Src/balance_car/raspi_link.c **** 
@@ -1558,7 +1558,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  817              		.loc 1 127 5 is_stmt 1 view .LVU225
  818 0076 04A9     		add	r1, sp, #16
  819 0078 2846     		mov	r0, r5
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 27
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 27
 
 
  820 007a FFF7FEFF 		bl	HAL_GPIO_Init
@@ -1618,7 +1618,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  855 009c 58B9     		cbnz	r0, .L67
  856 009e 0446     		mov	r4, r0
  143:Core/Src/balance_car/raspi_link.c ****     HAL_NVIC_EnableIRQ(USART1_IRQn);
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 28
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 28
 
 
  857              		.loc 1 143 5 is_stmt 1 view .LVU245
@@ -1678,7 +1678,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   92:Core/Src/balance_car/raspi_link.c ****     if (HAL_UART_Receive_IT(&s_huart_raspi, &s_rx_byte, 1U) != HAL_OK) {
  907              		.loc 1 92 1 is_stmt 1 view -0
  908              		.cfi_startproc
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 29
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 29
 
 
  909              		@ args = 0, pretend = 0, frame = 0
@@ -1738,7 +1738,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  958              		.cfi_offset 14, -4
  959 0002 85B0     		sub	sp, sp, #20
  960              	.LCFI15:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 30
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 30
 
 
  961              		.cfi_def_cfa_offset 24
@@ -1798,7 +1798,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
   87:Core/Src/balance_car/raspi_link.c ****     AppTasks_SubmitControlCommandFromTask(&command);
  995              		.loc 1 87 25 is_stmt 0 view .LVU280
  996 0028 0393     		str	r3, [sp, #12]	@ float
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 31
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 31
 
 
   88:Core/Src/balance_car/raspi_link.c **** }
@@ -1858,7 +1858,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1043 000a 14B1     		cbz	r4, .L80
  372:Core/Src/balance_car/raspi_link.c ****         return;
  1044              		.loc 1 372 5 is_stmt 1 view .LVU291
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 32
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 32
 
 
  372:Core/Src/balance_car/raspi_link.c ****         return;
@@ -1918,7 +1918,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  381:Core/Src/balance_car/raspi_link.c ****     }
  1084              		.loc 1 381 9 view .LVU307
  1085 0034 FFF7FEFF 		bl	RaspiLink_StopMotion
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 33
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 33
 
 
  1086              	.LVL69:
@@ -1978,7 +1978,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1133              	.LVL72:
  1134              	.L87:
  212:Core/Src/balance_car/raspi_link.c **** 
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 34
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 34
 
 
  1135              		.loc 1 212 1 view .LVU317
@@ -2038,7 +2038,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1176              	.LCFI22:
  1177              		.cfi_def_cfa_offset 0
  1178              		.cfi_restore 4
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 35
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 35
 
 
  1179              		.cfi_restore 5
@@ -2098,7 +2098,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1226              		@ args = 0, pretend = 0, frame = 8
  1227              		@ frame_needed = 0, uses_anonymous_args = 0
  232:Core/Src/balance_car/raspi_link.c ****     float parsed;
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 36
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 36
 
 
  1228              		.loc 1 232 5 view .LVU340
@@ -2158,7 +2158,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1271 0018 FFF7FEFF 		bl	strtof
  1272              	.LVL90:
  239:Core/Src/balance_car/raspi_link.c ****         return 0U;
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 37
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 37
 
 
  1273              		.loc 1 239 5 is_stmt 1 view .LVU352
@@ -2218,7 +2218,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1314              		.loc 1 236 16 view .LVU365
  1315 0032 EDE7     		b	.L98
  1316              	.LVL96:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 38
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 38
 
 
  1317              	.L101:
@@ -2278,7 +2278,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1360              		.loc 1 262 5 view .LVU378
  263:Core/Src/balance_car/raspi_link.c ****     float linear_x;
  1361              		.loc 1 263 5 view .LVU379
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 39
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 39
 
 
  264:Core/Src/balance_car/raspi_link.c ****     float angular_z;
@@ -2338,7 +2338,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1401 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
  277:Core/Src/balance_car/raspi_link.c ****         return;
  1402              		.loc 1 277 8 view .LVU395
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 40
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 40
 
 
  1403 0022 B3B1     		cbz	r3, .L108
@@ -2398,7 +2398,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1440 004a 0EE0     		b	.L113
  1441              	.LVL107:
  1442              	.L133:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 41
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 41
 
 
  281:Core/Src/balance_car/raspi_link.c ****         return;
@@ -2458,7 +2458,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1485              		.loc 1 296 37 discriminator 1 view .LVU424
  296:Core/Src/balance_car/raspi_link.c ****         actual_checksum ^= (uint8_t)(*cursor);
  1486              		.loc 1 296 29 is_stmt 0 discriminator 1 view .LVU425
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 42
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 42
 
 
  1487 006a 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
@@ -2518,7 +2518,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1526              		.loc 1 314 9 is_stmt 1 view .LVU440
  1527              	.LVL120:
  308:Core/Src/balance_car/raspi_link.c ****         cursor = strchr(cursor, ',');
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 43
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 43
 
 
  1528              		.loc 1 308 27 is_stmt 0 view .LVU441
@@ -2578,7 +2578,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1570 00c2 0A98     		ldr	r0, [sp, #40]
  1571 00c4 FFF7FEFF 		bl	strcmp
  1572              	.LVL128:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 44
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 44
 
 
  317:Core/Src/balance_car/raspi_link.c ****         RaspiLink_MarkInvalid(RASPI_LINK_FAULT_BAD_FRAME);
@@ -2638,7 +2638,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  325:Core/Src/balance_car/raspi_link.c ****         RaspiLink_MarkInvalid(RASPI_LINK_FAULT_BAD_FRAME);
  1615              		.loc 1 325 9 view .LVU466
  1616 0104 05A9     		add	r1, sp, #20
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 45
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 45
 
 
  1617 0106 0F98     		ldr	r0, [sp, #60]
@@ -2698,7 +2698,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1657              		.loc 1 336 5 is_stmt 1 view .LVU480
  336:Core/Src/balance_car/raspi_link.c **** 
  1658              		.loc 1 336 54 is_stmt 0 view .LVU481
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 46
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 46
 
 
  1659 0134 2049     		ldr	r1, .L140+16
@@ -2758,7 +2758,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1698 0164 E370     		strb	r3, [r4, #3]
  344:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.angular_z_cmd = angular_z;
  1699              		.loc 1 344 5 is_stmt 1 view .LVU497
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 47
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 47
 
 
  344:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.angular_z_cmd = angular_z;
@@ -2818,7 +2818,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1737              		.loc 1 355 5 is_stmt 1 view .LVU514
  355:Core/Src/balance_car/raspi_link.c ****     command.run_enable = 1U;
  1738              		.loc 1 355 23 is_stmt 0 view .LVU515
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 48
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 48
 
 
  1739 0188 0023     		movs	r3, #0
@@ -2878,7 +2878,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  417:Core/Src/balance_car/raspi_link.c **** 
  418:Core/Src/balance_car/raspi_link.c **** static void RaspiLink_UpdateOdometry(uint32_t now)
  419:Core/Src/balance_car/raspi_link.c **** {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 49
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 49
 
 
  1784              		.loc 1 419 1 view -0
@@ -2938,7 +2938,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  431:Core/Src/balance_car/raspi_link.c **** 
  432:Core/Src/balance_car/raspi_link.c ****     dt_ms = now - s_last_odom_update_ms;
  1827              		.loc 1 432 5 is_stmt 1 view .LVU541
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 50
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 50
 
 
  1828              	.LVL154:
@@ -2998,7 +2998,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1870 004a 4146     		mov	r1, r8
  1871 004c 4046     		mov	r0, r8
  1872 004e FFF7FEFF 		bl	__aeabi_fadd
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 51
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 51
 
 
  1873              	.LVL163:
@@ -3058,7 +3058,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1919              		.loc 1 451 41 is_stmt 0 view .LVU570
  1920 0088 234C     		ldr	r4, .L155+20
  1921              	.LVL174:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 52
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 52
 
 
  1922              		.loc 1 451 41 view .LVU571
@@ -3118,7 +3118,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  1968 00c6 FFF7FEFF 		bl	__aeabi_fmul
  1969              	.LVL179:
  1970              		.loc 1 459 89 discriminator 1 view .LVU593
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 53
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 53
 
 
  1971 00ca 3946     		mov	r1, r7
@@ -3178,7 +3178,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2020              	.LVL188:
  2021              	.L154:
  439:Core/Src/balance_car/raspi_link.c ****     }
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 54
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 54
 
 
  2022              		.loc 1 439 24 is_stmt 0 view .LVU607
@@ -3238,7 +3238,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  469:Core/Src/balance_car/raspi_link.c **** 
  470:Core/Src/balance_car/raspi_link.c ****     if (buffer == 0 || size == 0U) {
  2068              		.loc 1 470 5 view .LVU614
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 55
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 55
 
 
  2069              		.loc 1 470 8 is_stmt 0 view .LVU615
@@ -3298,7 +3298,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2112 0026 FFF7FEFF 		bl	__aeabi_fadd
  2113              	.LVL196:
  2114              		.loc 1 479 12 view .LVU627
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 56
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 56
 
 
  2115 002a FFF7FEFF 		bl	__aeabi_f2iz
@@ -3358,7 +3358,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2161 005a 054F     		ldr	r7, .L169+16
  2162 005c DDE7     		b	.L159
  2163              	.LVL205:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 57
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 57
 
 
  2164              	.L165:
@@ -3418,7 +3418,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2207              		.loc 1 489 5 view .LVU645
  490:Core/Src/balance_car/raspi_link.c ****     char yaw_text[16];
  2208              		.loc 1 490 5 view .LVU646
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 58
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 58
 
 
  491:Core/Src/balance_car/raspi_link.c ****     char vx_text[16];
@@ -3478,7 +3478,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  503:Core/Src/balance_car/raspi_link.c ****     s_next_odom_tx_ms = now + g_raspi_link_debug.odom_period_ms;
  2250              		.loc 1 503 5 is_stmt 1 view .LVU661
  2251              		.loc 1 503 49 is_stmt 0 view .LVU662
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 59
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 59
 
 
  2252 0022 574B     		ldr	r3, .L189
@@ -3538,7 +3538,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  506:Core/Src/balance_car/raspi_link.c ****         return;
  2294              		.loc 1 506 42 view .LVU679
  2295 0050 0133     		adds	r3, r3, #1
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 60
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 60
 
 
  2296 0052 1361     		str	r3, [r2, #16]
@@ -3598,7 +3598,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  562:Core/Src/balance_car/raspi_link.c ****     if (Sem_RaspberryTxMutex != NULL) {
  563:Core/Src/balance_car/raspi_link.c ****         (void)xSemaphoreGive(Sem_RaspberryTxMutex);
  564:Core/Src/balance_car/raspi_link.c ****     }
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 61
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 61
 
 
  565:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.tx_count++;
@@ -3658,7 +3658,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2339              		.loc 1 518 5 view .LVU693
  2340 007c 0DF13808 		add	r8, sp, #56
  2341 0080 1021     		movs	r1, #16
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 62
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 62
 
 
  2342 0082 4046     		mov	r0, r8
@@ -3718,7 +3718,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2384 00c6 0CD9     		bls	.L175
  531:Core/Src/balance_car/raspi_link.c ****         if (Sem_RaspberryTxMutex != NULL) {
  2385              		.loc 1 531 9 is_stmt 1 view .LVU706
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 63
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 63
 
 
  531:Core/Src/balance_car/raspi_link.c ****         if (Sem_RaspberryTxMutex != NULL) {
@@ -3778,7 +3778,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2426 00f2 FFF7FEFF 		bl	snprintf
  2427              	.LVL225:
  539:Core/Src/balance_car/raspi_link.c ****     if (frame_len <= 0 || frame_len >= (int)sizeof(s_tx_line)) {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 64
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 64
 
 
  2428              		.loc 1 539 17 view .LVU721
@@ -3838,7 +3838,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2469              	.LVL230:
  548:Core/Src/balance_car/raspi_link.c ****             s_tx_line,
  2470              		.loc 1 548 5 is_stmt 0 view .LVU735
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 65
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 65
 
 
  2471 0124 FFF7FEFF 		bl	strncpy
@@ -3898,7 +3898,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  565:Core/Src/balance_car/raspi_link.c ****     g_raspi_link_state.last_tx_ms = now;
  2510              		.loc 1 565 32 view .LVU751
  2511 0156 0132     		adds	r2, r2, #1
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 66
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 66
 
 
  2512 0158 DA60     		str	r2, [r3, #12]
@@ -3958,7 +3958,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2553              		.cfi_restore 9
  2554              		.cfi_restore 10
  2555              		.cfi_restore 14
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 67
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 67
 
 
  560:Core/Src/balance_car/raspi_link.c ****     }
@@ -4018,7 +4018,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2604              		.loc 1 154 18 is_stmt 0 view .LVU772
  2605 0014 0E4A     		ldr	r2, .L195+8
  2606 0016 1370     		strb	r3, [r2]
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 68
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 68
 
 
  155:Core/Src/balance_car/raspi_link.c ****     s_rx_line_start_ms = 0U;
@@ -4078,7 +4078,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2644              		.loc 1 163 5 is_stmt 1 view .LVU789
  164:Core/Src/balance_car/raspi_link.c **** 
  2645              		.loc 1 164 1 is_stmt 0 view .LVU790
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 69
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 69
 
 
  2646 003e 2046     		mov	r0, r4
@@ -4138,7 +4138,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2696              	.LVL244:
  572:Core/Src/balance_car/raspi_link.c ****     AppRaspiLine_t queued_line;
  2697              		.loc 1 572 5 is_stmt 1 view .LVU796
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 70
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 70
 
 
  573:Core/Src/balance_car/raspi_link.c ****     uint8_t processed_queued_line = 0U;
@@ -4198,7 +4198,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2737 0030 0023     		movs	r3, #0
  2738 0032 84F84F30 		strb	r3, [r4, #79]
  587:Core/Src/balance_car/raspi_link.c ****         g_raspi_link_state.frame_ready = (uint8_t)(uxQueueMessagesWaiting(Queue_RaspberryRxLine) !=
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 71
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 71
 
 
  2739              		.loc 1 587 9 is_stmt 1 view .LVU814
@@ -4258,7 +4258,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2781              		.loc 2 140 27 view .LVU828
  2782              	.LBB23:
  2783              		.loc 2 142 3 view .LVU829
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 72
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 72
 
 
  2784              		.syntax unified
@@ -4318,7 +4318,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  600:Core/Src/balance_car/raspi_link.c ****         strncpy(s_parse_line, s_pending_line, sizeof(s_parse_line) - 1U);
  601:Core/Src/balance_car/raspi_link.c ****         s_parse_line[sizeof(s_parse_line) - 1U] = '\0';
  602:Core/Src/balance_car/raspi_link.c ****         s_line_ready = 0U;
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 73
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 73
 
 
  603:Core/Src/balance_car/raspi_link.c ****         s_line_queued = 0U;
@@ -4378,7 +4378,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2868              		.loc 1 600 9 view .LVU850
  2869 0098 0B4C     		ldr	r4, .L206+8
  2870              	.LVL257:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 74
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 74
 
 
  600:Core/Src/balance_car/raspi_link.c ****         s_parse_line[sizeof(s_parse_line) - 1U] = '\0';
@@ -4438,7 +4438,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  2912              	.L207:
  2913              		.align	2
  2914              	.L206:
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 75
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 75
 
 
  2915 00c0 00000000 		.word	g_raspi_link_debug
@@ -4498,7 +4498,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  622:Core/Src/balance_car/raspi_link.c **** {
  2966              		.loc 1 622 1 is_stmt 1 view -0
  2967              		.cfi_startproc
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 76
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 76
 
 
  2968              		@ args = 0, pretend = 0, frame = 88
@@ -4558,7 +4558,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  648:Core/Src/balance_car/raspi_link.c ****             if (xQueueOverwriteFromISR(Queue_RaspberryRxLine,
  649:Core/Src/balance_car/raspi_link.c ****                                        &queued_line,
  650:Core/Src/balance_car/raspi_link.c ****                                        &higher_priority_task_woken) != pdPASS) {
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 77
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 77
 
 
  651:Core/Src/balance_car/raspi_link.c ****                 RaspiLink_SetFault(RASPI_LINK_FAULT_LINE_OVERFLOW);
@@ -4618,7 +4618,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3017              		.loc 1 632 32 view .LVU882
  3018 001e 0133     		adds	r3, r3, #1
  3019 0020 9360     		str	r3, [r2, #8]
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 78
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 78
 
 
  634:Core/Src/balance_car/raspi_link.c ****         RaspiLink_StartReceive();
@@ -4678,7 +4678,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  678:Core/Src/balance_car/raspi_link.c **** }
  3060              		.loc 1 678 5 view .LVU897
  678:Core/Src/balance_car/raspi_link.c **** }
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 79
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 79
 
 
  3061              		.loc 1 678 12 is_stmt 0 view .LVU898
@@ -4738,7 +4738,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3101              		.loc 1 644 9 is_stmt 1 view .LVU912
  644:Core/Src/balance_car/raspi_link.c ****             xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
  3102              		.loc 1 644 35 is_stmt 0 view .LVU913
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 80
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 80
 
 
  3103 007a 2B4B     		ldr	r3, .L230+28
@@ -4798,7 +4798,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3142              		.loc 1 661 9 discriminator 1 view .LVU928
  3143              		.syntax unified
  3144              	@ 661 "Core/Src/balance_car/raspi_link.c" 1
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 81
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 81
 
 
  3145 00b0 BFF34F8F 		dsb
@@ -4858,7 +4858,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3187              	.L229:
  651:Core/Src/balance_car/raspi_link.c ****             } else {
  3188              		.loc 1 651 17 is_stmt 1 view .LVU941
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 82
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 82
 
 
  3189 00e4 0420     		movs	r0, #4
@@ -4918,7 +4918,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3232 011c 00000000 		.word	s_rx_line
  3233 0120 00000000 		.word	s_pending_line
  3234 0124 00000000 		.word	s_line_queued
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 83
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 83
 
 
  3235 0128 00000000 		.word	Queue_RaspberryRxLine
@@ -4978,7 +4978,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3278              	.LVL286:
  687:Core/Src/balance_car/raspi_link.c **** }
  3279              		.loc 1 687 12 view .LVU963
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 84
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 84
 
 
  3280 0014 7047     		bx	lr
@@ -5038,7 +5038,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  695:Core/Src/balance_car/raspi_link.c ****     RaspiLink_StartReceive();
  3325              		.loc 1 695 32 is_stmt 0 view .LVU972
  3326 000e 044B     		ldr	r3, .L243+4
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 85
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 85
 
 
  3327 0010 0022     		movs	r2, #0
@@ -5098,7 +5098,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3384      00000000 
  3384      00000000 
  3384      00000000 
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 86
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 86
 
 
  3384      00000000 
@@ -5140,7 +5140,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3424 0008 00004040 		.word	1077936128
  3425 000c 00000040 		.word	1073741824
  3426 0010 B81E053D 		.word	1023745720
- 3427 0014 0AD7A33C 		.word	1017370378
+ 3427 0014 CDCC4C3D 		.word	1028443341
  3428 0018 F4010000 		.word	500
  3429 001c 32000000 		.word	50
  3430              		.global	g_raspi_link_state
@@ -5158,7 +5158,7 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3440              		.file 4 "F:/Msys2/mingw64/arm-none-eabi/include/machine/_default_types.h"
  3441              		.file 5 "F:/Msys2/mingw64/arm-none-eabi/include/sys/_stdint.h"
  3442              		.file 6 "F:/Msys2/mingw64/lib/gcc/arm-none-eabi/13.3.0/include/stddef.h"
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 87
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 87
 
 
  3443              		.file 7 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
@@ -5179,113 +5179,113 @@ ARM GAS  D:\TMP\ccDrhhFo.s 			page 1
  3458              		.file 22 "Middlewares/Third_Party/FreeRTOS/Source/include/task.h"
  3459              		.file 23 "Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h"
  3460              		.file 24 "<built-in>"
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 88
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 88
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 raspi_link.c
-   D:\TMP\ccDrhhFo.s:19     .text.RaspiLink_SetFault:00000000 $t
-   D:\TMP\ccDrhhFo.s:24     .text.RaspiLink_SetFault:00000000 RaspiLink_SetFault
-   D:\TMP\ccDrhhFo.s:44     .text.RaspiLink_SetFault:0000000c $d
-   D:\TMP\ccDrhhFo.s:3435   .bss.g_raspi_link_state:00000000 g_raspi_link_state
-   D:\TMP\ccDrhhFo.s:51     .text.RaspiLink_Clamp:00000000 $t
-   D:\TMP\ccDrhhFo.s:56     .text.RaspiLink_Clamp:00000000 RaspiLink_Clamp
-   D:\TMP\ccDrhhFo.s:121    .text.RaspiLink_ChecksumAscii:00000000 $t
-   D:\TMP\ccDrhhFo.s:126    .text.RaspiLink_ChecksumAscii:00000000 RaspiLink_ChecksumAscii
-   D:\TMP\ccDrhhFo.s:168    .text.RaspiLink_HexValue:00000000 $t
-   D:\TMP\ccDrhhFo.s:173    .text.RaspiLink_HexValue:00000000 RaspiLink_HexValue
-   D:\TMP\ccDrhhFo.s:246    .text.RaspiLink_ParseChecksum:00000000 $t
-   D:\TMP\ccDrhhFo.s:251    .text.RaspiLink_ParseChecksum:00000000 RaspiLink_ParseChecksum
-   D:\TMP\ccDrhhFo.s:371    .text.RaspiLink_ParseFlag:00000000 $t
-   D:\TMP\ccDrhhFo.s:376    .text.RaspiLink_ParseFlag:00000000 RaspiLink_ParseFlag
-   D:\TMP\ccDrhhFo.s:447    .text.RaspiLink_MarkInvalid:00000000 $t
-   D:\TMP\ccDrhhFo.s:452    .text.RaspiLink_MarkInvalid:00000000 RaspiLink_MarkInvalid
-   D:\TMP\ccDrhhFo.s:484    .text.RaspiLink_MarkInvalid:00000014 $d
-   D:\TMP\ccDrhhFo.s:491    .text.RaspiLink_NormalizeYaw:00000000 $t
-   D:\TMP\ccDrhhFo.s:496    .text.RaspiLink_NormalizeYaw:00000000 RaspiLink_NormalizeYaw
-   D:\TMP\ccDrhhFo.s:558    .text.RaspiLink_NormalizeYaw:0000003c $d
-   D:\TMP\ccDrhhFo.s:566    .text.RaspiLink_CheckLineTimeout:00000000 $t
-   D:\TMP\ccDrhhFo.s:571    .text.RaspiLink_CheckLineTimeout:00000000 RaspiLink_CheckLineTimeout
-   D:\TMP\ccDrhhFo.s:680    .text.RaspiLink_CheckLineTimeout:00000050 $d
-   D:\TMP\ccDrhhFo.s:3393   .bss.s_rx_index:00000000 s_rx_index
-   D:\TMP\ccDrhhFo.s:3360   .bss.s_rx_line_start_ms:00000000 s_rx_line_start_ms
-   D:\TMP\ccDrhhFo.s:3399   .bss.s_rx_line:00000000 s_rx_line
-   D:\TMP\ccDrhhFo.s:3377   .bss.s_pending_line:00000000 s_pending_line
-   D:\TMP\ccDrhhFo.s:3388   .bss.s_line_ready:00000000 s_line_ready
-   D:\TMP\ccDrhhFo.s:3365   .bss.s_line_queued:00000000 s_line_queued
-   D:\TMP\ccDrhhFo.s:691    .text.RaspiLink_UartInit:00000000 $t
-   D:\TMP\ccDrhhFo.s:696    .text.RaspiLink_UartInit:00000000 RaspiLink_UartInit
-   D:\TMP\ccDrhhFo.s:891    .text.RaspiLink_UartInit:000000c0 $d
-   D:\TMP\ccDrhhFo.s:3410   .bss.s_huart_raspi:00000000 s_huart_raspi
-   D:\TMP\ccDrhhFo.s:900    .text.RaspiLink_StartReceive:00000000 $t
-   D:\TMP\ccDrhhFo.s:905    .text.RaspiLink_StartReceive:00000000 RaspiLink_StartReceive
-   D:\TMP\ccDrhhFo.s:938    .text.RaspiLink_StartReceive:00000018 $d
-   D:\TMP\ccDrhhFo.s:3404   .bss.s_rx_byte:00000000 s_rx_byte
-   D:\TMP\ccDrhhFo.s:944    .text.RaspiLink_StopMotion:00000000 $t
-   D:\TMP\ccDrhhFo.s:949    .text.RaspiLink_StopMotion:00000000 RaspiLink_StopMotion
-   D:\TMP\ccDrhhFo.s:1010   .text.RaspiLink_StopMotion:00000038 $d
-   D:\TMP\ccDrhhFo.s:1015   .text.RaspiLink_CheckTimeout:00000000 $t
-   D:\TMP\ccDrhhFo.s:1020   .text.RaspiLink_CheckTimeout:00000000 RaspiLink_CheckTimeout
-   D:\TMP\ccDrhhFo.s:1091   .text.RaspiLink_CheckTimeout:0000003c $d
-   D:\TMP\ccDrhhFo.s:3417   .data.g_raspi_link_debug:00000000 g_raspi_link_debug
-   D:\TMP\ccDrhhFo.s:1097   .text.RaspiLink_ParseUint32:00000000 $t
-   D:\TMP\ccDrhhFo.s:1102   .text.RaspiLink_ParseUint32:00000000 RaspiLink_ParseUint32
-   D:\TMP\ccDrhhFo.s:1216   .text.RaspiLink_ParseFloat:00000000 $t
-   D:\TMP\ccDrhhFo.s:1221   .text.RaspiLink_ParseFloat:00000000 RaspiLink_ParseFloat
-   D:\TMP\ccDrhhFo.s:1334   .rodata.RaspiLink_ProcessLine.str1.4:00000000 $d
-   D:\TMP\ccDrhhFo.s:1341   .text.RaspiLink_ProcessLine:00000000 $t
-   D:\TMP\ccDrhhFo.s:1346   .text.RaspiLink_ProcessLine:00000000 RaspiLink_ProcessLine
-   D:\TMP\ccDrhhFo.s:1765   .text.RaspiLink_ProcessLine:000001a8 $d
-   D:\TMP\ccDrhhFo.s:1776   .text.RaspiLink_UpdateOdometry:00000000 $t
-   D:\TMP\ccDrhhFo.s:1781   .text.RaspiLink_UpdateOdometry:00000000 RaspiLink_UpdateOdometry
-   D:\TMP\ccDrhhFo.s:2030   .text.RaspiLink_UpdateOdometry:00000104 $d
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 89
+   D:\TMP\ccOeGaZ4.s:19     .text.RaspiLink_SetFault:00000000 $t
+   D:\TMP\ccOeGaZ4.s:24     .text.RaspiLink_SetFault:00000000 RaspiLink_SetFault
+   D:\TMP\ccOeGaZ4.s:44     .text.RaspiLink_SetFault:0000000c $d
+   D:\TMP\ccOeGaZ4.s:3435   .bss.g_raspi_link_state:00000000 g_raspi_link_state
+   D:\TMP\ccOeGaZ4.s:51     .text.RaspiLink_Clamp:00000000 $t
+   D:\TMP\ccOeGaZ4.s:56     .text.RaspiLink_Clamp:00000000 RaspiLink_Clamp
+   D:\TMP\ccOeGaZ4.s:121    .text.RaspiLink_ChecksumAscii:00000000 $t
+   D:\TMP\ccOeGaZ4.s:126    .text.RaspiLink_ChecksumAscii:00000000 RaspiLink_ChecksumAscii
+   D:\TMP\ccOeGaZ4.s:168    .text.RaspiLink_HexValue:00000000 $t
+   D:\TMP\ccOeGaZ4.s:173    .text.RaspiLink_HexValue:00000000 RaspiLink_HexValue
+   D:\TMP\ccOeGaZ4.s:246    .text.RaspiLink_ParseChecksum:00000000 $t
+   D:\TMP\ccOeGaZ4.s:251    .text.RaspiLink_ParseChecksum:00000000 RaspiLink_ParseChecksum
+   D:\TMP\ccOeGaZ4.s:371    .text.RaspiLink_ParseFlag:00000000 $t
+   D:\TMP\ccOeGaZ4.s:376    .text.RaspiLink_ParseFlag:00000000 RaspiLink_ParseFlag
+   D:\TMP\ccOeGaZ4.s:447    .text.RaspiLink_MarkInvalid:00000000 $t
+   D:\TMP\ccOeGaZ4.s:452    .text.RaspiLink_MarkInvalid:00000000 RaspiLink_MarkInvalid
+   D:\TMP\ccOeGaZ4.s:484    .text.RaspiLink_MarkInvalid:00000014 $d
+   D:\TMP\ccOeGaZ4.s:491    .text.RaspiLink_NormalizeYaw:00000000 $t
+   D:\TMP\ccOeGaZ4.s:496    .text.RaspiLink_NormalizeYaw:00000000 RaspiLink_NormalizeYaw
+   D:\TMP\ccOeGaZ4.s:558    .text.RaspiLink_NormalizeYaw:0000003c $d
+   D:\TMP\ccOeGaZ4.s:566    .text.RaspiLink_CheckLineTimeout:00000000 $t
+   D:\TMP\ccOeGaZ4.s:571    .text.RaspiLink_CheckLineTimeout:00000000 RaspiLink_CheckLineTimeout
+   D:\TMP\ccOeGaZ4.s:680    .text.RaspiLink_CheckLineTimeout:00000050 $d
+   D:\TMP\ccOeGaZ4.s:3393   .bss.s_rx_index:00000000 s_rx_index
+   D:\TMP\ccOeGaZ4.s:3360   .bss.s_rx_line_start_ms:00000000 s_rx_line_start_ms
+   D:\TMP\ccOeGaZ4.s:3399   .bss.s_rx_line:00000000 s_rx_line
+   D:\TMP\ccOeGaZ4.s:3377   .bss.s_pending_line:00000000 s_pending_line
+   D:\TMP\ccOeGaZ4.s:3388   .bss.s_line_ready:00000000 s_line_ready
+   D:\TMP\ccOeGaZ4.s:3365   .bss.s_line_queued:00000000 s_line_queued
+   D:\TMP\ccOeGaZ4.s:691    .text.RaspiLink_UartInit:00000000 $t
+   D:\TMP\ccOeGaZ4.s:696    .text.RaspiLink_UartInit:00000000 RaspiLink_UartInit
+   D:\TMP\ccOeGaZ4.s:891    .text.RaspiLink_UartInit:000000c0 $d
+   D:\TMP\ccOeGaZ4.s:3410   .bss.s_huart_raspi:00000000 s_huart_raspi
+   D:\TMP\ccOeGaZ4.s:900    .text.RaspiLink_StartReceive:00000000 $t
+   D:\TMP\ccOeGaZ4.s:905    .text.RaspiLink_StartReceive:00000000 RaspiLink_StartReceive
+   D:\TMP\ccOeGaZ4.s:938    .text.RaspiLink_StartReceive:00000018 $d
+   D:\TMP\ccOeGaZ4.s:3404   .bss.s_rx_byte:00000000 s_rx_byte
+   D:\TMP\ccOeGaZ4.s:944    .text.RaspiLink_StopMotion:00000000 $t
+   D:\TMP\ccOeGaZ4.s:949    .text.RaspiLink_StopMotion:00000000 RaspiLink_StopMotion
+   D:\TMP\ccOeGaZ4.s:1010   .text.RaspiLink_StopMotion:00000038 $d
+   D:\TMP\ccOeGaZ4.s:1015   .text.RaspiLink_CheckTimeout:00000000 $t
+   D:\TMP\ccOeGaZ4.s:1020   .text.RaspiLink_CheckTimeout:00000000 RaspiLink_CheckTimeout
+   D:\TMP\ccOeGaZ4.s:1091   .text.RaspiLink_CheckTimeout:0000003c $d
+   D:\TMP\ccOeGaZ4.s:3417   .data.g_raspi_link_debug:00000000 g_raspi_link_debug
+   D:\TMP\ccOeGaZ4.s:1097   .text.RaspiLink_ParseUint32:00000000 $t
+   D:\TMP\ccOeGaZ4.s:1102   .text.RaspiLink_ParseUint32:00000000 RaspiLink_ParseUint32
+   D:\TMP\ccOeGaZ4.s:1216   .text.RaspiLink_ParseFloat:00000000 $t
+   D:\TMP\ccOeGaZ4.s:1221   .text.RaspiLink_ParseFloat:00000000 RaspiLink_ParseFloat
+   D:\TMP\ccOeGaZ4.s:1334   .rodata.RaspiLink_ProcessLine.str1.4:00000000 $d
+   D:\TMP\ccOeGaZ4.s:1341   .text.RaspiLink_ProcessLine:00000000 $t
+   D:\TMP\ccOeGaZ4.s:1346   .text.RaspiLink_ProcessLine:00000000 RaspiLink_ProcessLine
+   D:\TMP\ccOeGaZ4.s:1765   .text.RaspiLink_ProcessLine:000001a8 $d
+   D:\TMP\ccOeGaZ4.s:1776   .text.RaspiLink_UpdateOdometry:00000000 $t
+   D:\TMP\ccOeGaZ4.s:1781   .text.RaspiLink_UpdateOdometry:00000000 RaspiLink_UpdateOdometry
+   D:\TMP\ccOeGaZ4.s:2030   .text.RaspiLink_UpdateOdometry:00000104 $d
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 89
 
 
-   D:\TMP\ccDrhhFo.s:3348   .bss.s_last_odom_update_ms:00000000 s_last_odom_update_ms
-   D:\TMP\ccDrhhFo.s:2041   .rodata.RaspiLink_FormatFixed4.str1.4:00000000 $d
-   D:\TMP\ccDrhhFo.s:2052   .text.RaspiLink_FormatFixed4:00000000 $t
-   D:\TMP\ccDrhhFo.s:2057   .text.RaspiLink_FormatFixed4:00000000 RaspiLink_FormatFixed4
-   D:\TMP\ccDrhhFo.s:2177   .text.RaspiLink_FormatFixed4:00000060 $d
-   D:\TMP\ccDrhhFo.s:2186   .rodata.RaspiLink_SendOdometry.str1.4:00000000 $d
-   D:\TMP\ccDrhhFo.s:2193   .text.RaspiLink_SendOdometry:00000000 $t
-   D:\TMP\ccDrhhFo.s:2198   .text.RaspiLink_SendOdometry:00000000 RaspiLink_SendOdometry
-   D:\TMP\ccDrhhFo.s:2561   .text.RaspiLink_SendOdometry:00000180 $d
-   D:\TMP\ccDrhhFo.s:3354   .bss.s_next_odom_tx_ms:00000000 s_next_odom_tx_ms
-   D:\TMP\ccDrhhFo.s:3371   .bss.s_tx_line:00000000 s_tx_line
-   D:\TMP\ccDrhhFo.s:2574   .text.RaspiLink_Init:00000000 $t
-   D:\TMP\ccDrhhFo.s:2580   .text.RaspiLink_Init:00000000 RaspiLink_Init
-   D:\TMP\ccDrhhFo.s:2658   .text.RaspiLink_Init:00000048 $d
-   D:\TMP\ccDrhhFo.s:2670   .text.RaspiLink_Background:00000000 $t
-   D:\TMP\ccDrhhFo.s:2676   .text.RaspiLink_Background:00000000 RaspiLink_Background
-   D:\TMP\ccDrhhFo.s:2915   .text.RaspiLink_Background:000000c0 $d
-   D:\TMP\ccDrhhFo.s:3383   .bss.s_parse_line:00000000 s_parse_line
-   D:\TMP\ccDrhhFo.s:2926   .text.RaspiLink_IRQHandler:00000000 $t
-   D:\TMP\ccDrhhFo.s:2932   .text.RaspiLink_IRQHandler:00000000 RaspiLink_IRQHandler
-   D:\TMP\ccDrhhFo.s:2952   .text.RaspiLink_IRQHandler:0000000c $d
-   D:\TMP\ccDrhhFo.s:2957   .text.RaspiLink_RxCpltCallback:00000000 $t
-   D:\TMP\ccDrhhFo.s:2963   .text.RaspiLink_RxCpltCallback:00000000 RaspiLink_RxCpltCallback
-   D:\TMP\ccDrhhFo.s:3228   .text.RaspiLink_RxCpltCallback:0000010c $d
-   D:\TMP\ccDrhhFo.s:3242   .text.RaspiLink_TxCpltCallback:00000000 $t
-   D:\TMP\ccDrhhFo.s:3248   .text.RaspiLink_TxCpltCallback:00000000 RaspiLink_TxCpltCallback
-   D:\TMP\ccDrhhFo.s:3284   .text.RaspiLink_TxCpltCallback:00000018 $d
-   D:\TMP\ccDrhhFo.s:3290   .text.RaspiLink_ErrorCallback:00000000 $t
-   D:\TMP\ccDrhhFo.s:3296   .text.RaspiLink_ErrorCallback:00000000 RaspiLink_ErrorCallback
-   D:\TMP\ccDrhhFo.s:3339   .text.RaspiLink_ErrorCallback:0000001c $d
-   D:\TMP\ccDrhhFo.s:3345   .bss.s_last_odom_update_ms:00000000 $d
-   D:\TMP\ccDrhhFo.s:3351   .bss.s_next_odom_tx_ms:00000000 $d
-   D:\TMP\ccDrhhFo.s:3357   .bss.s_rx_line_start_ms:00000000 $d
-   D:\TMP\ccDrhhFo.s:3366   .bss.s_line_queued:00000000 $d
-   D:\TMP\ccDrhhFo.s:3368   .bss.s_tx_line:00000000 $d
-   D:\TMP\ccDrhhFo.s:3374   .bss.s_pending_line:00000000 $d
-   D:\TMP\ccDrhhFo.s:3380   .bss.s_parse_line:00000000 $d
-   D:\TMP\ccDrhhFo.s:3389   .bss.s_line_ready:00000000 $d
-   D:\TMP\ccDrhhFo.s:3394   .bss.s_rx_index:00000000 $d
-   D:\TMP\ccDrhhFo.s:3396   .bss.s_rx_line:00000000 $d
-   D:\TMP\ccDrhhFo.s:3405   .bss.s_rx_byte:00000000 $d
-   D:\TMP\ccDrhhFo.s:3407   .bss.s_huart_raspi:00000000 $d
-   D:\TMP\ccDrhhFo.s:3414   .data.g_raspi_link_debug:00000000 $d
-   D:\TMP\ccDrhhFo.s:3432   .bss.g_raspi_link_state:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3348   .bss.s_last_odom_update_ms:00000000 s_last_odom_update_ms
+   D:\TMP\ccOeGaZ4.s:2041   .rodata.RaspiLink_FormatFixed4.str1.4:00000000 $d
+   D:\TMP\ccOeGaZ4.s:2052   .text.RaspiLink_FormatFixed4:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2057   .text.RaspiLink_FormatFixed4:00000000 RaspiLink_FormatFixed4
+   D:\TMP\ccOeGaZ4.s:2177   .text.RaspiLink_FormatFixed4:00000060 $d
+   D:\TMP\ccOeGaZ4.s:2186   .rodata.RaspiLink_SendOdometry.str1.4:00000000 $d
+   D:\TMP\ccOeGaZ4.s:2193   .text.RaspiLink_SendOdometry:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2198   .text.RaspiLink_SendOdometry:00000000 RaspiLink_SendOdometry
+   D:\TMP\ccOeGaZ4.s:2561   .text.RaspiLink_SendOdometry:00000180 $d
+   D:\TMP\ccOeGaZ4.s:3354   .bss.s_next_odom_tx_ms:00000000 s_next_odom_tx_ms
+   D:\TMP\ccOeGaZ4.s:3371   .bss.s_tx_line:00000000 s_tx_line
+   D:\TMP\ccOeGaZ4.s:2574   .text.RaspiLink_Init:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2580   .text.RaspiLink_Init:00000000 RaspiLink_Init
+   D:\TMP\ccOeGaZ4.s:2658   .text.RaspiLink_Init:00000048 $d
+   D:\TMP\ccOeGaZ4.s:2670   .text.RaspiLink_Background:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2676   .text.RaspiLink_Background:00000000 RaspiLink_Background
+   D:\TMP\ccOeGaZ4.s:2915   .text.RaspiLink_Background:000000c0 $d
+   D:\TMP\ccOeGaZ4.s:3383   .bss.s_parse_line:00000000 s_parse_line
+   D:\TMP\ccOeGaZ4.s:2926   .text.RaspiLink_IRQHandler:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2932   .text.RaspiLink_IRQHandler:00000000 RaspiLink_IRQHandler
+   D:\TMP\ccOeGaZ4.s:2952   .text.RaspiLink_IRQHandler:0000000c $d
+   D:\TMP\ccOeGaZ4.s:2957   .text.RaspiLink_RxCpltCallback:00000000 $t
+   D:\TMP\ccOeGaZ4.s:2963   .text.RaspiLink_RxCpltCallback:00000000 RaspiLink_RxCpltCallback
+   D:\TMP\ccOeGaZ4.s:3228   .text.RaspiLink_RxCpltCallback:0000010c $d
+   D:\TMP\ccOeGaZ4.s:3242   .text.RaspiLink_TxCpltCallback:00000000 $t
+   D:\TMP\ccOeGaZ4.s:3248   .text.RaspiLink_TxCpltCallback:00000000 RaspiLink_TxCpltCallback
+   D:\TMP\ccOeGaZ4.s:3284   .text.RaspiLink_TxCpltCallback:00000018 $d
+   D:\TMP\ccOeGaZ4.s:3290   .text.RaspiLink_ErrorCallback:00000000 $t
+   D:\TMP\ccOeGaZ4.s:3296   .text.RaspiLink_ErrorCallback:00000000 RaspiLink_ErrorCallback
+   D:\TMP\ccOeGaZ4.s:3339   .text.RaspiLink_ErrorCallback:0000001c $d
+   D:\TMP\ccOeGaZ4.s:3345   .bss.s_last_odom_update_ms:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3351   .bss.s_next_odom_tx_ms:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3357   .bss.s_rx_line_start_ms:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3366   .bss.s_line_queued:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3368   .bss.s_tx_line:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3374   .bss.s_pending_line:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3380   .bss.s_parse_line:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3389   .bss.s_line_ready:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3394   .bss.s_rx_index:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3396   .bss.s_rx_line:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3405   .bss.s_rx_byte:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3407   .bss.s_huart_raspi:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3414   .data.g_raspi_link_debug:00000000 $d
+   D:\TMP\ccOeGaZ4.s:3432   .bss.g_raspi_link_state:00000000 $d
 
 UNDEFINED SYMBOLS
 __aeabi_fcmplt
@@ -5299,7 +5299,7 @@ HAL_NVIC_SetPriority
 HAL_NVIC_EnableIRQ
 HAL_UART_Receive_IT
 AppTasks_SubmitControlCommandFromTask
-ARM GAS  D:\TMP\ccDrhhFo.s 			page 90
+ARM GAS  D:\TMP\ccOeGaZ4.s 			page 90
 
 
 strtoul
