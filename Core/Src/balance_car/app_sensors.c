@@ -12,11 +12,11 @@ volatile AppSensorState_t g_sensor_state = {
     .temperature_c = 0.0f,
     .humidity_percent = 0.0f,
     .weight_g = 0.0f,
-    .hx711_raw = 0,
-    .hx711_zero_raw = 0,
-    .hx711_g_per_count = DEFAULT_G_PER_COUNT,
-    .hx711_weight_g = 0.0f,
-    .sensor_fault_flags = SENSOR_FAULT_NONE,
+    .hx711_raw = 0,                   
+    .hx711_zero_raw = 0,           
+    .hx711_g_per_count = DEFAULT_G_PER_COUNT,      
+    .hx711_weight_g = 0.0f,              
+    .sensor_fault_flags = SENSOR_FAULT_NONE, 
 };
 
 static uint32_t s_next_hx711_ms;
